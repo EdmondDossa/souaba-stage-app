@@ -1,0 +1,35 @@
+import React from "react";
+
+const Button = ({
+  children,
+  variant = "primary",
+  size = "md",
+  className = "",
+  ...props
+}) => {
+  const baseStyles =
+    "font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out";
+
+  const variantStyles = {
+    primary: "bg-blue-600 hover:bg-blue-700 text-white",
+    secondary: "bg-gray-200 hover:bg-gray-300 text-gray-800",
+    outline:
+      "bg-transparent border border-blue-600 text-blue-600 hover:bg-blue-50 hover:text-blue-700",
+  };
+
+  const sizeStyles = {
+    sm: "text-sm py-1 px-3",
+    md: "text-base py-2 px-4",
+    lg: "text-lg py-3 px-6",
+  };
+
+  const combinedStyles = `${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`;
+
+  return (
+    <button className={combinedStyles} {...props}>
+      {children}
+    </button>
+  );
+};
+
+export default Button;

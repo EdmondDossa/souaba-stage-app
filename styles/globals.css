@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Montserrat";
+  src: url("/fonts/Montserrat-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@theme {
+  --color-primary: #f8aa24;
+  --color-green: #29b06f;
+  --color-danger: #d00505;
+  --color-background: #ffffff;
+  --color-foreground: #000000;
+  --font-montserrat: "Montserrat", sans-serif;
+  --font-sans: "Montserrat", system-ui, sans-serif;
+}
+
+@keyframes borderReveal {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+.active-border {
+  position: relative;
+}
+
+.active-border::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background-color: var(--color-primary);
+  animation: borderReveal 0.3s ease-out forwards;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
