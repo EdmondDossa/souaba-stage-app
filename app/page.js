@@ -1,5 +1,5 @@
 "use client";
-import { PropertyCard, SearchBar } from "@/components/common";
+import { PropertyCard, SearchBar } from "@/app/ui/common";
 import { useState } from "react";
 
 export default function Home() {
@@ -9,7 +9,7 @@ export default function Home() {
     <div>
       <div className="relative bg-[url('/images/acceuil-first-image.webp')] bg-cover bg-center h-[100vh] w-full flex items-center justify-center text-center">
         <div className="relative h-full w-full bg-black/50 z-10 flex flex-col items-center justify-center text-white space-y-4 px-10">
-          <h2 className="font-bold text-white text-7xl">
+          <h2 className="font-montserrat-bold text-white text-7xl word -tracking-wide">
             Trouvez l'hébergement parfait pour votre prochain séjour.
           </h2>
           <div className="w-full flex flex-col lg:flex-row items-center justify-evenly">
