@@ -31,21 +31,23 @@ const AuthForm = ({
         </h1>
         {children}
         <div>
-          <Button className="w-full py-5 rounded-4xl bg-primary hover:hover:bg-primary/70 transition duration-200 cursor-pointer">
+          <Button className="w-full py-5 font-montserrat-bold rounded-4xl bg-primary hover:hover:bg-primary/70 transition duration-200 cursor-pointer">
             {btnTitle}
           </Button>
         </div>
-        <div className="text-sm text-center mt-4">
-          <p className="font-bold">
-            {alternativeOptionMessage}
-            <Link
-              href={alternativeOptionLink}
-              className="ms-2 text-primary decoration-1 underline  hover:decoration-2 hover:decoration-dotted transition"
-            >
-              {alternativeOptionBtn}
-            </Link>{" "}
-          </p>
-        </div>
+        {alternativeOptionMessage && (
+          <div className="text-sm text-center mt-4">
+            <p className="font-bold">
+              {alternativeOptionMessage}
+              <Link
+                href={alternativeOptionLink}
+                className="ms-2 text-primary decoration-1 underline  hover:decoration-2 hover:decoration-dotted transition"
+              >
+                {alternativeOptionBtn}
+              </Link>{" "}
+            </p>
+          </div>
+        )}
       </form>
     </>
   );

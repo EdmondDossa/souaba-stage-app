@@ -1,8 +1,10 @@
 import React from "react";
 import { InputRow } from "@/app/ui/common/index";
-import AuthForm from "../ui/AuthForm";
+import AuthForm from "../components/AuthForm";
 import CheckBox from "@/app/ui/common/CheckBox";
-const Page = () => {
+import Link from "next/link";
+
+const RegisterPage = () => {
   return (
     <AuthForm
       formTitle="Créer Un Compte"
@@ -22,13 +24,16 @@ const Page = () => {
           htmlFor="terms"
         >
           Accepter les{" "}
-          <span className="text-primary decoration-1 underline">
+          <Link
+            href=""
+            className="text-primary decoration-1 underline hover:decoration-2 hover:decoration-dotted"
+          >
             termes et conditions
-          </span>
+          </Link>
         </label>
       </div>
     </AuthForm>
   );
 };
 
-export default Page;
+export default RegisterPage;

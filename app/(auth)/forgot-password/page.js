@@ -1,23 +1,27 @@
 import React from "react";
-import AuthForm from "../ui/AuthForm";
+import AuthForm from "../components/AuthForm";
 import { InputRow } from "@/app/ui/common";
 
-const Page = () => {
+const PasswordForgot = () => {
   return (
-    <AuthForm
-      showTopImage={false}
-      btnTitle="Envoyez"
-    >
+    <AuthForm showTopImage={false} btnTitle="Envoyez">
       <div className="mx-auto w-[90%] text-center">
-        <h2 className="font-montserrat-bold text-center mb-5 text-2xl">Entrer Votre Adresse Email </h2>
+        <h2 className="font-montserrat-bold text-center mb-5 text-2xl">
+          Entrer Votre Adresse Email{" "}
+        </h2>
         <p className="text-[15px] mx-auto text-center w-4/5">
           Après avoir entré votre adresse e-mail, vous recevrez un mail de
-          vérification
+          vérification.
         </p>
       </div>
-      <InputRow type="email" name="email" placeholder="exemple@gmail.com" />
+      <InputRow
+        label="Email"
+        type="email"
+        name="email"
+        placeholder="exemple@gmail.com"
+      />
     </AuthForm>
   );
 };
 
-export default Page;
+export default PasswordForgot;

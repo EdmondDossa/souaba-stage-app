@@ -1,8 +1,9 @@
 import React from "react";
 import { InputRow } from "@/app/ui/common/index";
 import Link from "next/link";
-import AuthForm from "../ui/AuthForm";
-const Page = () => {
+import AuthForm from "../components/AuthForm";
+
+const LoginPage = () => {
   return (
     <AuthForm
       formTitle="Se Connecter"
@@ -29,4 +30,4 @@ const Page = () => {
   );
 };
 
-export default Page;
+export default LoginPage;
