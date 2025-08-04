@@ -12,7 +12,10 @@ const AuthForm = ({
   handleSubmit,
   children,
   showTopImage = true,
+  className,
 }) => {
+  const customClasse = `mx-auto w-[365px] mb-10 ${className}`;
+
   return (
     <>
       {showTopImage && (
@@ -25,13 +28,13 @@ const AuthForm = ({
           />
         </div>
       )}
-      <form className="mx-auto w-[365px]  mb-10" onSubmit={handleSubmit}>
-        <h1 className="font-montserrat-bold text-center mb-5 text-2xl">
+      <form className={customClasse} onSubmit={handleSubmit}>
+        <h1 className="font-montserrat-bold text-center mb-5 text-xl md:text-2xl">
           {formTitle}
         </h1>
         {children}
         <div>
-          <Button className="w-full py-5 font-montserrat-bold rounded-4xl bg-primary hover:hover:bg-primary/70 transition duration-200 cursor-pointer">
+          <Button className="w-full py-3 md:py-5 font-montserrat-bold rounded-4xl bg-primary hover:hover:bg-primary/70 transition duration-200 cursor-pointer">
             {btnTitle}
           </Button>
         </div>

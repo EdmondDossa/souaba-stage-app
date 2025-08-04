@@ -42,7 +42,7 @@ const Header = () => {
             {/* Bouton S'inscrire */}
             <Link
               href="/register"
-              className="hidden sm:inline-flex items-center px-5 py-2.5 border-2 border-primary text-black rounded-full text-sm font-bold bg-white hover:bg-primary hover:text-white transition-colors"
+              className="hidden sm:inline-flex items-center px-5 py-2.5 border-2 border-primary text-black rounded-full text-sm font-bold bg-white hover:shadow-lg shadow-gray-500 hover:bg-primary hover:text-white transition"
             >
               S'inscrire
             </Link>
@@ -50,7 +50,7 @@ const Header = () => {
             {/* Bouton Se connecter */}
             <Link
               href="/login"
-              className="hidden sm:inline-flex items-center px-5 py-2.5 border-2 border-primary text-black rounded-full text-sm font-bold bg-white hover:bg-primary hover:text-white transition-colors"
+              className="hidden sm:inline-flex items-center px-5 py-2.5 border-2 border-primary text-black rounded-full text-sm font-bold bg-white hover:bg-primary hover:shadow-lg shadow-gray-500 hover:text-white transition"
             >
               Se connecter
             </Link>

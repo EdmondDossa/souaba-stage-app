@@ -39,12 +39,12 @@
     width: 0%;
   }
   100% {
-    width: 100%;
+    width: 70%;
   }
 }
 
-.active-border {
-  position: relative;
+.active-border,.property-card-title {
+  position: relative !important;
 }
 
 .active-border::after {
@@ -56,6 +56,18 @@
   background-color: var(--color-primary);
   animation: borderReveal 0.3s ease-out forwards;
 }
+
+.property-card-title::after {
+  content: "";
+  position: absolute;
+  bottom: -28px;
+  left: 0;
+  height: 8px;
+  border-radius: 80px;
+  width: 45%;
+  background-color: var(--color-primary);
+}
+
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
