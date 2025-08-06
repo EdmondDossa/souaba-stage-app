@@ -1,7 +1,8 @@
 import React from "react";
-import { InputRow } from "@/app/ui/common/index";
+import { InputRow } from "@/components/ui/common/index";
 import Link from "next/link";
 import AuthForm from "../components/AuthForm";
+import { AuthLayout } from "@/components/Layout";
 
 const LoginPage = () => {
   return (

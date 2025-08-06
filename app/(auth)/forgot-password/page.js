@@ -1,6 +1,6 @@
 import React from "react";
 import AuthForm from "../components/AuthForm";
-import { InputRow } from "@/app/ui/common";
+import { InputRow } from "@/components/ui/common";
 
 const PasswordForgot = () => {
   return (

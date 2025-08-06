@@ -1,6 +1,7 @@
 "use client";
+import { AuthLayout } from "@/components/Layout";
 import AuthForm from "../components/AuthForm";
-import { InputRow } from "@/app/ui/common";
+import { InputRow } from "@/components/ui/common";
 
 const PasswordChange = () => {
   return (

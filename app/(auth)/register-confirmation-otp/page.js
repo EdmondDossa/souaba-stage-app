@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import AuthForm from "../components/AuthForm";
-import OtpInput from "@/app/ui/common/OtpInput";
+import OtpInput from "@/components/ui/common/OtpInput";
 
 const RegisterConfirmationOtp = () => {
   const [otpCode, setOtpCode] = useState("------");

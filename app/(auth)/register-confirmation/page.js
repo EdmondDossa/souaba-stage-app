@@ -1,6 +1,7 @@
 import React from "react";
 import { RadioGroup } from "radix-ui";
 import AuthForm from "../components/AuthForm";
+import { AuthLayout } from "@/components/Layout";
 
 const RegisterConfirmation = () => {
   return (

@@ -13,7 +13,7 @@ const CheckBox = ({ id, className, defaultChecked = false, ...props }) => {
       id={id}
     >
       <Checkbox.Indicator className="bg-primary border rounded-md border-white">
-        <Check className="w-6 h-6 text-white"  />
+        <Check className="w-6 h-6 text-white" />
       </Checkbox.Indicator>
     </Checkbox.Root>
   );

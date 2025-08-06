@@ -1,7 +1,8 @@
 "use client";
 import React, { useState } from "react";
 import AuthForm from "../components/AuthForm";
-import OtpInput from "@/app/ui/common/OtpInput";
+import OtpInput from "@/components/ui/common/OtpInput";
+import { AuthLayout } from "@/components/Layout";
 
 const OtpCheck = () => {
   const [otpCode, setOtpCode] = useState("----");

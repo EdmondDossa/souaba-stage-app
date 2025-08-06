@@ -1,8 +1,8 @@
 import React from "react";
-import { InputRow } from "@/app/ui/common/index";
+import { InputRow, CheckBox } from "@/components/ui/common/index";
 import AuthForm from "../components/AuthForm";
-import CheckBox from "@/app/ui/common/CheckBox";
 import Link from "next/link";
+import { AuthLayout } from "@/components/Layout";
 
 const RegisterPage = () => {
   return (

@@ -1,6 +1,6 @@
 import React from "react";
 import Image from "next/image";
-import { Button } from "@/app/ui/common/index";
+import { Button } from "@/components/ui/common/index";
 import Link from "next/link";
 
 const AuthForm = ({

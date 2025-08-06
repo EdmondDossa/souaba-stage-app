@@ -1,10 +1,9 @@
 "use client";
-import { PropertyCard, SearchBar } from "@/components/common";
+import { MainLayout } from "@/components/Layout";
+import { PropertyCard, SearchBar } from "@/components/ui/common";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import Header from "./ui/layout/Header";
-import Footer from "./ui/layout/Footer";
 
 export default function Home() {
   const [property, setProperty] = useState("hotels");
@@ -77,7 +76,7 @@ export default function Home() {
     },
   ];
   return (
-    <div>
+    <>
       <div className="relative bg-[url('/images/acceuil-first-image.webp')] bg-cover bg-center h-[60vh] w-full flex items-center justify-center text-center">
         <div className="relative h-full w-full bg-black/50 z-10 flex flex-col items-center justify-center text-white space-y-10 px-10">
           <div>
@@ -255,6 +254,6 @@ export default function Home() {
           ))}
         </div>
       </div>
-    </div>
+    </>
   );
 }
