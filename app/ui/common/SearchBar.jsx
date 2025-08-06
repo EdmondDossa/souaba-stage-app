@@ -40,11 +40,11 @@ export default function SearchBar() {
   };
 
   return (
-    <div className="relative bg-white rounded-full p-2 shadow-lg flex items-center justify-between space-x-4 max-w-5xl mx-auto border border-gray-200">
+    <div className="relative bg-white rounded-full p-2 shadow-lg flex items-center justify-between space-x-4 max-w-5xl mx-auto border border-gray-200 ">
       <div className="flex-1 px-4 py-2">
         <label
           htmlFor="destination"
-          className="block text-sm font-medium text-gray-700"
+          className="block text-start text-sm text-gray-700 font-montserrat-medium font-bold"
         >
           Destination
         </label>
@@ -52,7 +52,7 @@ export default function SearchBar() {
           type="text"
           id="destination"
           placeholder="Quelle ville préférez-vous ?"
-          className="w-full focus:outline-none text-gray-800 placeholder-gray-400"
+          className="w-full focus:outline-none font-montserrat-medium  text-sm text-gray-800 font-bold  placeholder-gray-400"
           value={destination}
           onChange={(e) => setDestination(e.target.value)}
         />
@@ -63,7 +63,7 @@ export default function SearchBar() {
       <div className="flex-1 px-4 py-2">
         <label
           htmlFor="arrivalDate"
-          className="block text-sm font-medium text-gray-700"
+          className="block text-start font-montserrat-medium font-bold text-sm text-gray-700"
         >
           Date d'arrivée
         </label>
@@ -71,7 +71,7 @@ export default function SearchBar() {
           type="text"
           id="arrivalDate"
           placeholder="Ajouter une date"
-          className="w-full focus:outline-none text-gray-800 placeholder-gray-400"
+          className="w-full focus:outline-none font-montserrat-medium  text-sm text-gray-800 font-bold  placeholder-gray-400"
           onFocus={handleDateInputFocus}
           onBlur={handleDateInputBlur}
           value={arrivalDate}
@@ -84,7 +84,7 @@ export default function SearchBar() {
       <div className="flex-1 px-4 py-2">
         <label
           htmlFor="departureDate"
-          className="block text-sm font-medium text-gray-700"
+          className="block text-start font-montserrat-medium font-bold text-sm text-gray-700"
         >
           Date de départ
         </label>
@@ -92,7 +92,7 @@ export default function SearchBar() {
           type="text"
           id="departureDate"
           placeholder="Ajouter une date"
-          className="w-full focus:outline-none text-gray-800 placeholder-gray-400"
+          className="w-full focus:outline-none font-montserrat-medium  text-sm text-gray-800 font-bold  placeholder-gray-400"
           onFocus={handleDateInputFocus}
           onBlur={handleDateInputBlur}
           value={departureDate}
@@ -103,13 +103,16 @@ export default function SearchBar() {
       <div className="border-l border-gray-200 h-12"></div>
 
       <div className="relative flex-1 px-4 py-2 cursor-pointer">
-        <label className="block text-sm font-medium text-gray-700">
+        <label className="block text-start font-montserrat-medium font-bold text-sm text-gray-700">
           Nombre d'invités
         </label>
         <div className="flex space-x-2 items-center text-gray-800 placeholder-gray-400">
           <div className="flex items-center justify-center">
-            <label>Adultes</label>
+            <label className="w-full me-1 focus:outline-none font-montserrat-medium text-sm md:text-[12px] text-gray-400 font-bold">
+              Adultes
+            </label>
             <select
+              className="font-mono"
               onChange={(e) => {
                 setAdults(parseInt(e.target.value));
               }}
@@ -127,8 +130,11 @@ export default function SearchBar() {
             </select>
           </div>
           <div className="flex items-center justify-center">
-            <label>Enfants</label>
+            <label className="w-full me-1 focus:outline-none font-montserrat-medium text-sm md:text-[12px] text-gray-400 font-bold">
+              Enfants
+            </label>
             <select
+              className="font-mono"
               onChange={(e) => {
                 setChildren(parseInt(e.target.value));
               }}
@@ -146,8 +152,11 @@ export default function SearchBar() {
             </select>
           </div>
           <div className="flex items-center justify-center">
-            <label>Bébés</label>
+            <label className="w-full me-1 focus:outline-none font-montserrat-medium text-sm md:text-[12px] text-gray-400 font-bold">
+              Bébés
+            </label>
             <select
+              className="font-mono"
               onChange={(e) => {
                 setBabies(parseInt(e.target.value));
               }}

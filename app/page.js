@@ -3,6 +3,8 @@ import { PropertyCard, SearchBar } from "@/components/common";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import Header from "./ui/layout/Header";
+import Footer from "./ui/layout/Footer";
 
 export default function Home() {
   const [property, setProperty] = useState("hotels");
