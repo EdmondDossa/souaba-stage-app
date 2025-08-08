@@ -20,22 +20,18 @@ const RegisterPage = () => {
   const [isLoading, setLoading] = useState(false);
   const [formError, setFormError] = useState("");
   const [validationError, setValidationError] = useState("");
-  const userFields = ["email", "password", "fullname", "contact"];
+  const userFields = ["email", "password", "username", "contact"];
 
   async function handleSubmit(e) {
-    setLoading(true);
     e.preventDefault();
-
     let user = {};
     userFields.forEach((key) => (user[key] = e.target[key].value));
     const errors = validateUserInfo(user);
     setValidationError(errors);
 
     const isInvalid = Object.values(errors).some((field) => Boolean(field));
-    if (isInvalid) {
-      setLoading(false);
-      return;
-    }
+    if (isInvalid) return;
+    setLoading(true);
     const { success, message, status } = await register(user);
 
     if (success) {
@@ -65,8 +61,8 @@ const RegisterPage = () => {
     >
       <InputRow
         label="Nom Complet"
-        errorMessage={validationError.fullname}
-        name="fullname"
+        errorMessage={validationError.username}
+        name="username"
       />
       <InputRow
         label="Téléphone"
@@ -118,10 +114,10 @@ const RegisterPage = () => {
       error.password = "";
     }
 
-    if (!userinfo.fullname || !FULLNAME_REGEX.test(userinfo.fullname)) {
-      error.fullname = "Nom complet invalide";
+    if (!userinfo.username || !FULLNAME_REGEX.test(userinfo.username)) {
+      error.username = "Nom complet invalide";
     } else {
-      error.fullname = "";
+      error.username = "";
     }
 
     if (!userinfo.contact || !TELEPHONE_REGEX.test(userinfo.contact)) {

@@ -7,8 +7,7 @@ const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   let http = getAxiosInstance();
-
-  const [isLogged, setLogged] = useState(false);
+  const [isLogged,setLogged] = useState(false);
   const [user, setUser] = useState({});
 
   async function fetchUser() {
@@ -35,13 +34,14 @@ export function AuthProvider({ children }) {
         success: false,
         status: error.status,
         message: error?.response?.data?.message,
+        code: error?.response?.data?.code,
       };
     }
   }
 
   async function register(user) {
     try {
-     const res = await http.post("/auth/signup/", user);
+      const res = await http.post("/auth/signup/", user);
       localStorage.setItem("activationToken", res.data?.activationToken);
       return { success: true };
     } catch (error) {
@@ -53,6 +53,14 @@ export function AuthProvider({ children }) {
     }
   }
 
+  async function logout() {
+    try {
+      await http.post("/auth/logout");
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("refresh_token");
+      await fetchUser();
+    } catch (error) {}
+  }
   useEffect(() => {
     fetchUser();
   }, [isLogged]);
@@ -60,6 +68,7 @@ export function AuthProvider({ children }) {
   const authContextData = {
     register,
     login,
+    logout,
     isLogged,
     user,
   };

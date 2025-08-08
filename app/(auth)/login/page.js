@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useEffect, useState } from "react";
 import { InputRow } from "@/components/ui/common/index";
 import Link from "next/link";
@@ -17,35 +16,26 @@ const LoginPage = () => {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setLoading(true);
     const email = e.target["email"].value;
     const password = e.target["password"].value;
-
-    if (!email || !password) {
-      setFormError(
-        "L'adresse email et le mot de passe sont des champs requis."
-      );
-      setLoading(false);
-      return;
-    } else {
-      setFormError("");
-    }
-
-    if (!EMAIL_REGEX.test(email)) {
-      setFormError("Votre adresse email est invalide");
-      setLoading(false);
-      return;
-    } else {
-      setFormError("");
-    }
-
-    const { success, message, status } = await login({ email, password });
+    const error = validateInput(email, password);
+    setFormError(error);
+    if (error) return;
+    const { success, message, status, code } = await login({ email, password });
     if (!success) {
-      if (status === 403)
-        setFormError(
-          "Votre compte n'est pas encore activé. Pour vous connecter, activez votre compte en premier."
-        );
-      else if (status === 401)
+      if (status === 403) {
+        //case account is locked
+        if (code === "ACCOUNT_LOCKED") {
+          setFormError(
+            "Trop de tentatives de connexions. Votre compte a été vérouillé. Vous avez reçu un mail pour réinitialiser votre mot de passe  ou réessayez dans un moment."
+          );
+        }
+        //case account not activate
+        else
+          setFormError(
+            "Votre compte n'est pas encore activé. Pour vous connecter, activez votre compte en premier."
+          );
+      } else if (status === 401)
         setFormError("Email ou mot de passe incorrecte.");
       else setFormError(message);
     }
@@ -83,6 +73,16 @@ const LoginPage = () => {
       </Link>
     </AuthForm>
   );
+
+  function validateInput(email, password) {
+    if (!email || !password) {
+      return "L'adresse email et le mot de passe sont des champs requis.";
+    }
+    if (!EMAIL_REGEX.test(email)) {
+      return "Votre adresse email est invalide";
+    }
+    return "";
+  }
 };
 
 export default LoginPage;

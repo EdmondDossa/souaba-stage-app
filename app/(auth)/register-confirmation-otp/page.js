@@ -47,15 +47,17 @@ const RegisterConfirmationOtp = () => {
 
   async function resendOtpCode(e) {
     e.preventDefault();
+    if(timeRemaining) return;
     setLoading(true);
-    if (isCodeResent) return;
     try {
       const { data } = await http.post("/auth/resend-otp", { email });
       localStorage.setItem("activationToken", data.activationToken);
       setCodeResent(true);
       makeDecount();
     } catch (error) {
-      setFormError("Le code n'a pas pu être envoyé. Veuillez réessayer.");
+      if(error.status === 403) setFormError("Ce compte est déjà activé. Vous pouvez vous connecter.")
+      else setFormError("Le code n'a pas pu être envoyé. Veuillez réessayer.");
+      setTimeRemaining("");
     } finally {
       setLoading(false);
     }
@@ -66,7 +68,7 @@ const RegisterConfirmationOtp = () => {
     if (accountActivate) {
       setFormError("");
       timerId = setTimeout(() => {
-        router.push("/login");
+        router.replace("/login");
       }, 2500);
     }
     return () => clearTimeout(timerId);
@@ -100,10 +102,10 @@ const RegisterConfirmationOtp = () => {
           <FaSpinner className="animate-spin" />
         </p>
       )}
-      {(timeRemaining && !accountActivate) && (
+      {timeRemaining && !accountActivate && (
         <p className="text-sm text-center font-montserrat-medium  mb-2">
           {" "}
-          Vous pourrez redemandé un code dans{" "}
+          Vous pourrez redemander un code dans{" "}
           <span className="text-green font-montserrat-bold">
             {" "}
             {timeRemaining}{" "}

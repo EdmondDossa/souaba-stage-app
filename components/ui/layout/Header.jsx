@@ -3,8 +3,11 @@ import React, { useState } from "react";
 import { Menu, User } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import useAuthContext from "@/context/auth";
+import ConditionalComponentRender from "@/components/auth/ConditionalComponentRender";
 
 const Header = () => {
+  const { logout } = useAuthContext();
   const [isOpen, setIsOpen] = useState(false);
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
   const toggleMenu = () => {
@@ -39,44 +42,49 @@ const Header = () => {
 
           {/* Boutons de droite */}
           <div className="flex items-center space-x-3">
-            {/* Bouton S'inscrire */}
-            <Link
-              href="/register"
-              className="hidden sm:inline-flex items-center px-5 py-2.5 border-2 border-primary text-black rounded-full text-sm font-bold bg-white hover:shadow-lg shadow-gray-500 hover:bg-primary hover:text-white transition"
-            >
-              S'inscrire
-            </Link>
+            <ConditionalComponentRender forLoggedUser={false}>
+              {/* Bouton S'inscrire */}
+              <Link
+                href="/register"
+                className="hidden sm:inline-flex items-center px-5 py-2.5 border-2 border-primary text-black rounded-full text-sm font-bold bg-white hover:shadow-lg shadow-gray-500 hover:bg-primary hover:text-white transition"
+              >
+                S'inscrire
+              </Link>
 
-            {/* Bouton Se connecter */}
-            <Link
-              href="/login"
-              className="hidden sm:inline-flex items-center px-5 py-2.5 border-2 border-primary text-black rounded-full text-sm font-bold bg-white hover:bg-primary hover:shadow-lg shadow-gray-500 hover:text-white transition"
-            >
-              Se connecter
-            </Link>
-
-            {/* Bouton Ajouter votre établissement */}
-            <Link
-              href="/add-establishment"
-              className="hidden sm:inline-flex items-center px-5 py-2.5 bg-green text-white rounded-full text-sm font-bold hover:opacity-80 transition-colors shadow-sm"
-            >
-              Ajouter votre établissement
-            </Link>
+              {/* Bouton Se connecter */}
+              <Link
+                href="/login"
+                className="hidden sm:inline-flex items-center px-5 py-2.5 border-2 border-primary text-black rounded-full text-sm font-bold bg-white hover:bg-primary hover:shadow-lg shadow-gray-500 hover:text-white transition"
+              >
+                Se connecter
+              </Link>
+            </ConditionalComponentRender>
+            <ConditionalComponentRender forLoggedUser={true}>
+              {/* Bouton Ajouter votre établissement */}
+              <Link
+                href="/add-establishment"
+                className="hidden sm:inline-flex items-center px-5 py-2.5 bg-green text-white rounded-full text-sm font-bold hover:opacity-80 transition-colors shadow-sm"
+              >
+                Ajouter votre établissement
+              </Link>
+            </ConditionalComponentRender>
 
             {/* Avatar utilisateur */}
-            <div className="relative">
-              <div
-                onClick={toggleMenu}
-                className="flex items-center rounded-full border-2 border-[#CBCBCB] space-x-1 p-1.5"
-              >
-                <div className="w-8 h-8   flex items-center justify-center">
-                  <Menu className="w-5 h-5 text-gray-[#CBCBCB]" />
-                </div>
-                <div className="w-8 h-8   flex items-center justify-center">
-                  <User className="w-4 h-4 text-gray-600" />
+            <ConditionalComponentRender forLoggedUser={true}>
+              <div className="relative">
+                <div
+                  onClick={toggleMenu}
+                  className="flex items-center rounded-full border-2 border-[#CBCBCB] space-x-1 p-1.5"
+                >
+                  <div className="w-8 h-8   flex items-center justify-center">
+                    <Menu className="w-5 h-5 text-gray-[#CBCBCB]" />
+                  </div>
+                  <div className="w-8 h-8   flex items-center justify-center">
+                    <User className="w-4 h-4 text-gray-600" />
+                  </div>
                 </div>
               </div>
-            </div>
+            </ConditionalComponentRender>
           </div>
         </div>
       </div>
@@ -100,20 +108,22 @@ const Header = () => {
                   >
                     Trouver un hébergement
                   </Link>
-                  <Link
-                    href="/register"
-                    className="inline-flex justify-center items-center px-5 py-2.5 border-2 border-primary text-black rounded-full text-sm font-bold bg-white hover:bg-primary hover:text-white transition-colors"
-                  >
-                    S'inscrire
-                  </Link>
+                  <ConditionalComponentRender forLoggedUser={false}>
+                    <Link
+                      href="/register"
+                      className="inline-flex justify-center items-center px-5 py-2.5 border-2 border-primary text-black rounded-full text-sm font-bold bg-white hover:bg-primary hover:text-white transition-colors"
+                    >
+                      S'inscrire
+                    </Link>
 
-                  {/* Bouton Se connecter */}
-                  <Link
-                    href="/login"
-                    className="inline-flex justify-center items-center px-5 py-2.5 border-2 border-primary text-black rounded-full text-sm font-bold bg-white hover:bg-primary hover:text-white transition-colors"
-                  >
-                    Se connecter
-                  </Link>
+                    {/* Bouton Se connecter */}
+                    <Link
+                      href="/login"
+                      className="inline-flex justify-center items-center px-5 py-2.5 border-2 border-primary text-black rounded-full text-sm font-bold bg-white hover:bg-primary hover:text-white transition-colors"
+                    >
+                      Se connecter
+                    </Link>
+                  </ConditionalComponentRender>
                   <Link
                     href="/add-establishment"
                     className="inline-flex justify-center items-center px-5 py-2.5 bg-green text-white rounded-full text-sm font-bold hover:opacity-80 transition-colors shadow-sm"
@@ -169,13 +179,15 @@ const Header = () => {
                   >
                     Centre d'aide
                   </Link>
-                  <Link
-                    href="/logout"
-                    className="block  text-gray-700 hover:bg-gray-50 rounded-lg px-2 text-sm font-medium transition-colors"
-                    onClick={toggleMenu}
+                  <button
+                    className="block cursor-pointer p-1 w-full text-gray-700 hover:bg-red-500/50 hover:text-red-700 rounded-lg px-2 text-sm font-medium transition-colors"
+                    onClick={() => {
+                      toggleMenu();
+                      logout();
+                    }}
                   >
                     Déconnexion
-                  </Link>
+                  </button>
                 </div>
               </div>
             </div>

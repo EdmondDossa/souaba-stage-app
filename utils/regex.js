@@ -1,4 +1,4 @@
-export const EMAIL_REGEX = /^[\w\.-]+@[\w\.-]+\.\w{2,}$/;
+export const EMAIL_REGEX = /^[\w\.-]+@[\w\.-]+\.[A-Za-z]{2,}$/;
 
 export const FULLNAME_REGEX = /^([A-ZÀ-ÖØ-Ýa-zà-öø-ÿ'-\s]{3,})+$/;
 
