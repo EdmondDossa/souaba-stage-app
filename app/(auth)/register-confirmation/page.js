@@ -1,9 +1,21 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 import { RadioGroup } from "radix-ui";
 import AuthForm from "../components/AuthForm";
-import { AuthLayout } from "@/components/Layout";
+import { useSearchParams } from "next/navigation";
+import { hideString } from "@/utils";
 
 const RegisterConfirmation = () => {
+  const searchParams = useSearchParams();
+  const email = searchParams.get("email");
+  const contact = searchParams.get("contact");
+  const [confirmationOption, setConfirmationOption] = useState("email");
+
+  async function handleConfirmation() {
+    
+  }
+
   return (
     <AuthForm
       className="md:w-[700px] w-[200px]"
@@ -13,7 +25,8 @@ const RegisterConfirmation = () => {
     >
       <section className="mb-5">
         <RadioGroup.Root
-          defaultValue="Email"
+          onChange={(e) => setConfirmationOption(e.currentTarget.value)}
+          defaultValue="email"
           name="confirmation-option"
           className="w-full border rounded-xl border-gray-300"
         >
@@ -26,14 +39,15 @@ const RegisterConfirmation = () => {
                 Adresse e-mail
               </span>
               <p className="text-sm md:text-lg">
-                Nous enverrons un code à exe******o@gmail.com{" "}
+                Nous enverrons un code à {hideString(email)}
               </p>
             </div>
             <div>
               <RadioGroup.Item
                 id="email"
+                name="email"
                 className="size-[30px] border border-primary rounded-full bg-white outline-none cursor-pointer"
-                value="Email"
+                value="email"
               >
                 <RadioGroup.Indicator className="relative flex size-full items-center justify-center after:block after:size-[18px] after:rounded-full after:bg-primary" />
               </RadioGroup.Item>
@@ -49,14 +63,14 @@ const RegisterConfirmation = () => {
                 Messagerie
               </span>
               <p className="text-sm md:text-lg">
-                Nous enverrons un code au +225******22
+                Nous enverrons un code au {hideString(contact)}
               </p>
             </div>
             <div>
               <RadioGroup.Item
                 id="messagerie"
                 className="size-[30px] border border-primary cursor-pointer rounded-full bg-white outline-none"
-                value="Messagerie"
+                value="messagerie"
               >
                 <RadioGroup.Indicator className="relative flex size-full items-center justify-center after:block after:size-[18px] after:rounded-full after:bg-primary" />
               </RadioGroup.Item>

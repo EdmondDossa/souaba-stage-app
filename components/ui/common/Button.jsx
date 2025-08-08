@@ -1,14 +1,16 @@
 import React from "react";
+import { FaSpinner } from "react-icons/fa";
 
 const Button = ({
   children,
   variant = "primary",
   size = "md",
   className = "",
+  isLoading = false,
   ...props
 }) => {
   const baseStyles =
-    "font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out";
+    "flex items-center justify-center font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300 ease-in-out";
 
   const variantStyles = {
     primary: "bg-blue-600 hover:bg-blue-700 text-white",
@@ -27,7 +29,7 @@ const Button = ({
 
   return (
     <button className={combinedStyles} {...props}>
-      {children}
+       { isLoading ? <FaSpinner className="animate-spin" />: children}
     </button>
   );
 };

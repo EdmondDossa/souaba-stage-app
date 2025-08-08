@@ -1,4 +1,3 @@
-import React from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/common/index";
 import Link from "next/link";
@@ -9,10 +8,12 @@ const AuthForm = ({
   alternativeOptionMessage,
   alternativeOptionLink = "",
   alternativeOptionBtn,
-  handleSubmit,
+  onSubmit,
   children,
   showTopImage = true,
   className,
+  isLoading,
+  formError = "",
 }) => {
   const customClasse = `mx-auto w-[365px] mb-10 ${className}`;
 
@@ -28,13 +29,20 @@ const AuthForm = ({
           />
         </div>
       )}
-      <form className={customClasse} onSubmit={handleSubmit}>
+      <form className={customClasse} onSubmit={onSubmit}>
         <h1 className="font-montserrat-bold text-center mb-5 text-xl md:text-2xl">
           {formTitle}
         </h1>
+        <p className="empty:hidden text-center px-3 py-1 text-[14px] text-danger">
+          {formError}
+        </p>
         {children}
         <div>
-          <Button className="w-full py-3 md:py-5 font-montserrat-bold rounded-4xl bg-primary hover:hover:bg-primary/70 transition duration-200 cursor-pointer">
+          <Button
+            disabled={isLoading}
+            isLoading={isLoading}
+            className="w-full py-3 md:py-4 font-montserrat-bold rounded-4xl bg-primary hover:hover:bg-primary/70 transition duration-200 cursor-pointer"
+          >
             {btnTitle}
           </Button>
         </div>

@@ -1,14 +1,11 @@
+import { AuthLayout } from "@/components/Layout";
 import "@/styles/globals.css";
 
 export const metadata = {
-  title: "Souaba | Se connecter",
+  title: "Souaba | Connexion",
   description: "Page de connexion de Souaba",
 };
 
-export default function LoginLayout({ children }) {
-  return (
-    <main className="min-h-screen flex flex-col items-center justify-center content-center">
-      {children}
-    </main>
-  );
+export default function Layout({ children }) {
+  return <AuthLayout> {children} </AuthLayout>;
 }
