@@ -33,7 +33,8 @@ export function AuthProvider({ children }) {
       return {
         success: false,
         status: error.status,
-        message: error?.response?.data?.message,
+        message: error?.response?.data?.message ||
+        "Une erreur est survenue. Veuillez réesayez plus tard.",
         code: error?.response?.data?.code,
       };
     }
@@ -48,7 +49,8 @@ export function AuthProvider({ children }) {
       return {
         success: false,
         status: error.status,
-        message: error?.response?.data?.message,
+        message: error?.response?.data?.message ||
+          "Une erreur est survenue. Veuillez réesayez plus tard.",
       };
     }
   }
