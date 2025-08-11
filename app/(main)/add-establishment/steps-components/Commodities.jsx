@@ -1,21 +1,25 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ChoiceCard from "@/components/ui/common/ChoiceCard";
 import StepTitle from "./StepTitle";
 
-const Commodities = () => {
-  const [commodities,setCommodities] = useState([]);
+const Commodities = ({ handleFormDataUpdate, initialState }) => {
+  const [commodities, setCommodities] = useState(initialState || []);
 
   const commoditiesList = [
-  "Télévision",
-  "Wifi",
-  "Rondelle",
-  "Balcon",
-  "Nettoyeur",
-  "Radio",
-  "Ascenseur",
-  "Autre"
+    "Télévision",
+    "Wifi",
+    "Rondelle",
+    "Balcon",
+    "Nettoyeur",
+    "Radio",
+    "Ascenseur",
+    "Autre",
   ];
+
+  useEffect(() => {
+    if (commodities.length > 0) handleFormDataUpdate(commodities);
+  }, [commodities.length]);
 
   return (
     <>

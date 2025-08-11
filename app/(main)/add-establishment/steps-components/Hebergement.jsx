@@ -1,12 +1,14 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import hotelMini from "@/public/images/add-etablishment/hotel-mini.png";
 import residenceMini from "@/public/images/add-etablishment/residence-mini.png";
 import studioMini from "@/public/images/add-etablishment/studio-mini.png";
 import StepTitle from "./StepTitle";
 import ChoiceCard from "@/components/ui/common/ChoiceCard";
 
-const Hebergement = () => {
-  const [hebergementMode, setHebergementMode] = useState("Appartement");
+const Hebergement = ({ handleFormDataUpdate, initialState,allowNextStep }) => {
+  const [hebergementMode, setHebergementMode] = useState(
+    initialState || "Hotêl"
+  );
 
   const items = [
     {
@@ -30,6 +32,13 @@ const Hebergement = () => {
       icon: studioMini,
     },
   ];
+
+  useEffect(() => {
+    if (hebergementMode) {
+      handleFormDataUpdate(hebergementMode);
+      allowNextStep();
+    };
+  }, [hebergementMode]);
 
   return (
     <>

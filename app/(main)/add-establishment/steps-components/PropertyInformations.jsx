@@ -5,11 +5,11 @@ import Wrapper from "./Wrapper";
 import StepTitle from "./StepTitle";
 import { Asterisk, ImagePlus, X } from "lucide-react";
 import countryList from "@/data/country-in-fr.json";
+import { handlePhotoUpload } from "@/utils";
 
-const PropertyInformations = () => {
-  const [previewPhotos, setPreviewPhotos] = useState([]);
+const PropertyInformations = ({ handleFormDataUpdate, initialState }) => {
+  const [previewPhotos, setPreviewPhotos] = useState(initialState || []);
   const [uploadError, setUploadError] = useState("");
-  const LIMIT_UPLOAD_SIZE = 5 * 1024 * 1024; // 5MB;
   const allowedExtensions = ["jpg", "jpeg", "png", "gif", "webp", "svg"];
 
   function removeUploadedPhoto(key) {
@@ -19,31 +19,15 @@ const PropertyInformations = () => {
     setPreviewPhotos(filteredResults);
   }
 
-  function handleFileUpload(e) {
-    const files = e.target.files;
-    let uploadedPhotos = [];
-    let fileError = false;
-
-    for (const file of files) {
-      const fileExtension = file.type.split("/").at(-1);
-      if (
-        !file.type?.startsWith("image/") ||
-        !allowedExtensions.includes(fileExtension) ||
-        file.size > LIMIT_UPLOAD_SIZE
-      ) {
-        fileError = true;
-      } else {
-        const urlPreview = URL.createObjectURL(file);
-        uploadedPhotos.push({ file, url: urlPreview });
-      }
-    }
-
-    if (fileError)
+  function handleFileChange(e) {
+    const { fileError, media } = handlePhotoUpload(e, allowedExtensions);
+    if (fileError) {
       setUploadError(
         `Taille MAX:5MB. Extensions autorisées ${allowedExtensions.join(",")}.`
       );
-    else setUploadError("");
-    setPreviewPhotos([...previewPhotos, ...uploadedPhotos]);
+    } else setUploadError("");
+    setPreviewPhotos([...previewPhotos, ...media]);
+    handleFormDataUpdate([...previewPhotos, ...media]);
   }
 
   return (
@@ -107,13 +91,13 @@ const PropertyInformations = () => {
                   {uploadError}{" "}
                 </p>
                 <div className="p-4 flex flex-col  border border-gray-200 rounded-lg">
-                  <label htmlFor="photos" className="block">
+                  <label htmlFor="photos" className="block hover:bg-gray-100">
                     <span className="cursor-pointer font-montserrat-bold flex flex-col items-center justify-center">
                       <ImagePlus className="w-14 h-14 mb-4" />
                       Ajouter des photos
                     </span>
                     <input
-                      onChange={handleFileUpload}
+                      onChange={handleFileChange}
                       type="file"
                       className="hidden"
                       id="photos"

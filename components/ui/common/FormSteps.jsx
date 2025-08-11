@@ -1,6 +1,6 @@
 "use client";
 
-const FormSteps = ({ steps, currentStep }) => {
+const FormSteps = ({ stepsLabels:steps, currentStep }) => {
   const width = (1 / steps.length) * 70 + "vw";
   const progressBar = (
     <section className="flex w-full items-center justify-center mt-15">

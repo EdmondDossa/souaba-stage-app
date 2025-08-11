@@ -21,6 +21,7 @@ const LoginPage = () => {
     const error = validateInput(email, password);
     setFormError(error);
     if (error) return;
+    setLoading(true);
     const { success, message, status, code } = await login({ email, password });
     if (!success) {
       if (status === 403) {
