@@ -30,13 +30,13 @@ const Resume = ({ formValues, allowNextStep, setCurrentStep }) => {
     <article>
       <section className="mb-10">
         <StepTitle>Récapitulatif de votre hébergement</StepTitle>
-        <p className="font-montserrat-medium text-xl text-center text-gray-600 -mt-8 mb-8">
+        <p className="font-montserrat-medium text-lg text-center text-gray-600 -mt-8 mb-8">
           Vérifiez que toutes les informations sont correctes avant de publier.
         </p>
         {/* Hébergements sections */}
         <div className="flex items-center justify-between">
           <ResumeHead title="Type d'hébergement" icon={residenceMini} />
-          <div className="font-montserrat-bold text-gray-700 text-xl">
+          <div className="font-montserrat-bold text-gray-700 text-lg">
             {formValues[steps.hebergement].data}
           </div>
         </div>
@@ -47,12 +47,12 @@ const Resume = ({ formValues, allowNextStep, setCurrentStep }) => {
             {formValues[steps.informations]?.data?.photos?.map(
               (photo, index) => {
                 return (
-                  <li key={index} className="w-[190px] h-[150px] bg-gray-200">
+                  <li key={index} className="w-[210px] h-[130px] bg-gray-200">
                     <Image
                       src={photo.url}
                       width={400}
                       height={500}
-                      className="object-cover rounded-lg h-full w-full"
+                      className="object-cover rounded-md h-full w-full"
                       alt=""
                     />
                   </li>
@@ -64,12 +64,12 @@ const Resume = ({ formValues, allowNextStep, setCurrentStep }) => {
           <div className="w-10 flex flex-col items-center justify-center gap-y-10 mt-8">
             <button className="cursor-pointer">
               <Edit
-                className="text-blue-600 w-5 h-5"
+                className="text-blue-600 w-4 h-4"
                 onClick={() => setCurrentStep(steps.informations)}
               />
             </button>
             <button className="cursor-pointer">
-              <Trash2Icon className="text-red-600 w-5 h-5" />
+              <Trash2Icon className="text-red-600 w-4 h-4" />
             </button>
           </div>
         </section>
@@ -78,7 +78,7 @@ const Resume = ({ formValues, allowNextStep, setCurrentStep }) => {
         <section className="mb-10">
           <ResumeHead icon={infoIcon} title="Informations générales" />
           <div className="mt-10 capitalize">
-            <table className="text-xl">
+            <table className="text-lg">
               <tbody className="[&_th]:font-montserrat-bold [&_tr]:mb-5">
                 <tr className="flex justify-between gap-8">
                   <th>Nom:</th>
@@ -124,7 +124,7 @@ const Resume = ({ formValues, allowNextStep, setCurrentStep }) => {
           <ResumeHead icon={textFileIcon} title="Détails des pièces" />
           <div className="mt-5">
             <table>
-              <tbody className="[&_th]:font-montserrat-bold  [&_tr]:mb-5 text-xl">
+              <tbody className="[&_th]:font-montserrat-bold  [&_tr]:mb-5 text-lg">
                 <tr className="flex justify-between gap-8">
                   <th>Nombre de chambres:</th>
                   <td className="capitalize w-sm">
@@ -159,7 +159,7 @@ const Resume = ({ formValues, allowNextStep, setCurrentStep }) => {
           <ResumeHead icon={textFileIcon} title="Coordonnées" />
           <div className="mt-5">
             <table>
-              <tbody className="[&_th]:font-montserrat-bold  [&_tr]:mb-5 text-xl">
+              <tbody className="[&_th]:font-montserrat-bold  [&_tr]:mb-5 text-lg">
                 <tr className="flex justify-between gap-8">
                   <th>Nombre du propriétaire/gestionnaire:</th>
                   <td className="capitalize w-sm">{user.username}</td>
@@ -178,7 +178,7 @@ const Resume = ({ formValues, allowNextStep, setCurrentStep }) => {
         </section>
         {/* Footer */}
         <hr className="h-3 my-10 text-gray-200" />
-        <p className="text-xl font-light">
+        <p className="text-lg font-light">
           Merci de vérifier les informations ci-dessus. Vous pourrez toujours
           modifier votre annonce après publication.
         </p>
@@ -199,7 +199,7 @@ function ResumeHead({ icon, title }) {
           className="object-cover"
         />
       </div>
-      <div className="text-xl font-montserrat-bold text-gray-800">{title}</div>
+      <div className="text-lg font-montserrat-bold text-gray-800">{title}</div>
     </div>
   );
 }
