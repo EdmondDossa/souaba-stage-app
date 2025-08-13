@@ -86,3 +86,13 @@ input[type="number"]::-webkit-outer-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
 }
+/* 
+@keyframes wiggle {
+  from{
+    width: 0;
+    white-space: nowrap;
+  }
+  to {
+    width: 120%;
+  }
+} */

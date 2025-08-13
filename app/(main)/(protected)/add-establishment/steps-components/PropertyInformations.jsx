@@ -145,7 +145,7 @@ const PropertyInformations = ({
                 {formContentError.description}
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2 space-y-3">
+            <div className="grid grid-cols-1 items-center md:grid-cols-2 gap-4 mt-2 space-y-3">
               <div>
                 <Label displayName="Pays" id="country" />
                 <select
@@ -323,7 +323,7 @@ function Input({
         type={type}
         value={value ?? ""}
         onChange={onChange}
-        className="border border-gray-200 rounded-lg outline-0 w-full p-4 placeholder:text-md  placeholder-black font-montserrat-medium"
+        className="border border-gray-200 rounded-lg outline-0 w-full p-3 placeholder:text-md  placeholder-black font-montserrat-medium"
         {...props}
       />
       <p className="empty:hidden text-red-500 text-sm font-sans"> {error} </p>
