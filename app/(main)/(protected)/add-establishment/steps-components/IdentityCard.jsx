@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import  { useEffect, useState } from "react";
 import StepTitle from "./StepTitle";
 import { LucideImagePlus } from "lucide-react";
 import { handlePhotoUpload } from "@/utils";
 import Image from "next/image";
 
-const IdentityCard = ({ handleFormDataUpdate, initialState }) => {
+const IdentityCard = ({ handleFormDataUpdate, initialState, allowNextStep }) => {
   const [identityPhoto, setIdentityPhoto] = useState(initialState || {});
   const [uploadError, setUploadError] = useState("");
   const allowedExtensions = ["jpg", "jpeg", "png"];
@@ -20,6 +20,12 @@ const IdentityCard = ({ handleFormDataUpdate, initialState }) => {
     setIdentityPhoto(savedCard);
     handleFormDataUpdate(savedCard);
   }
+
+  useEffect(()=>{
+    //will allow publishing only if recto photo and verso photo have been uploaded
+    if(Object.keys(identityPhoto).length === 2) allowNextStep();
+    else allowNextStep(false)
+  },[Object.keys(identityPhoto).length]);
 
   return (
     <article>

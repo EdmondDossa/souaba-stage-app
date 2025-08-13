@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import propertyInfoImage from "@/public/images/add-etablishment/room-banner.png";
 import Wrapper from "./Wrapper";
@@ -6,17 +6,45 @@ import StepTitle from "./StepTitle";
 import { Asterisk, ImagePlus, X } from "lucide-react";
 import countryList from "@/data/country-in-fr.json";
 import { handlePhotoUpload } from "@/utils";
+import { TEXT_INPUT_REGEX } from "@/utils/regex";
 
-const PropertyInformations = ({ handleFormDataUpdate, initialState }) => {
-  const [previewPhotos, setPreviewPhotos] = useState(initialState || []);
-  const [uploadError, setUploadError] = useState("");
+const PropertyInformations = ({
+  handleFormDataUpdate,
+  initialState,
+  allowNextStep,
+}) => {
+  const formFields = {
+    name: "",
+    description: "",
+    city: "",
+    address: "",
+    country: "",
+    city: "",
+    price_per_night: "",
+    capacity: "",
+    area: "",
+  };
+  
+  //upload states
+  const [previewPhotos, setPreviewPhotos] = useState(
+    initialState?.photos || []
+  );
   const allowedExtensions = ["jpg", "jpeg", "png", "gif", "webp", "svg"];
+  const [uploadError, setUploadError] = useState("");
+
+  //form fields
+  const [formContent, setFormContent] = useState(
+    initialState?.formContent || { ...formFields }
+  );
+
+  const [formContentError, setFormContentError] = useState({ ...formFields });
 
   function removeUploadedPhoto(key) {
     const filteredResults = previewPhotos.filter(
       (preview, index) => `${preview.file.filename}-${index}` !== key
     );
     setPreviewPhotos(filteredResults);
+    handleFormDataUpdate({ formContent, photos: filteredResults });
   }
 
   function handleFileChange(e) {
@@ -27,8 +55,56 @@ const PropertyInformations = ({ handleFormDataUpdate, initialState }) => {
       );
     } else setUploadError("");
     setPreviewPhotos([...previewPhotos, ...media]);
-    handleFormDataUpdate([...previewPhotos, ...media]);
+    handleFormDataUpdate({ formContent, photos: [...previewPhotos, ...media] });
+    verifyAvailabilityForNextStep();
   }
+
+  function handleFormInput(e) {
+    const { name, value } = e.target;
+    setFormContent({ ...formContent, [name]: value });
+  }
+
+  function addFormError(field, error) {
+    setFormContentError({ ...formContentError, [field]: error });
+  }
+
+  const validator = {
+    string: (field) => {
+      if (!formContent[field] || !TEXT_INPUT_REGEX.test(formContent[field]))
+        addFormError(
+          field,
+          "Ce champ est invalide. Il doit faire 3 caractères au moins."
+        );
+      else addFormError(field, "");
+    },
+    number: (field) => {
+      if (!Number(formContent[field]))
+        addFormError(field, "Ce champ doit être un nombre.");
+      else addFormError(field, "");
+    },
+  };
+
+  function verifyAvailabilityForNextStep() {
+    const everyFieldHasContent = Object.values(formContent).every(
+      (fieldValue) => Boolean(fieldValue)
+    );
+    const isFormContentError = Object.values(formContentError).some((field) =>
+      Boolean(field)
+    );
+    const imagesHasBeenUploaded = previewPhotos.length > 0;
+    if (everyFieldHasContent && imagesHasBeenUploaded && !isFormContentError) {
+      allowNextStep();
+    } else allowNextStep(false);
+  }
+
+  useEffect(() => {
+    verifyAvailabilityForNextStep();
+  }, [JSON.stringify(formContentError), previewPhotos.length]);
+
+  useEffect(() => {
+    //update the state in the parent component
+    handleFormDataUpdate({ formContent, photos: previewPhotos });
+  }, [JSON.stringify(formContent)]);
 
   return (
     <div className="space-y-10">
@@ -43,27 +119,40 @@ const PropertyInformations = ({ handleFormDataUpdate, initialState }) => {
         <div>
           <form action="">
             <div className="mb-3">
-              <Label id={"property-name"} displayName="Nom" />
+              <Label id="name" displayName="Nom" />
               <Input
-                id="property-name"
+                name="name"
+                onChange={handleFormInput}
+                error={formContentError.name}
+                value={formContent.name}
+                onBlur={() => validator.string("name")}
                 placeholder="Entrer le nom de la propriété"
               />
             </div>
             <div>
               <Label id="description" displayName="Description" />
               <textarea
-                name="description"
                 id="description"
+                name="description"
+                value={formContent.description}
+                error={formContentError.description}
+                onBlur={() => validator.string("description")}
+                onChange={handleFormInput}
                 placeholder="Entrez la description de la propriété"
                 className="w-full outline-0 p-4 rounded-lg border border-gray-200 resize-none font-montserrat-medium placeholder-black text-black placeholder:text-md"
               />
+              <p className="empty:hidden text-red-500 text-sm font-sans">
+                {formContentError.description}
+              </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2 space-y-3">
               <div>
                 <Label displayName="Pays" id="country" />
                 <select
-                  name="coutry"
                   id="country"
+                  name="country"
+                  value={formContent.country}
+                  onChange={handleFormInput}
                   className="w-full border border-gray-200 p-4 rounded-lg font-montserrat-medium"
                 >
                   <option value="">Sélectionnez un pays</option>
@@ -74,9 +163,23 @@ const PropertyInformations = ({ handleFormDataUpdate, initialState }) => {
               </div>
               <div>
                 <Label displayName="Ville" id="ville" />
-                <Input placeholder="Nom de la ville" />
+                <Input
+                  name="city"
+                  error={formContentError.city}
+                  value={formContent.city}
+                  onChange={handleFormInput}
+                  onBlur={() => validator.string("city")}
+                  placeholder="Nom de la ville"
+                />
               </div>
-              <Input placeholder="Adresse" id="adresse" name="adresse" />
+              <Input
+                name="address"
+                onChange={handleFormInput}
+                error={formContentError.address}
+                placeholder="Adresse"
+                onBlur={() => validator.string("address")}
+                value={formContent.address}
+              />
               <Input
                 placeholder="Entrer la localisation google map"
                 id="localisation"
@@ -91,7 +194,7 @@ const PropertyInformations = ({ handleFormDataUpdate, initialState }) => {
                   {uploadError}{" "}
                 </p>
                 <div className="p-4 flex flex-col  border border-gray-200 rounded-lg">
-                  <label htmlFor="photos" className="block hover:bg-gray-100">
+                  <label htmlFor="photos" className="block hover:bg-gray-100 p-5">
                     <span className="cursor-pointer font-montserrat-bold flex flex-col items-center justify-center">
                       <ImagePlus className="w-14 h-14 mb-4" />
                       Ajouter des photos
@@ -145,22 +248,43 @@ const PropertyInformations = ({ handleFormDataUpdate, initialState }) => {
               </div>
               <div className="[&_div]:mb-5 w-full md:w-1/2 space-y-4">
                 <div>
-                  <Label displayName="Prix par nuit" id="night-price" />
-                  <Input placeholder="Entrer le prix par nuit" />
+                  <Label displayName="Prix par nuit (FCFA)" id="night-price" />
+                  <Input
+                    name="price_per_night"
+                    type="number"
+                    onChange={handleFormInput}
+                    error={formContentError.price_per_night}
+                    onBlur={() => validator.number("price_per_night")}
+                    value={formContent.price_per_night}
+                    placeholder="Entrer le prix par nuit"
+                  />
                 </div>
                 <div>
                   <Label displayName="Nombre de personnes" id="capacity" />
                   <Input
+                    name="capacity"
+                    type="number"
+                    onChange={handleFormInput}
+                    error={formContentError.capacity}
+                    onBlur={() => validator.number("capacity")}
+                    value={formContent.capacity}
                     placeholder="Entrer la capacité d'accueil"
-                    id="capacity"
                   />
                 </div>
                 <div>
                   <Label
-                    displayName="La superficie de la propriété"
+                    displayName="La superficie de la propriété (km²)"
                     id="area"
                   />
-                  <Input placeholder="Entrer la superficie" id="area" />
+                  <Input
+                    name="area"
+                    onChange={handleFormInput}
+                    type="number"
+                    error={formContentError.area}
+                    onBlur={() => validator.number("area")}
+                    value={formContent.area}
+                    placeholder="Entrer la superficie"
+                  />
                 </div>
               </div>
             </div>
@@ -183,14 +307,26 @@ function Label({ displayName, id }) {
   );
 }
 
-function Input({ type = "text", ...props }) {
+function Input({
+  name,
+  type = "text",
+  value,
+  error,
+  onChange = () => {},
+  ...props
+}) {
   return (
     <div>
       <input
+        id={name}
+        name={name}
         type={type}
+        value={value ?? ""}
+        onChange={onChange}
         className="border border-gray-200 rounded-lg outline-0 w-full p-4 placeholder:text-md  placeholder-black font-montserrat-medium"
         {...props}
       />
+      <p className="empty:hidden text-red-500 text-sm font-sans"> {error} </p>
     </div>
   );
 }

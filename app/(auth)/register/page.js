@@ -12,6 +12,7 @@ import {
   PASSWORD_REGEX,
   TELEPHONE_REGEX,
 } from "@/utils/regex";
+import ConnexionHero from "../components/ConnexionHero";
 
 const RegisterPage = () => {
   const router = useRouter();
@@ -49,54 +50,59 @@ const RegisterPage = () => {
   }, [isLogged]);
 
   return (
-    <AuthForm
-      formTitle="Créer Un Compte"
-      btnTitle="S'inscrire"
-      alternativeOptionBtn="Connectez-vous"
-      alternativeOptionMessage="Vous avez déjà un compte ?"
-      alternativeOptionLink="/login"
-      onSubmit={handleSubmit}
-      isLoading={isLoading}
-      formError={formError}
-    >
-      <InputRow
-        label="Nom Complet"
-        errorMessage={validationError.username}
-        name="username"
-      />
-      <InputRow
-        label="Téléphone"
-        errorMessage={validationError.contact}
-        name="contact"
-      />
-      <InputRow
-        type="email"
-        label="Email"
-        name="email"
-        errorMessage={validationError.email}
-      />
-      <InputRow
-        type="password"
-        label="Password"
-        name="password"
-        errorMessage={validationError.password}
-      />
-      <div className="flex items-center -mt-3 mb-5">
-        <CheckBox id="terms" defaultChecked={false} />
-        <label
-          className="pl-[15px] text-[15px] leading-none font-montserrat-medium"
-          htmlFor="terms"
+    <section className="flex">
+      <ConnexionHero />
+      <div className="w-1/2 h-screen overflow-y-auto">
+        <AuthForm
+          formTitle="Créer Un Compte"
+          btnTitle="S'inscrire"
+          alternativeOptionBtn="Connectez-vous"
+          alternativeOptionMessage="Vous avez déjà un compte ?"
+          alternativeOptionLink="/login"
+          onSubmit={handleSubmit}
+          isLoading={isLoading}
+          formError={formError}
         >
-          Accepter les{" "}
-          <Link
-            href=""
-            className="text-primary decoration-1 underline hover:decoration-2 hover:decoration-dotted"
-          >
-            termes et conditions
-          </Link>
-        </label>
+          <InputRow
+            label="Nom Complet"
+            errorMessage={validationError.username}
+            name="username"
+          />
+          <InputRow
+            label="Téléphone"
+            errorMessage={validationError.contact}
+            name="contact"
+          />
+          <InputRow
+            type="email"
+            label="Email"
+            name="email"
+            errorMessage={validationError.email}
+          />
+          <InputRow
+            type="password"
+            label="Password"
+            name="password"
+            errorMessage={validationError.password}
+          />
+          <div className="flex items-center -mt-1 mb-5">
+            <CheckBox id="terms" defaultChecked={false} />
+            <label
+              className="pl-[15px] text-sm leading-none font-montserrat-medium"
+              htmlFor="terms"
+            >
+              Accepter les{" "}
+              <Link
+                href=""
+                className="text-primary decoration-1 underline hover:decoration-2 hover:decoration-dotted"
+              >
+                termes et conditions
+              </Link>
+            </label>
+          </div>
+        </AuthForm>
       </div>
-    </AuthForm>
+    </section>
   );
 
   function validateUserInfo(userinfo) {

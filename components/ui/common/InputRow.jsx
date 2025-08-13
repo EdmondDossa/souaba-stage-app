@@ -19,11 +19,11 @@ const InputRow = ({
   const [isPasswordVisible, setPasswordVisible] = useState(false);
   const tooglePasswordVisibility = () => setPasswordVisible(!isPasswordVisible);
   
-  const customClass = `w-full px-5 py-4 rounded-xl outline-none focus:outline-none ring-2 transition duration-300 ring-white focus:ring-primary bg-[#F9F9F9] ${className}`;
-  const customlabelClass = `block text-[15px] font-extrabold font-montserrat-medium mb-3 ${labelClassName}`;
+  const customClass = `w-full px-5 py-3 rounded-xl outline-none focus:outline-none ring-2 transition duration-300 ring-white focus:ring-primary bg-[#F9F9F9] ${className}`;
+  const customlabelClass = `block text-sm font-extrabold font-montserrat-medium mb-3 ${labelClassName}`;
 
   return (
-    <div className="mb-4 relative">
+    <div className="mb-3 relative">
       <label
         className={customlabelClass}
         htmlFor={name}
@@ -57,7 +57,7 @@ const InputRow = ({
         </>
       )}
       {errorMessage && (
-        <p className="text-danger text-[14px]"> {errorMessage} </p>
+        <p className="text-danger text-[12px]"> {errorMessage} </p>
       )}
     </div>
   );

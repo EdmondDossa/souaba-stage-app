@@ -29,7 +29,7 @@ const FormSteps = ({ stepsLabels:steps, currentStep }) => {
       })}
       <span
         className={`w-8 h-8 rounded-full border border-black font-montserrat-medium text-center place-content-center block truncate ${
-          currentStep === steps.length ? "bg-primary border-transparent text-white" : ""
+          currentStep === (steps.length - 1) ? "bg-primary border-transparent text-white" : ""
         } `}
       >
       </span>

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Button } from "@/components/ui/common/index";
 import Link from "next/link";
+import AuthWrapper from "./AuthWrapper";
 
 const AuthForm = ({
   formTitle,
@@ -18,9 +19,9 @@ const AuthForm = ({
   const customClasse = `mx-auto w-[365px] mb-10 ${className}`;
 
   return (
-    <>
+    <AuthWrapper>
       {showTopImage && (
-        <div className="my-10">
+        <div className="my-10 flex items-center justify-center">
           <Image
             src="/images/logo-primary.png"
             width="120"
@@ -60,7 +61,7 @@ const AuthForm = ({
           </div>
         )}
       </form>
-    </>
+    </AuthWrapper>
   );
 };
 

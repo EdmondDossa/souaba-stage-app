@@ -9,12 +9,18 @@ import {
   PropertyInformations,
   Security,
   Resume,
-} from "@/app/(main)/add-establishment/steps-components";
+} from "@/app/(main)/(protected)/add-establishment/steps-components";
 import { FaChevronLeft } from "react-icons/fa";
 import { Button } from "@/components/ui/common";
 import Wrapper from "./steps-components/Wrapper";
+import toast from "react-hot-toast";
+import getAxiosInstance from "@/lib/request";
+import { useRouter } from "next/navigation";
 
 const AddEstablishment = () => {
+  const http = getAxiosInstance();
+  const router = useRouter();
+
   const stepsLabels = [
     "Hébergement",
     "Informations",
@@ -47,15 +53,18 @@ const AddEstablishment = () => {
     setStepFormValues(formDataCopy);
   }
 
-  function allowNextStep() {
+  function allowNextStep(isAllowed = true) {
     let formDataCopy = Array.from(stepFormValues);
-    formDataCopy[currentStep].allowNextStep = true;
+    formDataCopy[currentStep].allowNextStep = isAllowed;
     setStepFormValues(formDataCopy);
   }
 
   function renderStepComponentWithData(CurrentStepComponent) {
     return (
       <CurrentStepComponent
+        key={stepsLabels[currentStep]}
+        formValues={stepFormValues} // only useful for resume step
+        setCurrentStep={setCurrentStep} // only useful for resume step
         handleFormDataUpdate={handleFormDataUpdate}
         initialState={stepFormValues[currentStep].data}
         allowNextStep={allowNextStep}
@@ -65,11 +74,20 @@ const AddEstablishment = () => {
 
   function goToNextStep() {
     //make sure we are not on the last step
-    if (currentStep != 6) {
+    if (currentStep != stepsLabels.length - 1) {
       //move only if the prev component gives authorization
       if (stepFormValues[currentStep].allowNextStep)
         setCurrentStep(currentStep + 1);
+      else toast.error("Des informations requises sur cette page sont manquantes pour continuer.");
+    }else{
+      //on the last step we have to publish 
+      router.push("/");
     }
+  }
+
+  function submitData(){
+    alert("Form submitted!");
+
   }
 
   useEffect(() => {
@@ -81,7 +99,10 @@ const AddEstablishment = () => {
     <section>
       <FormSteps stepsLabels={stepsLabels} currentStep={currentStep} />
       <section className="w-full md:w-[90%]  mx-auto mt-10">
-        <Wrapper withBorder={![0, 1, 7].includes(currentStep)}>
+        <Wrapper
+          fullWidth={[0,3,4].includes(currentStep)}
+          withBorder={[2,5].includes(currentStep)}
+        >
           {/* Current steps components */}
           <div className="w-full p-4 mb-4">
             {renderStepComponentWithData(components[currentStep])}

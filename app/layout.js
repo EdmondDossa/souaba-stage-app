@@ -1,5 +1,6 @@
 import { AuthProvider } from "@/context/auth";
 import "@/styles/globals.css";
+import { Toaster } from "react-hot-toast";
 
 export const metadata = {
   title: "Create Next App",
@@ -11,6 +12,7 @@ export default function RootLayout({ children }) {
     <html lang="en" data-theme="light" className="font-Montserrat">
       <body>
         <AuthProvider> {children} </AuthProvider>
+        <Toaster position="top-right" />
       </body>
     </html>
   );

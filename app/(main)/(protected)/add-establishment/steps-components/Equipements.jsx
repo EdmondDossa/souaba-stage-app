@@ -3,10 +3,10 @@ import React, { useEffect, useState } from "react";
 import StepTitle from "./StepTitle";
 import { Minus, Plus } from "lucide-react";
 
-const Equipements = ({ handleFormDataUpdate, initialState }) => {
-  const [rooms, setRooms] = useState(initialState?.rooms ?? 0);
-  const [bathrooms, setBathrooms] = useState(initialState?.bathrooms ?? 0);
-  const [parking, setParking] = useState(initialState?.parking ?? 0);
+const Equipements = ({ handleFormDataUpdate, initialState, allowNextStep }) => {
+  const [rooms, setRooms] = useState(initialState?.rooms ?? 1);
+  const [bathrooms, setBathrooms] = useState(initialState?.bathrooms ?? 1);
+  const [parking, setParking] = useState(initialState?.parking ?? 1);
 
   const increment = (prev) => prev + 1;
   const decrement = (prev) => Math.max(prev - 1, 0);
@@ -30,13 +30,13 @@ const Equipements = ({ handleFormDataUpdate, initialState }) => {
   ];
 
   useEffect(() => {
-    if (rooms || bathrooms || parking) {
-      handleFormDataUpdate({ rooms, bathrooms, parking });
-    }
+    handleFormDataUpdate({ rooms, bathrooms, parking });
+    if (rooms > 0 || bathrooms > 0 || parking > 0) allowNextStep();
+    else allowNextStep(false);
   }, [rooms, bathrooms, parking]);
 
   return (
-    <section className="mx-auto">
+    <section className="mx-auto mb-10">
       <StepTitle>Ajoutez les installations disponibles chez vous. </StepTitle>
       <div className="flex flex-col md:flex-row justify-center gap-x-4 items-center py-7">
         {items.map((item, index) => {
@@ -53,9 +53,8 @@ const Equipements = ({ handleFormDataUpdate, initialState }) => {
               </button>
               <div className="font-montserrat-medium font-bold text-gray-700 text-lg whitespace-nowrap">
                 <span className="font-montserrat-bold text-xl lg:text-2xl w-8 inline-block ">
-                  {" "}
-                  {item.value}{" "}
-                </span>{" "}
+                  {item.value}
+                </span>
                 {item.label}
               </div>
               <button

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import ChoiceCard from "@/components/ui/common/ChoiceCard";
 import StepTitle from "./StepTitle";
 
-const Commodities = ({ handleFormDataUpdate, initialState }) => {
+const Commodities = ({ handleFormDataUpdate, initialState, allowNextStep }) => {
   const [commodities, setCommodities] = useState(initialState || []);
 
   const commoditiesList = [
@@ -18,13 +18,15 @@ const Commodities = ({ handleFormDataUpdate, initialState }) => {
   ];
 
   useEffect(() => {
-    if (commodities.length > 0) handleFormDataUpdate(commodities);
+    handleFormDataUpdate(commodities);
+    if (commodities.length > 0) allowNextStep();
+    else allowNextStep(false);
   }, [commodities.length]);
 
   return (
     <>
       <StepTitle>Ajoutez les commodités disponibles chez vous.</StepTitle>
-      <section className="grid grid-cols-1 place-items-center md:grid-cols-2 lg:grid-cols-4 gap-x-2 gap-y-8">
+      <section className="flex flex-wrap justify-center items-center sm:justify-start gap-x-5 gap-y-8">
         {commoditiesList.map((commoditie) => (
           <ChoiceCard
             key={commoditie}
