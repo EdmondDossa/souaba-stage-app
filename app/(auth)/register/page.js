@@ -6,13 +6,14 @@ import AuthForm from "../components/AuthForm";
 import Link from "next/link";
 import useAuthContext from "@/context/auth";
 import { useRouter } from "next/navigation";
+import ConnexionHero from "../components/ConnexionHero";
+
 import {
   EMAIL_REGEX,
   FULLNAME_REGEX,
   PASSWORD_REGEX,
   TELEPHONE_REGEX,
 } from "@/utils/regex";
-import ConnexionHero from "../components/ConnexionHero";
 
 const RegisterPage = () => {
   const router = useRouter();
@@ -72,6 +73,7 @@ const RegisterPage = () => {
             label="Téléphone"
             errorMessage={validationError.contact}
             name="contact"
+            type="tel"
           />
           <InputRow
             type="email"
