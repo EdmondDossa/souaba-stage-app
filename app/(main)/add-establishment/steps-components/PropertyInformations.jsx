@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import propertyInfoImage from "@/public/images/add-etablishment/room-banner.png";
-import Wrapper from "./Wrapper";
-import StepTitle from "./StepTitle";
-import { Asterisk, ImagePlus, X } from "lucide-react";
-import countryList from "@/data/country-in-fr.json";
+import Wrapper from "../ui/Wrapper";
+import StepTitle from "../ui/StepTitle";
+import { ImagePlus, X } from "lucide-react";
 import { handlePhotoUpload } from "@/utils";
 import { TEXT_INPUT_REGEX } from "@/utils/regex";
+import { Input, Label, CountrySelect } from "../ui";
 
 const PropertyInformations = ({
   handleFormDataUpdate,
@@ -24,7 +24,7 @@ const PropertyInformations = ({
     capacity: "",
     area: "",
   };
-  
+
   //upload states
   const [previewPhotos, setPreviewPhotos] = useState(
     initialState?.photos || []
@@ -48,11 +48,12 @@ const PropertyInformations = ({
   }
 
   function handleFileChange(e) {
-    const { fileError, media } = handlePhotoUpload(e, allowedExtensions);
+    const { fileError, media, message } = handlePhotoUpload(
+      e.target.files,
+      allowedExtensions
+    );
     if (fileError) {
-      setUploadError(
-        `Taille MAX:5MB. Extensions autorisées ${allowedExtensions.join(",")}.`
-      );
+      setUploadError(message);
     } else setUploadError("");
     setPreviewPhotos([...previewPhotos, ...media]);
     handleFormDataUpdate({ formContent, photos: [...previewPhotos, ...media] });
@@ -92,14 +93,18 @@ const PropertyInformations = ({
       Boolean(field)
     );
     const imagesHasBeenUploaded = previewPhotos.length > 0;
-    if (everyFieldHasContent && imagesHasBeenUploaded && !isFormContentError) {
+    if (everyFieldHasContent && imagesHasBeenUploaded && !isFormContentError)
       allowNextStep();
-    } else allowNextStep(false);
+    else allowNextStep(false);
   }
 
   useEffect(() => {
     verifyAvailabilityForNextStep();
-  }, [JSON.stringify(formContentError), previewPhotos.length]);
+  }, [
+    JSON.stringify(formContent),
+    JSON.stringify(formContentError),
+    previewPhotos.length,
+  ]);
 
   useEffect(() => {
     //update the state in the parent component
@@ -107,16 +112,16 @@ const PropertyInformations = ({
   }, [JSON.stringify(formContent)]);
 
   return (
-    <div className="space-y-10">
+    <div>
       {/* main banner */}
-      <div className="mb-5">
+      <div className="mb-2">
         <Image src={propertyInfoImage} width={2000} height={472} alt="" />
       </div>
       <Wrapper>
         <StepTitle>
           Ajouter quelques informations concernant cette propriété.
         </StepTitle>
-        <div>
+        <div className="space-y-10">
           <form action="">
             <div className="mb-3">
               <Label id="name" displayName="Nom" />
@@ -148,18 +153,10 @@ const PropertyInformations = ({
             <div className="grid grid-cols-1 items-center md:grid-cols-2 gap-4 mt-2 space-y-3">
               <div>
                 <Label displayName="Pays" id="country" />
-                <select
-                  id="country"
-                  name="country"
+                <CountrySelect
                   value={formContent.country}
                   onChange={handleFormInput}
-                  className="w-full border border-gray-200 p-4 rounded-lg font-montserrat-medium"
-                >
-                  <option value="">Sélectionnez un pays</option>
-                  {countryList.map((country) => (
-                    <option key={country}> {country} </option>
-                  ))}
-                </select>
+                />
               </div>
               <div>
                 <Label displayName="Ville" id="ville" />
@@ -194,7 +191,10 @@ const PropertyInformations = ({
                   {uploadError}{" "}
                 </p>
                 <div className="p-4 flex flex-col  border border-gray-200 rounded-lg">
-                  <label htmlFor="photos" className="block hover:bg-gray-100 p-5">
+                  <label
+                    htmlFor="photos"
+                    className="block hover:bg-gray-100 p-5"
+                  >
                     <span className="cursor-pointer font-montserrat-bold flex flex-col items-center justify-center">
                       <ImagePlus className="w-14 h-14 mb-4" />
                       Ajouter des photos
@@ -294,41 +294,5 @@ const PropertyInformations = ({
     </div>
   );
 };
-
-function Label({ displayName, id }) {
-  return (
-    <label
-      className="font-montserrat-bold text-gray-800 font-bold text-md  flex items-center mb-2"
-      htmlFor={id}
-    >
-      {" "}
-      {displayName} <Asterisk className="w-4 h-4 text-danger" />
-    </label>
-  );
-}
-
-function Input({
-  name,
-  type = "text",
-  value,
-  error,
-  onChange = () => {},
-  ...props
-}) {
-  return (
-    <div>
-      <input
-        id={name}
-        name={name}
-        type={type}
-        value={value ?? ""}
-        onChange={onChange}
-        className="border border-gray-200 rounded-lg outline-0 w-full p-3 placeholder:text-md  placeholder-black font-montserrat-medium"
-        {...props}
-      />
-      <p className="empty:hidden text-red-500 text-sm font-sans"> {error} </p>
-    </div>
-  );
-}
 
 export default PropertyInformations;

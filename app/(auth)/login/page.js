@@ -5,9 +5,9 @@ import Link from "next/link";
 import AuthForm from "../components/AuthForm";
 import { useRouter } from "next/navigation";
 import useAuthContext from "@/context/auth";
-import { EMAIL_REGEX } from "@/utils/regex";
 import ConnexionHero from "../components/ConnexionHero";
 import AuthWrapper from "../components/AuthWrapper";
+import { isEmail } from "@/utils/validator";
 
 const LoginPage = () => {
   const router = useRouter();
@@ -86,7 +86,7 @@ const LoginPage = () => {
     if (!email || !password) {
       return "L'adresse email et le mot de passe sont des champs requis.";
     }
-    if (!EMAIL_REGEX.test(email)) {
+    if (!isEmail(email)) {
       return "Votre adresse email est invalide";
     }
     return "";

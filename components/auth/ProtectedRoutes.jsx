@@ -9,7 +9,7 @@ const ProtectedRoutes = ({ children }) => {
   const { isLogged } = useAuthContext();
 
   useEffect(()=>{
-    if(!isLogged) router.push("/login");
+    if(!isLogged) router.push("/");
   },[isLogged]);
 
   return children;

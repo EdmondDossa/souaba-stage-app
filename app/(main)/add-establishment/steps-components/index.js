@@ -5,6 +5,8 @@ import Equipements from "./Equipements";
 import PropertyInformations from "./PropertyInformations";
 import Security from "./Security";
 import Resume from "./Resume";
+import SuccessfulSubmit  from "./SuccessfulSubmit";
+import PersonalInformations from "./PersonalInformations";
 
 export {
   IdentityCard,
@@ -14,4 +16,6 @@ export {
   PropertyInformations,
   Security,
   Resume,
+  SuccessfulSubmit ,
+  PersonalInformations
 };

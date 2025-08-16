@@ -8,11 +8,13 @@ import {
   Equipements,
   PropertyInformations,
   Security,
+  PersonalInformations,
   Resume,
-} from "@/app/(main)/(protected)/add-establishment/steps-components";
+  SuccessfulSubmit,
+} from "@/app/(main)/add-establishment/steps-components";
 import { FaChevronLeft } from "react-icons/fa";
 import { Button } from "@/components/ui/common";
-import Wrapper from "./steps-components/Wrapper";
+import Wrapper from "./ui/Wrapper";
 import toast from "react-hot-toast";
 import getAxiosInstance from "@/lib/request";
 import { useRouter } from "next/navigation";
@@ -22,6 +24,7 @@ const AddEstablishment = () => {
   const router = useRouter();
 
   const stepsLabels = [
+    "Informations personnelles",
     "Hébergement",
     "Informations",
     "Equipements",
@@ -32,6 +35,7 @@ const AddEstablishment = () => {
   ];
 
   const components = [
+    PersonalInformations,
     Hebergement,
     PropertyInformations,
     Equipements,
@@ -46,6 +50,7 @@ const AddEstablishment = () => {
   );
 
   const [currentStep, setCurrentStep] = useState(0);
+  const [isSubmitted, setSubmitted] = useState(false);
 
   function handleFormDataUpdate(data) {
     let formDataCopy = Array.from(stepFormValues);
@@ -73,21 +78,19 @@ const AddEstablishment = () => {
   }
 
   function goToNextStep() {
-    //make sure we are not on the last step
-    if (currentStep != stepsLabels.length - 1) {
-      //move only if the prev component gives authorization
-      if (stepFormValues[currentStep].allowNextStep)
-        setCurrentStep(currentStep + 1);
-      else toast.error("Des informations requises sur cette page sont manquantes pour continuer.");
-    }else{
-      //on the last step we have to publish 
-      router.push("/");
+    if (stepFormValues[currentStep].allowNextStep)
+      setCurrentStep(currentStep + 1);
+    else {
+      toast.error(
+        "Des informations requises sur cette page sont manquantes pour continuer."
+      );
+      return;
     }
-  }
 
-  function submitData(){
-    alert("Form submitted!");
-
+    //on the last step we have to publish
+    if (currentStep === stepsLabels.length - 1) {
+      setSubmitted(true);
+    }
   }
 
   useEffect(() => {
@@ -95,19 +98,32 @@ const AddEstablishment = () => {
     window.scrollTo({ top: 0 });
   }, [currentStep]);
 
-  return (
+  return isSubmitted ? (
+    <SuccessfulSubmit />
+  ) : (
     <section>
       <FormSteps stepsLabels={stepsLabels} currentStep={currentStep} />
-      <section className="w-full md:w-[90%]  mx-auto mt-10">
+      <section className="w-full md:w-[90%] mx-auto mt-10">
         <Wrapper
-          fullWidth={[0,3,4].includes(currentStep)}
-          withBorder={[2,5].includes(currentStep)}
+          fullWidth={[
+            "Hébergement",
+            "Equipements",
+            "Commodités",
+            "Sécurités",
+          ].includes(stepsLabels[currentStep])}
+          withBorder={["Equipements", "Résumé"].includes(
+            stepsLabels[currentStep]
+          )}
         >
           {/* Current steps components */}
           <div className="w-full p-4 mb-4">
             {renderStepComponentWithData(components[currentStep])}
           </div>
-          <div className="flex justify-between px-10 mb-5">
+          <div
+            className={`flex justify-between ${
+              currentStep !== 0 ? "w-[65%] mx-auto" : ""
+            } `}
+          >
             <Button
               onClick={() => setCurrentStep(currentStep - 1)}
               variant="secondary"
@@ -124,7 +140,8 @@ const AddEstablishment = () => {
               size="lg"
               className="font-montserrat-medium font-bold rounded-lg bg-primary py-3 hover:bg-primary/80 cursor-pointer"
             >
-              {currentStep === 6 ? "Publier" : "Suivant"}
+              {/* check if it is the last step */}
+              {currentStep === stepsLabels.length - 1 ? "Publier" : "Suivant"}
             </Button>
           </div>
         </Wrapper>

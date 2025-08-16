@@ -1,31 +1,33 @@
-import  { useEffect, useState } from "react";
-import StepTitle from "./StepTitle";
+import { useEffect, useState } from "react";
+import StepTitle from "../ui/StepTitle";
 import { LucideImagePlus } from "lucide-react";
 import { handlePhotoUpload } from "@/utils";
 import Image from "next/image";
 
-const IdentityCard = ({ handleFormDataUpdate, initialState, allowNextStep }) => {
+const IdentityCard = ({
+  handleFormDataUpdate,
+  initialState,
+  allowNextStep,
+}) => {
   const [identityPhoto, setIdentityPhoto] = useState(initialState || {});
   const [uploadError, setUploadError] = useState("");
   const allowedExtensions = ["jpg", "jpeg", "png"];
 
   function handleFileChange(e) {
-    const { fileError, media } = handlePhotoUpload(e, allowedExtensions);
+    const { fileError, media, message } = handlePhotoUpload(e.target.files);
     if (fileError) {
-      setUploadError(
-        `Taille MAX:5MB. Extensions autorisées ${allowedExtensions.join(",")}.`
-      );
+      setUploadError(message);
     } else setUploadError("");
     const savedCard = { ...identityPhoto, [e.target.name]: media[0] };
     setIdentityPhoto(savedCard);
     handleFormDataUpdate(savedCard);
   }
 
-  useEffect(()=>{
+  useEffect(() => {
     //will allow publishing only if recto photo and verso photo have been uploaded
-    if(Object.keys(identityPhoto).length === 2) allowNextStep();
-    else allowNextStep(false)
-  },[Object.keys(identityPhoto).length]);
+    if (Object.keys(identityPhoto).length === 2) allowNextStep();
+    else allowNextStep(false);
+  }, [Object.keys(identityPhoto).length]);
 
   return (
     <article>

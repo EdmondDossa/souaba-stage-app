@@ -3,12 +3,10 @@ import React, { useState } from "react";
 import AuthForm from "../components/AuthForm";
 import { InputRow } from "@/components/ui/common";
 import getAxiosInstance from "@/lib/request";
-import { EMAIL_REGEX } from "@/utils/regex";
-import { useRouter } from "next/navigation";
+import { isEmail } from "@/utils/validator";
 
 const PasswordForgot = () => {
   const http = getAxiosInstance();
-  const router = useRouter();
 
   const [formError, setFormError] = useState("");
   const [isLoading, setLoading] = useState(false);
@@ -18,7 +16,7 @@ const PasswordForgot = () => {
   async function handleSubmit(e) {
     e.preventDefault();
     const email = e.target["email"].value;
-    if (!email || !EMAIL_REGEX.test(email)) {
+    if (!email || !isEmail(email)) {
       return setEmailError("Adresse email invalide.");
     } else setEmailError("");
 

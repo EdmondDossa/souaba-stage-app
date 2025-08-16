@@ -40,7 +40,6 @@ const AuthForm = ({
         {children}
         <div>
           <Button
-            disabled={isLoading}
             isLoading={isLoading}
             className="w-full py-3 md:py-4 font-montserrat-bold rounded-4xl bg-primary hover:hover:bg-primary/70 transition duration-200 cursor-pointer"
           >

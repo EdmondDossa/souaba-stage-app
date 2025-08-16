@@ -7,13 +7,7 @@ import Link from "next/link";
 import useAuthContext from "@/context/auth";
 import { useRouter } from "next/navigation";
 import ConnexionHero from "../components/ConnexionHero";
-
-import {
-  EMAIL_REGEX,
-  FULLNAME_REGEX,
-  PASSWORD_REGEX,
-  TELEPHONE_REGEX,
-} from "@/utils/regex";
+import { isEmail, isPaswordStrong, isValidFullname, isValidPhoneNumber } from "@/utils/validator";
 
 const RegisterPage = () => {
   const router = useRouter();
@@ -22,7 +16,7 @@ const RegisterPage = () => {
   const [isLoading, setLoading] = useState(false);
   const [formError, setFormError] = useState("");
   const [validationError, setValidationError] = useState("");
-  const userFields = ["email", "password", "username", "contact"];
+  const userFields = ["email", "password", "username", "phone"];
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -34,6 +28,15 @@ const RegisterPage = () => {
     const isInvalid = Object.values(errors).some((field) => Boolean(field));
     if (isInvalid) return;
     setLoading(true);
+
+    //by default in the form skeleton we don't have firstname and lastname
+    //but we have to get it using the fullname
+    const fullnamePieces = user.username.trim().split(" ");
+    user.firstName = fullnamePieces[0];
+    if(fullnamePieces.length > 1) user.lastName = fullnamePieces.slice(1,).join(" ");
+    
+    //then we need to create a unique username to the user
+    user.username = `${user.firstName}-${Date.now()}`;
     const { success, message, status } = await register(user);
 
     if (success) {
@@ -71,8 +74,8 @@ const RegisterPage = () => {
           />
           <InputRow
             label="Téléphone"
-            errorMessage={validationError.contact}
-            name="contact"
+            errorMessage={validationError.phone}
+            name="phone"
             type="tel"
           />
           <InputRow
@@ -109,29 +112,29 @@ const RegisterPage = () => {
 
   function validateUserInfo(userinfo) {
     const error = {};
-    if (!userinfo.email || !EMAIL_REGEX.test(userinfo.email)) {
+    if (!userinfo.email || !isEmail(userinfo.email)) {
       error.email = "Email non valide";
     } else {
       error.email = "";
     }
 
-    if (!userinfo.password || !PASSWORD_REGEX.test(userinfo.password)) {
+    if (!userinfo.password || !isPaswordStrong(userinfo.password)) {
       error.password =
         "Le mot de passe doit contenir au moins huit caractères incluant au moins un chiffre, une lettre et un caractère spécial";
     } else {
       error.password = "";
     }
 
-    if (!userinfo.username || !FULLNAME_REGEX.test(userinfo.username)) {
+    if (!userinfo.username || !isValidFullname(userinfo.username)) {
       error.username = "Nom complet invalide";
     } else {
       error.username = "";
     }
 
-    if (!userinfo.contact || !TELEPHONE_REGEX.test(userinfo.contact)) {
-      error.contact = "Format du numéro de téléphone non valide";
+    if (!userinfo.phone || !isValidPhoneNumber(userinfo.phone)) {
+      error.phone = "Format du numéro de téléphone non valide";
     } else {
-      error.contact = "";
+      error.phone = "";
     }
     return error;
   }

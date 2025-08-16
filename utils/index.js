@@ -23,10 +23,11 @@ export function formatTime(time) {
   }
 }
 
-export function handlePhotoUpload(e,allowedExtensions) {
-  const LIMIT_UPLOAD_SIZE = 5 * 1024 * 1024; // 5MB;
-
-  const files = e.target.files;
+export function handlePhotoUpload(
+  files,
+  allowedExtensions = ["jpg", "jpeg", "png"],
+  LIMIT_UPLOAD_SIZE = 5 * 1024 * 1024 /*5MB */
+) {
   let uploadedPhotos = [];
   let fileError = false;
 
@@ -44,5 +45,15 @@ export function handlePhotoUpload(e,allowedExtensions) {
     }
   }
 
-  return { fileError, media: uploadedPhotos };
+  const response = {
+    fileError,
+    media: uploadedPhotos,
+  };
+
+  if (fileError)
+    response.message = `Taille MAX:5MB. Extensions autorisées ${allowedExtensions.join(
+      ","
+    )}.`;
+
+    return response;
 }

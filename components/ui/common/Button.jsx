@@ -14,7 +14,7 @@ const Button = ({
 
   const variantStyles = {
     primary: "bg-blue-600 hover:bg-blue-700 text-white",
-    secondary: "bg-gray-200 hover:bg-gray-300 text-gray-800",
+    secondary: "bg-gray-200 text-gray-800",
     outline:
       "bg-transparent border border-blue-600 text-blue-600 hover:bg-blue-50 hover:text-blue-700",
   };
@@ -28,7 +28,7 @@ const Button = ({
   const combinedStyles = `${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`;
 
   return (
-    <button className={combinedStyles} {...props}>
+    <button disabled={isLoading} className={combinedStyles} {...props}>
        { isLoading ? <FaSpinner className="animate-spin" />: children}
     </button>
   );

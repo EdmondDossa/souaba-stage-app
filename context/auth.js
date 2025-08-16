@@ -7,18 +7,24 @@ const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   let http = getAxiosInstance();
-  const [isLogged,setLogged] = useState(false);
+  const [isLogged, setLogged] = useState(false);
   const [user, setUser] = useState({});
+  const [isLoading, setLoading] = useState(true);
 
-  async function fetchUser() {
+  async function fetchUser(withLoader = true) {
     //to make sure to get last update in localstorage
     http = getAxiosInstance();
     try {
+      //if it the first fetching a loader should be shown
+      //but if it is fetching after updating no need to load
+      if (withLoader) setLoading(true);
       const res = await http.get("/users/me");
       setLogged(true);
-      setUser(res.data);
+      setUser({ ...res.data, ...(res?.data?.profile || {}) });
     } catch (error) {
       setLogged(false);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -27,14 +33,15 @@ export function AuthProvider({ children }) {
       const { data } = await http.post("/auth/login", credentials);
       localStorage.setItem("access_token", data.access_token);
       localStorage.setItem("refresh_token", data.refresh_token);
-      await fetchUser();
+      setLogged(true);
       return { success: true };
     } catch (error) {
       return {
         success: false,
         status: error.status,
-        message: error?.response?.data?.message ||
-        "Une erreur est survenue. Veuillez réesayez plus tard.",
+        message:
+          error?.response?.data?.message ||
+          "Une erreur est survenue. Veuillez réesayez plus tard.",
         code: error?.response?.data?.code,
       };
     }
@@ -49,7 +56,8 @@ export function AuthProvider({ children }) {
       return {
         success: false,
         status: error.status,
-        message: error?.response?.data?.message ||
+        message:
+          error?.response?.data?.message ||
           "Une erreur est survenue. Veuillez réesayez plus tard.",
       };
     }
@@ -60,7 +68,7 @@ export function AuthProvider({ children }) {
       await http.post("/auth/logout");
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");
-      await fetchUser();
+      setLogged(false);
     } catch (error) {}
   }
   useEffect(() => {
@@ -72,6 +80,7 @@ export function AuthProvider({ children }) {
     login,
     logout,
     isLogged,
+    isLoading,
     user,
   };
 

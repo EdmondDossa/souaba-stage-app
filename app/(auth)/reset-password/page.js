@@ -4,7 +4,7 @@ import AuthForm from "../components/AuthForm";
 import { InputRow } from "@/components/ui/common";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { PASSWORD_REGEX } from "@/utils/regex";
+import { isPaswordStrong } from "@/utils/validator";
 
 const PasswordChange = () => {
   const http = getAxiosInstance();
@@ -23,7 +23,7 @@ const PasswordChange = () => {
       if (password !== confirmPassword) {
         return setFormError("Les mots de passe ne correspondent pas.");
       }
-      if (!PASSWORD_REGEX.test(password)) {
+      if (!isPaswordStrong(password)) {
         return setFormError(
           "Le mot de passe doit faire huit caractères au moins avec des lettres, des chiffres et caractères spéciaux."
         );

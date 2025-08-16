@@ -3,20 +3,20 @@ import residenceMini from "@/public/images/add-etablishment/residence-mini.png";
 import textFileIcon from "@/public/images/add-etablishment/list-en-blanc.png";
 import infoIcon from "@/public/images/add-etablishment/info-icon.png";
 import Image from "next/image";
-import StepTitle from "./StepTitle";
+import StepTitle from "../ui/StepTitle";
 import { useEffect } from "react";
 import { Edit, Trash2Icon } from "lucide-react";
 import useAuthContext from "@/context/auth";
 
 const Resume = ({ formValues, allowNextStep, setCurrentStep }) => {
   const steps = {
-    hebergement: 0,
-    informations: 1,
-    equipements: 2,
-    commodites: 3,
-    securites: 4,
-    resume: 5,
-    "identity-card": 6,
+    hebergement: 1,
+    informations: 2,
+    equipements: 3,
+    commodites: 4,
+    securites: 5,
+    resume: 6,
+    "identity-card": 7,
   };
 
   const { user } = useAuthContext();

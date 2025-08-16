@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import ChoiceCard from "@/components/ui/common/ChoiceCard";
-import StepTitle from "./StepTitle";
+import StepTitle from "../ui/StepTitle";
 
 const Commodities = ({ handleFormDataUpdate, initialState, allowNextStep }) => {
   const [commodities, setCommodities] = useState(initialState || []);

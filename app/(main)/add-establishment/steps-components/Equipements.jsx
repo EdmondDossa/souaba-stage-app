@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import StepTitle from "./StepTitle";
+import StepTitle from "../ui/StepTitle";
 import { Minus, Plus } from "lucide-react";
 
 const Equipements = ({ handleFormDataUpdate, initialState, allowNextStep }) => {
