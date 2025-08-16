@@ -9,6 +9,7 @@ import {
   isValidFullname,
   isValidPhoneNumber,
 } from "@/utils/validator";
+import toast from "react-hot-toast";
 
 const EditProfile = ({ onEditCancel }) => {
   const http = getAxiosInstance();
@@ -49,6 +50,7 @@ const EditProfile = ({ onEditCancel }) => {
       setLoading(true);
       await http.patch("/users/profile", formValues);
       await fetchUser(false);
+      toast.success("Informations modifiées!");
     } catch (error) {
       setFormError({ ...formError, error: error.message });
     } finally {
