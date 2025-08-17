@@ -4,6 +4,78 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { Search, MapPin, Building } from "lucide-react";
 import React from "react";
 
+// Constantes
+const SUGGESTIONS = [
+  { id: 1, name: "Abidjan", description: "Côte d'Ivoire", type: "city", icon: MapPin },
+  { id: 2, name: "Abids", description: "Hyderabad, Telangana, India", type: "city", icon: MapPin },
+  { id: 3, name: "Abidos Hotel Apartment Dubai Land", description: "Dubai, Dubai Emirate, United Arab Emirates", type: "hotel", icon: Building },
+  { id: 4, name: "Hotel Abi d'Oru", description: "Olbia, Sardinia, Italy", type: "hotel", icon: Building },
+  { id: 5, name: "Abidos Hotel Apartment Al Barsha", description: "Dubai, Dubai Emirate, United Arab Emirates", type: "hotel", icon: Building },
+  { id: 6, name: "Dakar", description: "Sénégal", type: "city", icon: MapPin },
+  { id: 7, name: "Saint-Louis", description: "Sénégal", type: "city", icon: MapPin },
+  { id: 8, name: "Ziguinchor", description: "Sénégal", type: "city", icon: MapPin }
+];
+
+const WEEK_DAYS = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
+const GUEST_OPTIONS = Array.from({ length: 11 }, (_, i) => i);
+
+// Composant Calendrier
+const Calendar = ({ selectedDate, onDateSelect, onPreviousMonth, onNextMonth }) => (
+  <div className="absolute z-50 bg-white border border-gray-200 rounded-lg shadow-lg px-2 pt-2 pb-3 w-48 h-56 left-0 top-full mt-2">
+    <div className="flex justify-between items-center mb-2">
+      <button onClick={onPreviousMonth} className="p-1 hover:bg-gray-100 rounded text-black">
+        <span className="text-xs">‹</span>
+      </button>
+      <h3 className="font-medium text-black text-xs">
+        {selectedDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+      </h3>
+      <button onClick={onNextMonth} className="p-1 hover:bg-gray-100 rounded text-black">
+        <span className="text-xs">›</span>
+      </button>
+    </div>
+    <div className="grid grid-cols-7 gap-0.5">
+      {WEEK_DAYS.map(day => (
+        <div key={day} className="text-center text-xs font-medium text-gray-500 py-0.5">
+          {day}
+        </div>
+      ))}
+      {generateCalendarDays(selectedDate).map((date, idx) => {
+        const isCurrentMonth = date.getMonth() === selectedDate.getMonth();
+        const isToday = date.toDateString() === new Date().toDateString();
+        const isSelected = date.getDate() === 20 && isCurrentMonth;
+        return (
+          <button
+            key={idx}
+            onClick={() => onDateSelect(date)}
+            className={`py-1 text-xs hover:bg-gray-100 rounded text-center ${
+              !isCurrentMonth ? 'text-gray-300' : 'text-gray-900'
+            } ${isSelected ? 'bg-black text-white' : ''} ${isToday && !isSelected ? 'bg-blue-100' : ''}`}
+          >
+            {date.getDate()}
+          </button>
+        );
+      })}
+    </div>
+  </div>
+);
+
+
+const generateCalendarDays = (selectedDate) => {
+  const currentMonth = selectedDate.getMonth();
+  const currentYear = selectedDate.getFullYear();
+  const firstDay = new Date(currentYear, currentMonth, 1);
+  const startDate = new Date(firstDay);
+  startDate.setDate(startDate.getDate() - firstDay.getDay());
+  
+  const days = [];
+  for (let i = 0; i < 42; i++) {
+    const date = new Date(startDate);
+    date.setDate(startDate.getDate() + i);
+    days.push(date);
+  }
+  return days;
+};
+
 export default function SearchBar() {
   const [destination, setDestination] = useState("");
   const [arrivalDate, setArrivalDate] = useState("");
@@ -22,7 +94,6 @@ export default function SearchBar() {
   const [currentDateField, setCurrentDateField] = useState(null); // 'arrival' ou 'departure'
   const [selectedDate, setSelectedDate] = useState(new Date());
 
-  // Refs pour détecter les clics à l'extérieur
   const destinationRef = useRef(null);
   const dateRef = useRef(null);
   const guestsRef = useRef(null);
@@ -47,177 +118,74 @@ export default function SearchBar() {
       }
     };
 
-    // Ajouter l'event listener
+   
     document.addEventListener('mousedown', handleClickOutside);
     
-    // Nettoyer l'event listener
+    
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
-  // Exemple statique de suggestions — tu pourras remplacer par un fetch API plus tard
-  const suggestions = [
-    {
-      id: 1,
-      name: "Abidjan",
-      description: "Côte d'Ivoire",
-      type: "city",
-      icon: MapPin
-    },
-    {
-      id: 2,
-      name: "Abids",
-      description: "Hyderabad, Telangana, India",
-      type: "city",
-      icon: MapPin
-    },
-    {
-      id: 3,
-      name: "Abidos Hotel Apartment Dubai Land",
-      description: "Dubai, Dubai Emirate, United Arab Emirates",
-      type: "hotel",
-      icon: Building
-    },
-    {
-      id: 4,
-      name: "Hotel Abi d'Oru",
-      description: "Olbia, Sardinia, Italy",
-      type: "hotel",
-      icon: Building
-    },
-    {
-      id: 5,
-      name: "Abidos Hotel Apartment Al Barsha",
-      description: "Dubai, Dubai Emirate, United Arab Emirates",
-      type: "hotel",
-      icon: Building
-    },
-    {
-      id: 6,
-      name: "Dakar",
-      description: "Sénégal",
-      type: "city",
-      icon: MapPin
-    },
-    {
-      id: 7,
-      name: "Saint-Louis",
-      description: "Sénégal",
-      type: "city",
-      icon: MapPin
-    },
-    {
-      id: 8,
-      name: "Ziguinchor",
-      description: "Sénégal",
-      type: "city",
-      icon: MapPin
-    }
-  ];
-
   const filteredDestinations = useMemo(() => {
-    if (!destination) return suggestions;
+    if (!destination) return SUGGESTIONS;
     const q = destination.toLowerCase();
-    return suggestions.filter((s) => s.name.toLowerCase().includes(q));
+    return SUGGESTIONS.filter((s) => s.name.toLowerCase().includes(q));
   }, [destination]);
 
-  const openDestinationDropdown = () => {
-    setShowDestinationDropdown(true);
-    setActiveIndex(-1);
-  };
 
-  const closeDestinationDropdown = () => {
-    setShowDestinationDropdown(false);
-    setActiveIndex(-1);
-  };
-
-  const selectDestination = (value) => {
-    setDestination(value.name);
-    closeDestinationDropdown();
-  };
-
-  const handleDestinationKeyDown = (e) => {
-    if (!showDestinationDropdown) return;
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setActiveIndex((i) => Math.min(i + 1, filteredDestinations.length - 1));
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setActiveIndex((i) => Math.max(i - 1, 0));
-    } else if (e.key === "Enter") {
-      e.preventDefault();
-      if (activeIndex >= 0 && activeIndex < filteredDestinations.length) {
-        selectDestination(filteredDestinations[activeIndex]);
-      }
-    } else if (e.key === "Escape") {
-      closeDestinationDropdown();
+  const toggleDropdown = (dropdown, state) => {
+    switch (dropdown) {
+      case 'destination':
+        setShowDestinationDropdown(state);
+        if (!state) setActiveIndex(-1);
+        break;
+      case 'date':
+        setShowDateDropdown(state);
+        if (!state) setCurrentDateField(null);
+        break;
+      case 'guests':
+        setShowGuestsDropdown(state);
+        break;
     }
   };
-  // ---- fin dropdown destination ----
 
-  // ---- gestion dropdown date ----
-  const openDateDropdown = (field) => {
+  const handleDateOpen = (field) => {
     setShowDateDropdown(true);
     setCurrentDateField(field);
     setSelectedDate(new Date());
   };
 
-  const closeDateDropdown = () => {
-    setShowDateDropdown(false);
-    setCurrentDateField(null);
-  };
-
-  const selectDate = (date) => {
+  const handleDateSelect = (date) => {
     const formattedDate = date.toLocaleDateString('fr-FR');
-    if (currentDateField === 'arrival') {
-      setArrivalDate(formattedDate);
-    } else if (currentDateField === 'departure') {
-      setDepartureDate(formattedDate);
+    if (currentDateField === 'arrival') setArrivalDate(formattedDate);
+    else if (currentDateField === 'departure') setDepartureDate(formattedDate);
+    toggleDropdown('date', false);
+  };
+
+  const handleMonthChange = (direction) => {
+    const newDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + direction, 1);
+    setSelectedDate(newDate);
+  };
+
+  const selectDestination = (value) => {
+    setDestination(value.name);
+    toggleDropdown('destination', false);
+  };
+
+  const handleDestinationKeyDown = (e) => {
+    if (!showDestinationDropdown) return;
+    const actions = {
+      ArrowDown: () => setActiveIndex(i => Math.min(i + 1, filteredDestinations.length - 1)),
+      ArrowUp: () => setActiveIndex(i => Math.max(i - 1, 0)),
+      Enter: () => activeIndex >= 0 && selectDestination(filteredDestinations[activeIndex]),
+      Escape: () => toggleDropdown('destination', false)
+    };
+    if (actions[e.key]) {
+      e.preventDefault();
+      actions[e.key]();
     }
-    closeDateDropdown();
   };
-
-  const generateCalendarDays = () => {
-    const today = new Date();
-    const currentMonth = selectedDate.getMonth();
-    const currentYear = selectedDate.getFullYear();
-    
-    const firstDay = new Date(currentYear, currentMonth, 1);
-    const lastDay = new Date(currentYear, currentMonth + 1, 0);
-    const startDate = new Date(firstDay);
-    startDate.setDate(startDate.getDate() - firstDay.getDay());
-    
-    const days = [];
-    for (let i = 0; i < 42; i++) {
-      const date = new Date(startDate);
-      date.setDate(startDate.getDate() + i);
-      days.push(date);
-    }
-    return days;
-  };
-
-  const previousMonth = () => {
-    setSelectedDate(new Date(selectedDate.getFullYear(), selectedDate.getMonth() - 1, 1));
-  };
-
-  const nextMonth = () => {
-    setSelectedDate(new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 1));
-  };
-  // ---- fin dropdown date ----
-
-  // ---- gestion dropdown invités ----
-  const openGuestsDropdown = () => {
-    setShowGuestsDropdown(true);
-  };
-
-  const closeGuestsDropdown = () => {
-    setShowGuestsDropdown(false);
-  };
-
-  const increment = (setter, value) => setter(value + 1);
-  const decrement = (setter, value) => setter(value > 0 ? value - 1 : 0);
-  // ---- fin dropdown invités ----
 
   const handleSearch = () => {
     console.log({
@@ -248,35 +216,22 @@ export default function SearchBar() {
           value={destination}
           onChange={(e) => {
             setDestination(e.target.value);
-            openDestinationDropdown();
+            toggleDropdown('destination', true);
           }}
-          onFocus={openDestinationDropdown}
-          onClick={openDestinationDropdown}
+          onFocus={() => toggleDropdown('destination', true)}
+          onClick={() => toggleDropdown('destination', true)}
           onKeyDown={handleDestinationKeyDown}
           autoComplete="off"
         />
 
-        {/* Dropdown suggestions */}
         {showDestinationDropdown && filteredDestinations.length > 0 && (
-          <ul 
-            className="absolute z-50 bg-white border border-gray-200 overflow-auto"
-            style={{
-              width: '226px',
-              height: '191px',
-              borderRadius: '5px',
-              boxShadow: '0px 3px 5px 1px rgba(0, 0, 0, 0.25)',
-              opacity: 1,
-              left: '0px',
-              top: '100%',
-              marginTop: '8px'
-            }}
-          >
+          <ul className="absolute z-50 bg-white border border-gray-200 rounded-lg shadow-lg overflow-auto w-56 h-48 left-0 top-full mt-2">
             {filteredDestinations.map((suggestion, idx) => {
               const IconComponent = suggestion.icon;
               return (
                 <li
                   key={suggestion.id}
-                  className={`flex items-center px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors duration-150 ${
+                  className={`flex items-center px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors ${
                     idx === activeIndex ? "bg-gray-50" : ""
                   } ${idx !== filteredDestinations.length - 1 ? "border-b border-gray-100" : ""}`}
                   onMouseDown={(e) => {
@@ -284,19 +239,10 @@ export default function SearchBar() {
                     selectDestination(suggestion);
                   }}
                 >
-                  <div className="flex-shrink-0 mr-3">
-                    <IconComponent 
-                      size={20} 
-                      className="text-black" 
-                    />
-                  </div>
+                  <IconComponent size={20} className="text-black mr-3 flex-shrink-0" />
                   <div className="flex-1 min-w-0 text-left">
-                    <div className="text-sm font-bold text-black truncate text-left">
-                      {suggestion.name}
-                    </div>
-                    <div className="text-xs text-black truncate text-left">
-                      {suggestion.description}
-                    </div>
+                    <div className="text-sm font-bold text-black truncate">{suggestion.name}</div>
+                    <div className="text-xs text-black truncate">{suggestion.description}</div>
                   </div>
                 </li>
               );
@@ -319,64 +265,18 @@ export default function SearchBar() {
           id="arrivalDate"
           placeholder="Ajouter une date"
           className="w-full focus:outline-none font-montserrat-medium text-sm text-gray-800 font-bold placeholder-gray-400 cursor-pointer"
-          onClick={() => openDateDropdown('arrival')}
+          onClick={() => handleDateOpen('arrival')}
           value={arrivalDate}
           readOnly
         />
 
-        {/* Dropdown calendrier arrivée */}
         {showDateDropdown && currentDateField === 'arrival' && (
-          <div 
-            className="absolute z-50 bg-white border border-gray-200 px-2 pt-2 pb-3"
-            style={{
-              width: '190px',
-              height: '220px',
-              borderRadius: '5px',
-              boxShadow: '0px 1px 4px 0px rgba(0, 0, 0, 0.25)',
-              opacity: 1,
-              left: '0px',
-              top: '100%',
-              marginTop: '8px'
-            }}
-          >
-            {/* En-tête du calendrier */}
-            <div className="flex justify-between items-center mb-2">
-              <button onClick={previousMonth} className="p-1 hover:bg-gray-100 rounded text-black">
-                <span className="text-xs">‹</span>
-              </button>
-              <h3 className="font-medium text-black text-xs">
-                {selectedDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-              </h3>
-              <button onClick={nextMonth} className="p-1 hover:bg-gray-100 rounded text-black">
-                <span className="text-xs">›</span>
-              </button>
-            </div>
-
-            {/* Grille du calendrier */}
-            <div className="grid grid-cols-7 gap-0.5">
-              {['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'].map(day => (
-                <div key={day} className="text-center text-xs font-medium text-gray-500 py-0.5">
-                  {day}
-                </div>
-              ))}
-              {generateCalendarDays().map((date, idx) => {
-                const isCurrentMonth = date.getMonth() === selectedDate.getMonth();
-                const isToday = date.toDateString() === new Date().toDateString();
-                const isSelected = date.getDate() === 20 && isCurrentMonth;
-                return (
-                  <button
-                    key={idx}
-                    onClick={() => selectDate(date)}
-                    className={`py-1 text-xs hover:bg-gray-100 rounded text-center ${
-                      !isCurrentMonth ? 'text-gray-300' : 'text-gray-900'
-                    } ${isSelected ? 'bg-black text-white' : ''} ${isToday && !isSelected ? 'bg-blue-100' : ''}`}
-                  >
-                    {date.getDate()}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          <Calendar
+            selectedDate={selectedDate}
+            onDateSelect={handleDateSelect}
+            onPreviousMonth={() => handleMonthChange(-1)}
+            onNextMonth={() => handleMonthChange(1)}
+          />
         )}
       </div>
 
@@ -394,64 +294,18 @@ export default function SearchBar() {
           id="departureDate"
           placeholder="Ajouter une date"
           className="w-full focus:outline-none font-montserrat-medium text-sm text-gray-800 font-bold placeholder-gray-400 cursor-pointer"
-          onClick={() => openDateDropdown('departure')}
+          onClick={() => handleDateOpen('departure')}
           value={departureDate}
           readOnly
         />
 
-        {/* Dropdown calendrier départ */}
         {showDateDropdown && currentDateField === 'departure' && (
-          <div 
-            className="absolute z-50 bg-white border border-gray-200 px-2 pt-2 pb-3"
-            style={{
-              width: '190px',
-              height: '220px',
-              borderRadius: '5px',
-              boxShadow: '0px 1px 4px 0px rgba(0, 0, 0, 0.25)',
-              opacity: 1,
-              left: '0px',
-              top: '100%',
-              marginTop: '8px'
-            }}
-          >
-            {/* En-tête du calendrier */}
-            <div className="flex justify-between items-center mb-2">
-              <button onClick={previousMonth} className="p-1 hover:bg-gray-100 rounded text-black">
-                <span className="text-xs">‹</span>
-              </button>
-              <h3 className="font-medium text-black text-xs">
-                {selectedDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-              </h3>
-              <button onClick={nextMonth} className="p-1 hover:bg-gray-100 rounded text-black">
-                <span className="text-xs">›</span>
-              </button>
-            </div>
-
-            {/* Grille du calendrier */}
-            <div className="grid grid-cols-7 gap-0.5">
-              {['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'].map(day => (
-                <div key={day} className="text-center text-xs font-medium text-gray-500 py-0.5">
-                  {day}
-                </div>
-              ))}
-              {generateCalendarDays().map((date, idx) => {
-                const isCurrentMonth = date.getMonth() === selectedDate.getMonth();
-                const isToday = date.toDateString() === new Date().toDateString();
-                const isSelected = date.getDate() === 20 && isCurrentMonth;
-                return (
-                  <button
-                    key={idx}
-                    onClick={() => selectDate(date)}
-                    className={`py-1 text-xs hover:bg-gray-100 rounded text-center ${
-                      !isCurrentMonth ? 'text-gray-300' : 'text-gray-900'
-                    } ${isSelected ? 'bg-black text-white' : ''} ${isToday && !isSelected ? 'bg-blue-100' : ''}`}
-                  >
-                    {date.getDate()}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          <Calendar
+            selectedDate={selectedDate}
+            onDateSelect={handleDateSelect}
+            onPreviousMonth={() => handleMonthChange(-1)}
+            onNextMonth={() => handleMonthChange(1)}
+          />
         )}
       </div>
 
@@ -461,81 +315,27 @@ export default function SearchBar() {
         <label className="block text-start font-montserrat-medium font-bold text-sm text-gray-700">
           Nombre d'invités
         </label>
-        <div className="flex space-x-2 items-center text-gray-800 placeholder-gray-400">
-          <div className="flex items-center justify-center">
-            <label className="w-full me-1 focus:outline-none font-montserrat-medium text-sm md:text-[12px] text-gray-400 font-bold">
-              Adultes
-            </label>
-            <select
-              className="font-mono"
-              onChange={(e) => {
-                setAdults(parseInt(e.target.value));
-              }}
-              value={adults}
-            >
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-              <option value="6">6</option>
-              <option value="7">7</option>
-              <option value="8">8</option>
-              <option value="9">9</option>
-              <option value="10">10</option>
-            </select>
-          </div>
-          <div className="flex items-center justify-center">
-            <label className="w-full me-1 focus:outline-none font-montserrat-medium text-sm md:text-[12px] text-gray-400 font-bold">
-              Enfants
-            </label>
-            <select
-              className="font-mono"
-              onChange={(e) => {
-                setChildren(parseInt(e.target.value));
-              }}
-              value={children}
-            >
-              <option value="0">0</option>
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-              <option value="6">6</option>
-              <option value="7">7</option>
-              <option value="8">8</option>
-              <option value="9">9</option>
-              <option value="10">10</option>
-            </select>
-          </div>
-          <div className="flex items-center justify-center">
-            <label className="w-full me-1 focus:outline-none font-montserrat-medium text-sm md:text-[12px] text-gray-400 font-bold">
-              Bébés
-            </label>
-            <select
-              className="font-mono"
-              onChange={(e) => {
-                setBabies(parseInt(e.target.value));
-              }}
-              value={babies}
-            >
-              <option value="0">0</option>
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-              <option value="6">6</option>
-              <option value="7">7</option>
-              <option value="8">8</option>
-              <option value="9">9</option>
-              <option value="10">10</option>
-            </select>
-          </div>
-          {!adults && !children && !babies && (
-            <span className="text-gray-400">Ajouter des invités</span>
-          )}
+        <div className="flex space-x-2 items-center text-gray-800">
+          {[
+            { label: 'Adultes', value: adults, setter: setAdults, min: 1 },
+            { label: 'Enfants', value: children, setter: setChildren, min: 0 },
+            { label: 'Bébés', value: babies, setter: setBabies, min: 0 }
+          ].map(({ label, value, setter, min }) => (
+            <div key={label} className="flex items-center">
+              <label className="me-1 font-montserrat-medium text-xs text-gray-400 font-bold">
+                {label}
+              </label>
+              <select
+                className="font-mono text-sm"
+                onChange={(e) => setter(parseInt(e.target.value))}
+                value={value}
+              >
+                {GUEST_OPTIONS.slice(min).map(num => (
+                  <option key={num} value={num}>{num}</option>
+                ))}
+              </select>
+            </div>
+          ))}
         </div>
       </div>
 
