@@ -193,6 +193,42 @@ export default function Home() {
           ))}
         </div>
       </div>
+       <div className="py-8 px-12 space-y-5">
+        <div className="flex justify-between items-center">
+          <div className="py-2 space-y-2 w-fit">
+            <h1 className="font-bold text-xl lg:text-3xl">
+              Propriétés les{" "}
+            </h1>
+            <h1 className="font-bold text-xl lg:text-3xl">mieux notées</h1>
+            <div className="w-1/3 h-1 bg-primary mt-2"></div>
+          </div>
+          <div className="flex items-center space-x-2 justify-center">
+            <Image
+              src="/icons/ic_map.svg"
+              width={20}
+              height={20}
+              alt=""
+              className=""
+            />
+            <h4 className="font-semibold text-[15px]">Afficher sur la carte</h4>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-4 scrollbar-hide w-full">
+          {bestPoperties.map((property, index) => (
+            <PropertyCard
+              key={index}
+              imageUrl={property.imageUrl}
+              price={property.price}
+              title={property.title}
+              location={property.location}
+              showRate={property.showRate}
+              rating={property.rating}
+              isFavorite={property.isFavorite}
+              className="flex-shrink-0"
+            />
+          ))}
+        </div>
+      </div>
       <div className="py-8 px-12 relative  flex items-center justify-center text-center">
         <div className="rounded-xl bg-[url('/images/acceuil-first-image.webp')] bg-cover bg-center w-full">
           <div className="rounded-xl py-12  relative h-full w-full bg-black/50 z-10 flex flex-col  text-white space-y-4 px-10">
@@ -222,9 +258,9 @@ export default function Home() {
         <div className="flex justify-between items-center">
           <div className="py-2 space-y-2 w-fit">
             <h1 className="font-bold text-xl lg:text-3xl">
-              Propriétés répertoriées{" "}
+              Propriétés en vedette{" "}
             </h1>
-            <h1 className="font-bold text-xl lg:text-3xl">à proximité</h1>
+            <h1 className="font-bold text-xl lg:text-3xl">sur notre liste</h1>
             <div className="w-1/3 h-1 bg-primary mt-2"></div>
           </div>
           <div className="flex items-center space-x-2 justify-center">

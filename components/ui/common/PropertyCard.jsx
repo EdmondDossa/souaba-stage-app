@@ -1,6 +1,6 @@
 import React from "react";
 import Image from "next/image";
-import { Heart, Star } from "lucide-react";
+import { Heart, Star, Bed, Bath, Car } from "lucide-react";
 
 export default function PropertyCard({
   imageUrl,
@@ -9,8 +9,12 @@ export default function PropertyCard({
   isFavorite,
   location,
   rating = 0,
+  bedrooms = 3,
+  bathrooms = 1,
+  parking = 2,
   className,
   showRate = false,
+  showAmenities = true,
   ...rest
 }) {
   // Fonction pour générer les étoiles
@@ -98,7 +102,30 @@ export default function PropertyCard({
       <div className="p-4">
         <h3 className="text-xl font-semibold text-gray-900 mb-1">{title}</h3>
 
-        <p className="text-gray-600 text-sm">{location}</p>
+        <p className="text-gray-600 text-sm mb-3">{location}</p>
+
+        {/* Amenities with icons */}
+        {showAmenities && (
+          <div className="flex items-center gap-4 text-gray-600">
+            {/* Bedrooms */}
+            <div className="flex items-center gap-1">
+              <Bed size={18} className="text-gray-700" />
+              <span className="text-sm font-medium">{bedrooms}</span>
+            </div>
+            
+            {/* Bathrooms */}
+            <div className="flex items-center gap-1">
+              <Bath size={18} className="text-gray-700" />
+              <span className="text-sm font-medium">{bathrooms}</span>
+            </div>
+            
+            {/* Parking */}
+            <div className="flex items-center gap-1">
+              <Car size={18} className="text-gray-700" />
+              <span className="text-sm font-medium">{parking}</span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
