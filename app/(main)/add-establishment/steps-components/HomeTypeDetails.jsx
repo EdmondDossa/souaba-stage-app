@@ -83,7 +83,10 @@ const HomeTypeDetails = ({
       {/* when top form disposition is grid then it means that we want to render room form */}
       {formLayout.top.disposition === "grid" && (
         <div className="mt-12 mx-auto flex items-center justify-center">
-          <button className="flex gap-x-3 text-white font-montserrat-medium bg-primary hover:bg-primary/85 rounded-lg p-3">
+          <button
+            onClick={(e) => e.preventDefault()}
+            className="flex gap-x-3 text-white font-montserrat-medium bg-primary hover:bg-primary/85 rounded-lg p-3"
+          >
             <Plus /> Ajouter un type de chambre
           </button>
         </div>

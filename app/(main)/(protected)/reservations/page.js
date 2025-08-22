@@ -1,12 +1,12 @@
 "use client";
-import { Button } from "@/components/ui/common";
 import propertyOne from "@/public/images/new-property1.jpg";
 import propertyTwo from "@/public/images/new-property2.jpg";
-import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { IoMdCloseCircle } from "react-icons/io";
+import { ReservationRow } from "./ui";
 
 const Reservation = () => {
+  
   const dumpReservations = [
     {
       id: 1,
@@ -46,18 +46,54 @@ const Reservation = () => {
       night_number: 3,
       guests: 5,
       cost: 1_900_000,
-      category: "Prochain",
+      category: "Refuser",
+    },
+    {
+      id: 5,
+      name: "Appartement double avec 3 pièces",
+      img: propertyTwo,
+      arrival_date: "12 Mars 2024",
+      night_number: 3,
+      guests: 5,
+      cost: 1_900_000,
+      category: "En attente",
+    },
+    {
+      id: 6,
+      name: "Appartement double avec 3 pièces",
+      img: propertyTwo,
+      arrival_date: "12 Mars 2024",
+      night_number: 3,
+      guests: 5,
+      cost: 1_900_000,
+      category: "Passé",
+    },
+    {
+      id: 7,
+      name: "Appartement double avec 3 pièces",
+      img: propertyTwo,
+      arrival_date: "12 Mars 2024",
+      night_number: 3,
+      guests: 5,
+      cost: 1_900_000,
+      category: "Refuser",
     },
   ];
-
-  const categories = ["Prochain", "En attente", "Refuser", "Passé"];
-  const [currentCategory, setCurrentCategory] = useState("En attente");
-  const [cancelReason, setCancelReason] = useState("");
+  
   const ref = useRef();
 
-  const [reservations, setReservations] = useState(dumpReservations);
-  const [isCancellingReservation, setCancellingReservation] = useState(false);
+  const categories = ["Prochain", "En attente", "Refuser", "Passé"];
+  const [currentCategory, setCurrentCategory] = useState("Prochain");
+
+  const [cancelReason, setCancelReason] = useState("");
   const MAX_CANCEL_REASON_LENGTH = 255;
+  
+  const [isCancellingReservation, setCancellingReservation] = useState(false);
+  const cancelReservation = () => setCancellingReservation(true);
+  const cancelReservationCancelling = () => setCancellingReservation(false);
+
+  const [reservations, setReservations] = useState(dumpReservations);
+
 
   function handleCancel(reservationId) {
     //
@@ -68,21 +104,27 @@ const Reservation = () => {
       setCancelReason(e.target.value);
   }
 
-  const cancelReservationCancelling = () => setCancellingReservation(false);
 
   // useEffect(() => {
   //   function handleClickOutside(e) {
-  //    if(ref?.current && !ref.current.contains(e.target)){
+  //     if (ref?.current && !ref.current.contains(e.target)) {
   //       cancelReservationCancelling();
-  //    }
+  //     }
   //   }
   //   window.addEventListener("click", handleClickOutside);
   //   return () => window.removeEventListener("click", handleClickOutside);
   // }, []);
 
+  useEffect(() => {
+    const filteredReservations = dumpReservations.filter(
+      (reservation) => reservation.category === currentCategory
+    );
+    setReservations(filteredReservations);
+  }, [currentCategory]);
+
   return (
     <>
-      <div className={`max-w-5xl mx-auto mt-10 `}>
+      <div className={`max-w-6xl mx-auto mt-10 `}>
         <h1 className="text-4xl font-montserrat-bold text-gray-700">
           Réservations
         </h1>
@@ -107,56 +149,11 @@ const Reservation = () => {
           <section className="border-t border-t-gray-200">
             {reservations.map((reservation) => {
               return (
-                <div
-                  key={reservation.id}
-                  className="even:bg-gray-100 flex items-center justify-between my-5 p-4"
-                >
-                  <div className="flex gap-x-8 items-center">
-                    <div className="w-24 h-24">
-                      <Image
-                        className="w-full h-full rounded-lg object-cover"
-                        src={reservation.img}
-                        alt=""
-                      />
-                    </div>
-                    <div>
-                      <h2 className="font-montserrat-bold mb-1 text-gray-700">
-                        {reservation.name}
-                      </h2>
-                      <ul className="flex justify-between gap-x-5 text-sm">
-                        <li>
-                          <strong className="text-gray-600 font-montserrat-medium font-bold">
-                            Date d'arrivée :
-                          </strong>
-                          {reservation.arrival_date}
-                        </li>
-                        <li>
-                          <strong className="text-gray-600 font-montserrat-medium font-bold">
-                            Nombre de nuits :
-                          </strong>
-                          {reservation.night_number}
-                        </li>
-                        <li>
-                          <strong className="text-gray-600 font-montserrat-medium font-bold">
-                            Nombre d'invités :
-                          </strong>
-                          {reservation.guests} personnes
-                        </li>
-                      </ul>
-                      <div className="font-montserrat-medium mt-1 text-gray-700">
-                        {" "}
-                        {reservation.cost.toLocaleString("FR-fr")} FCFA{" "}
-                      </div>
-                    </div>
-                  </div>
-                  <div>
-                    <Button
-                      onClick={() => setCancellingReservation(true)}
-                      className="py-2 px-6 bg-danger rounded-3xl hover:bg-red-500 transition"
-                    >
-                      Annuler
-                    </Button>
-                  </div>
+                <div key={reservation.id} className="even:bg-gray-100 my-5 p-4">
+                  <ReservationRow
+                    cancelReservation={cancelReservation}
+                    reservation={reservation}
+                  />
                 </div>
               );
             })}
@@ -167,7 +164,7 @@ const Reservation = () => {
         <>
           <form
             ref={ref}
-            className="fixed inset-0 ext-sm translate-y-1/2 pt-8  left-[calc(100vw/2-512px/2)] w-lg z-50 h-96 bg-white border border-gray-200 rounded-lg p-3"
+            className="fixed inset-0 text-sm translate-y-1/2 pt-8  left-[calc(100vw/2-512px/2)] w-lg z-50 h-96 bg-white border border-gray-200 rounded-lg p-3"
           >
             <div className="h-full mx-auto w-[80%] ">
               <label
