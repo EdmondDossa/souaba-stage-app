@@ -296,7 +296,7 @@ function TableWrapper({ children, className }) {
 
 function TableRow({ content, label }) {
   return (
-    <tr className="flex  justify-between gap-8 p-3">
+    <tr className="flex justify-between gap-8 p-3">
       <th>{label} :</th>
       <td className="w-sm"> {content} </td>
     </tr>

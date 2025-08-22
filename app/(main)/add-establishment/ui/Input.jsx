@@ -10,7 +10,7 @@ function Input({
 }) {
   
   const commonClass =
-    "border border-gray-200 rounded-lg outline-0 w-full p-3 placeholder:text-md  placeholder-black font-montserrat-medium";
+    "border border-gray-200 rounded-lg outline-0 w-full p-3 placeholder:text-md  placeholder-black font-montserrat-medium ring-2 ring-white focus:ring-primary";
   return (
     <div>
       {type === "textarea" ? (
