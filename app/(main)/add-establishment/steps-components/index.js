@@ -7,6 +7,7 @@ import Security from "./Security";
 import Resume from "./Resume";
 import SuccessfulSubmit  from "./SuccessfulSubmit";
 import PersonalInformations from "./PersonalInformations";
+import HotelsRoom from "./HotelsRoom";
 
 export {
   IdentityCard,
@@ -17,5 +18,6 @@ export {
   Security,
   Resume,
   SuccessfulSubmit ,
-  PersonalInformations
+  PersonalInformations,
+  HotelsRoom
 };

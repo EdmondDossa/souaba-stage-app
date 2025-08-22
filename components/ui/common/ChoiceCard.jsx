@@ -55,7 +55,7 @@ const ChoiceCard = ({
             onCheckedChange={(isChecked) =>
               updateCheckboxesState(isChecked, label)
             }
-            defaultChecked={currentValue.includes(label)}
+            defaultChecked={currentValue?.includes(label)}
             className="absolute bg-white w-5 h-5 top-2 left-16 rounded-sm border-2 border-gray-300"
             indicatorClassname="bg-white w-5 h-5 border-2 border-gray-300  rounded-sm rounded-none [&_svg]:w-4 [&_svg]:h-4  [&_svg]:text-primary"
           />

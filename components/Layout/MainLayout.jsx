@@ -13,7 +13,7 @@ export default function MainLayout({ children }) {
           <Footer />
         </ClientLoader>
       </AuthProvider>
-      <Toaster position="top-right" />
+      <Toaster position="top-right" containerStyle={{fontSize:"14px"}} />
     </>
   );
 }

@@ -3,19 +3,26 @@ import React, { useEffect, useState } from "react";
 import ChoiceCard from "@/components/ui/common/ChoiceCard";
 import StepTitle from "../ui/StepTitle";
 
-const Security = ({ handleFormDataUpdate, initialState, allowNextStep }) => {
+const Security = ({
+  handleFormDataUpdate,
+  formValues,
+  initialState,
+  allowNextStep,
+}) => {
+  const isHotel =
+    formValues.find((step) => step.stepName === "Hébergement").data === "Hôtel";
+
   const [securities, setSecurities] = useState(initialState || []);
 
-  const securitiesList = [
+  const defaultSecurityList = [
     "Désinfectants",
     "Lanceurs de feu",
     "Nettoyant quotidien",
     "Extincteurs",
     "Détecteur de fumée",
-    "Option1",
-    "Option2",
-    "Option3",
   ];
+
+  const hotelSecurityList = [...defaultSecurityList, "Kits de premier secours"];
 
   useEffect(() => {
     handleFormDataUpdate(securities);
@@ -28,15 +35,17 @@ const Security = ({ handleFormDataUpdate, initialState, allowNextStep }) => {
       <>
         <StepTitle>Ajoutez la sécurité disponible chez vous.</StepTitle>
         <section className="flex flex-wrap justify-center items-center sm:justify-start gap-x-5 gap-y-8">
-          {securitiesList.map((security) => (
-            <ChoiceCard
-              key={security}
-              optionType="checkbox"
-              label={security}
-              currentValue={securities}
-              setCurrentValue={setSecurities}
-            />
-          ))}
+          {(isHotel ? hotelSecurityList : defaultSecurityList).map(
+            (security) => (
+              <ChoiceCard
+                key={security}
+                optionType="checkbox"
+                label={security}
+                currentValue={securities}
+                setCurrentValue={setSecurities}
+              />
+            )
+          )}
         </section>
       </>
     </div>

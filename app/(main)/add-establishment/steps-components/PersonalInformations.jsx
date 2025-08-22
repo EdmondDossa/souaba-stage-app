@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from "react";
-import personalInfo from "@/public/images/add-etablishment/personal-info-banner.png";
-import Image from "next/image";
+import personalInfoBanner from "@/public/images/add-etablishment/personal-info-banner.png";
 import { Input, Label, CountrySelect } from "../ui";
-import Wrapper from "../ui/Wrapper";
-import StepTitle from "../ui/StepTitle";
 import { isEmail } from "@/utils/validator";
+import InformationsForm from "./InformationsForm";
 
 const PersonalInformations = ({
   allowNextStep,
@@ -74,15 +72,12 @@ const PersonalInformations = ({
   ];
 
   return (
-    <section>
-      <div>
-        <Image src={personalInfo} width={2000} height={472} alt="" />
-      </div>
-      <Wrapper>
-        <StepTitle>
-          Veuillez nous renseignez ces quelques informations sur vous...
-        </StepTitle>
-        <form className="p-3" action="">
+    <>
+      <InformationsForm
+        formStepTitle="Veuillez nous renseignez ces quelques informations sur vous..."
+        bannerImg={personalInfoBanner}
+      >
+        <section className="p-3">
           {formFields.map((field) => {
             return (
               <div key={field.label} className="mb-5">
@@ -102,9 +97,9 @@ const PersonalInformations = ({
             <Label displayName={"Pays"} />
             <CountrySelect onChange={handleChange} value={userinfo.country} />
           </div>
-        </form>
-      </Wrapper>
-    </section>
+        </section>
+      </InformationsForm>
+    </>
   );
 };
 
