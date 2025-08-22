@@ -75,3 +75,37 @@
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+button{
+  cursor: pointer;
+}
+
+.activeLink {
+  position: relative;
+  padding-bottom: 6px;
+  font-weight: bold;
+}
+
+/* .activeLink::after {
+  content: "";
+  height: 3px;
+  width: 100px;
+  background:#364153;
+  position: absolute;
+  top: 44px;
+  left: 50%;
+  transform: translateX(-50%);
+  transition: all ease-in-out 5s;
+} */
+

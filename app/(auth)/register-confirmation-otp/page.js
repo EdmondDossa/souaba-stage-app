@@ -12,7 +12,7 @@ const RegisterConfirmationOtp = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const OTP_RESENT_REQUEST_TIME = 60 + 30; //1 min30s;
+  const OTP_RESENT_REQUEST_TIME = 60 + 30; //1 min 30s;
   const email = searchParams.get("email");
   const [otpCode, setOtpCode] = useState("------");
   const [isLoading, setLoading] = useState(false);
@@ -108,6 +108,7 @@ const RegisterConfirmationOtp = () => {
           Vous pourrez redemander un code dans{" "}
           <span className="text-green font-montserrat-bold">
             {" "}
+            <br />
             {timeRemaining}{" "}
           </span>
         </p>

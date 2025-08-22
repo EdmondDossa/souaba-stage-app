@@ -1,4 +1,5 @@
 import { AuthLayout } from "@/components/Layout";
+import { AuthProvider } from "@/context/auth";
 import "@/styles/globals.css";
 
 export const metadata = {
@@ -7,5 +8,9 @@ export const metadata = {
 };
 
 export default function Layout({ children }) {
-  return <AuthLayout> {children} </AuthLayout>;
+  return (
+    <AuthLayout>
+      <AuthProvider>{children}</AuthProvider>
+    </AuthLayout>
+  );
 }

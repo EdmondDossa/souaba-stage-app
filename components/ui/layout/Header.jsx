@@ -15,7 +15,7 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white shadow-md sticky top-0 z-50">
+    <header className="bg-white shadow-md sticky top-0 z-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -59,7 +59,6 @@ const Header = () => {
                 Se connecter
               </Link>
             </ConditionalComponentRender>
-            <ConditionalComponentRender forLoggedUser={true}>
               {/* Bouton Ajouter votre établissement */}
               <Link
                 href="/add-establishment"
@@ -67,8 +66,6 @@ const Header = () => {
               >
                 Ajouter votre établissement
               </Link>
-            </ConditionalComponentRender>
-
             {/* Avatar utilisateur */}
             <ConditionalComponentRender forLoggedUser={true}>
               <div className="relative">
@@ -93,7 +90,7 @@ const Header = () => {
         <>
           {/* Overlay */}
           <div
-            className={`absolute z-40  ${
+            className={`absolute z-20  ${
               isMobile ? "w-full" : "w-[150px] right-4"
             }`}
             onClick={toggleMenu}
