@@ -53,6 +53,7 @@ const EditProfile = ({ onEditCancel }) => {
       toast.success("Informations modifiées!");
     } catch (error) {
       setFormError({ ...formError, error: error.message });
+      console.log(error);
     } finally {
       setLoading(false);
     }
@@ -128,7 +129,7 @@ const EditProfile = ({ onEditCancel }) => {
             variant="secondary"
             isLoading={isLoading}
             type="submit"
-            className="inline-block text-sm py-3 rounded-lg text-white bg-primary hover:bg-amber-400"
+            className="inline-block min-w-20 text-sm py-3 rounded-lg text-white bg-primary hover:bg-amber-400"
           >
             Enrégistrer
           </Button>
