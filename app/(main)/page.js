@@ -286,6 +286,7 @@ export default function Home() {
               rating={property.rating}
               isFavorite={property.isFavorite}
               className="flex-shrink-0"
+              showAmenities={true}
             />
           ))}
         </div>

@@ -19,6 +19,8 @@ const EditProfile = ({ onEditCancel }) => {
   const [formError, setFormError] = useState({});
   const [isLoading, setLoading] = useState(false);
 
+  const [hasEdit,setHasEdit] = useState(false);
+
   const formFields = [
     {
       label: "Nom",
@@ -51,6 +53,7 @@ const EditProfile = ({ onEditCancel }) => {
       await http.patch("/users/profile", formValues);
       await fetchUser(false);
       toast.success("Informations modifiées!");
+      setHasEdit(false);
     } catch (error) {
       setFormError({ ...formError, error: error.message });
       console.log(error);
@@ -77,6 +80,7 @@ const EditProfile = ({ onEditCancel }) => {
   }
 
   function handleChange(e) {
+    if(!hasEdit) setHasEdit(true);
     const { name, value } = e.target;
     setFormValues({ ...formValues, [name]: value });
   }
@@ -127,6 +131,7 @@ const EditProfile = ({ onEditCancel }) => {
           </Button>
           <Button
             variant="secondary"
+            disabled={!hasEdit}
             isLoading={isLoading}
             type="submit"
             className="inline-block min-w-20 text-sm py-3 rounded-lg text-white bg-primary hover:bg-amber-400"

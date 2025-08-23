@@ -1,6 +1,8 @@
 import React from "react";
 import Image from "next/image";
-import { Heart, Star, Bed, Bath, Car } from "lucide-react";
+import { Heart, Star, Bed, Bath, Car, Ellipsis } from "lucide-react";
+import PropertyEllipsis from "./PropertyEllipsis";
+import renderStars from "@/utils/render-star";
 
 export default function PropertyCard({
   imageUrl,
@@ -14,71 +16,31 @@ export default function PropertyCard({
   parking = 2,
   className,
   showRate = false,
-  showAmenities = true,
+  showAmenities = false,
+  showEllipsis = false,
+  ellipsis = 0,
   ...rest
 }) {
-  // Fonction pour générer les étoiles
-  const renderStars = (rating) => {
-    const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 !== 0;
-
-    // Étoiles pleines
-    for (let i = 0; i < fullStars; i++) {
-      stars.push(
-        <Star
-          key={`full-${i}`}
-          size={16}
-          fill="#FFD700"
-          stroke="#FFD700"
-          className="text-yellow-400"
-        />
-      );
-    }
-
-    // Demi-étoile
-    if (hasHalfStar) {
-      stars.push(
-        <div key="half" className="relative">
-          <Star size={16} stroke="#FFD700" fill="none" />
-          <div className="absolute inset-0 overflow-hidden w-1/2">
-            <Star size={16} fill="#FFD700" stroke="#FFD700" />
-          </div>
-        </div>
-      );
-    }
-
-    // Étoiles vides
-    const emptyStars = 5 - Math.ceil(rating);
-    for (let i = 0; i < emptyStars; i++) {
-      stars.push(
-        <Star
-          key={`empty-${i}`}
-          size={16}
-          stroke="#D1D5DB"
-          fill="none"
-          className="text-gray-300"
-        />
-      );
-    }
-
-    return stars;
-  };
 
   return (
     <div
-      className={`relative w-full max-w-sm overflow-hidden ${className || ""}`}
+      className={`relative w-full max-w-[320px] overflow-hidden ${className || ""}`}
       {...rest}
     >
       {/* Image Container */}
       <div
-        className="w-full h-64 bg-cover rounded-xl"
+        className="w-full h-72 bg-cover rounded-xl"
         style={{ backgroundImage: `url(${imageUrl})` }}
       >
         <div className="relative h-full w-full rounded-xl bg-black/50">
           {/* Price Tag */}
-          <div className="absolute bottom-4 left-4 text-white px-3 py-1 text-[17px] font-bold ">
-            {price}
+          <div className="absolute bottom-1 left-4 w-full">
+            <div className="flex justify-between items-center">
+              <strong className="font-montserrat-medium text-white  text-[17px] font-bold"> {price}</strong>
+              {
+                showEllipsis &&  <PropertyEllipsis current={ellipsis} />
+              }
+            </div>
           </div>
           {/* Stars Rating */}
           {showRate && (
