@@ -11,7 +11,10 @@ import PropertyBookingCard from "./PropertyBookingCard";
 import PropertyAvailability from "./PropertyAvailability";
 import SecuritySection from "./SecuritySection";
 import HotelRooms from "./HotelRooms";
-export { 
+import PropertyReservationForm from "./PropertyReservationForm";
+import Newsletter from "./Newsletter";
+
+export {
   Button, 
   SearchBar, 
   PropertyCard, 
@@ -24,5 +27,7 @@ export {
   PropertyBookingCard,
   PropertyAvailability,
   SecuritySection,
-  HotelRooms
+  HotelRooms,
+  PropertyReservationForm,
+  Newsletter
 };

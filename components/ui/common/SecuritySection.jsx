@@ -1,24 +1,36 @@
-import { Shield } from "lucide-react";
+import Image from 'next/image';
+
+const SvgIcon = ({ name, size = 24, className = "" }) => {
+  return (
+    <Image
+      src={`/icons/${name}.svg`}
+      alt={name}
+      width={size}
+      height={size}
+      className={className}
+    />
+  );
+};
 
 export default function SecuritySection() {
   const securityFeatures = [
     {
-      icon: Shield,
+      icon: "Security et hygiene",
       title: "Nettoyage quotidien",
       description: "Désinfections et stérilisations"
     },
     {
-      icon: Shield,
+      icon: "Security et hygiene",
       title: "Extincteurs",
       description: "Détecteurs de fumée"
     },
     {
-      icon: Shield,
+      icon: "Security et hygiene",
       title: "Désinfections et stérilisations",
       description: ""
     },
     {
-      icon: Shield,
+      icon: "Security et hygiene",
       title: "Détecteurs de fumée",
       description: ""
     }
@@ -27,24 +39,20 @@ export default function SecuritySection() {
   return (
     <div className="space-y-6">
       <h3 className="text-xl font-bold text-gray-900">Sécurité et hygiène</h3>
-      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-1 gap-y-2">
-        {securityFeatures.map((feature, index) => {
-          const IconComponent = feature.icon;
-          return (
-            <div key={index} className="flex items-start space-x-4">
-              <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                <IconComponent className="w-5 h-5 text-orange-500" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-gray-900 text-sm">{feature.title}</h4>
-                {feature.description && (
-                  <p className="text-gray-600 text-sm">{feature.description}</p>
-                )}
-              </div>
+        {securityFeatures.map((feature, index) => (
+          <div key={index} className="flex items-center space-x-4 p-2">
+            <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+              <SvgIcon name={feature.icon} size={24} className="" />
             </div>
-          );
-        })}
+            <div>
+              <div className="font-semibold text-gray-900">{feature.title}</div>
+              {feature.description && (
+                <div className="text-gray-600 text-sm">{feature.description}</div>
+              )}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

@@ -1,6 +1,20 @@
 "use client";
-import { Heart, Share2, Star, Tv, Wifi, Home, Car, Shield, UtensilsCrossed, Wind } from "lucide-react";
+import { Heart, Share2, Star } from "lucide-react";
 import { useState } from "react";
+import Image from 'next/image';
+
+// Composant pour afficher les icônes SVG
+const SvgIcon = ({ name, size = 24, className = "" }) => {
+  return (
+    <Image
+      src={`/icons/${name}.svg`}
+      alt={name}
+      width={size}
+      height={size}
+      className={className}
+    />
+  );
+};
 
 export default function PropertyBookingCard({ 
   title, 
@@ -42,13 +56,14 @@ export default function PropertyBookingCard({
             onClick={() => setIsFavorite(!isFavorite)}
             className="p-2 rounded-full hover:bg-gray-100 transition-colors"
           >
-            <Heart 
-              size={20} 
-              className={isFavorite ? "fill-red-500 text-red-500" : "text-gray-500"} 
+            <SvgIcon
+              name="Heart"
+              size={20}
+              className={isFavorite ? "filter brightness-0 saturate-100 hue-rotate-[340deg]" : ""}
             />
           </button>
           <button className="p-2 rounded-full hover:bg-gray-100 transition-colors">
-            <Share2 size={20} className="text-gray-500" />
+            <SvgIcon name="share" size={20} className="" />
           </button>
         </div>
       </div>
@@ -59,55 +74,55 @@ export default function PropertyBookingCard({
         <div className="space-y-3">
           <div className="flex items-center space-x-3">
             <div className="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center">
-              <Tv className="w-4 h-4 text-orange-500" />
+              <SvgIcon name="tv" size={16} className="" />
             </div>
             <span className="text-sm text-gray-700">Télévision avec Netflix</span>
           </div>
           <div className="flex items-center space-x-3">
             <div className="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center">
-              <Wifi className="w-4 h-4 text-orange-500" />
+              <SvgIcon name="wifi" size={16} className="" />
             </div>
             <span className="text-sm text-gray-700">Internet sans fil gratuit</span>
           </div>
           <div className="flex items-center space-x-3">
             <div className="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center">
-              <Home className="w-4 h-4 text-orange-500" />
+              <SvgIcon name="balcony 1" size={16} className="" />
             </div>
             <span className="text-sm text-gray-700">Balcon ou terrasse</span>
           </div>
           <div className="flex items-center space-x-3">
             <div className="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center">
-              <Car className="w-4 h-4 text-orange-500" />
+              <SvgIcon name="Parking 1" size={16} className="" />
             </div>
             <span className="text-sm text-gray-700">Parking</span>
           </div>
           <div className="flex items-center space-x-3">
             <div className="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center">
-              <Shield className="w-4 h-4 text-orange-500" />
+              <SvgIcon name="ascenseur" size={16} className="" />
             </div>
             <span className="text-sm text-gray-700">Ascenseur</span>
           </div>
           <div className="flex items-center space-x-3">
             <div className="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center">
-              <UtensilsCrossed className="w-4 h-4 text-orange-500" />
+              <SvgIcon name="kitchen" size={16} className="" />
             </div>
             <span className="text-sm text-gray-700">Cuisine</span>
           </div>
           <div className="flex items-center space-x-3">
             <div className="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center">
-              <Wind className="w-4 h-4 text-orange-500" />
+              <SvgIcon name="flocon" size={16} className="" />
             </div>
             <span className="text-sm text-gray-700">Climatiseur</span>
           </div>
           <div className="flex items-center space-x-3">
             <div className="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center">
-              <Home className="w-4 h-4 text-orange-500" />
+              <SvgIcon name="laundry 1" size={16} className="" />
             </div>
             <span className="text-sm text-gray-700">Buanderie</span>
           </div>
           <div className="flex items-center space-x-3">
             <div className="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center">
-              <Shield className="w-4 h-4 text-orange-500" />
+              <SvgIcon name="espace" size={16} className="" />
             </div>
             <span className="text-sm text-gray-700">Espace détente</span>
           </div>

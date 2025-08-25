@@ -1,8 +1,22 @@
 import { Utensils, Car, Wifi, Coffee, Dumbbell, Waves } from "lucide-react";
+import Image from "next/image";
+import React from "react";
 
+
+const SvgIcon = ({ name, size = 24, className = "" }) => {
+    return (
+        <Image
+            src={`/icons/${name}.svg`}
+            alt={name}
+            width={size}
+            height={size}
+            className={className}
+        />
+    );
+};
 const hotelServices = [
-  { name: "Restaurant", icon: Utensils, description: "Restaurant gastronomique ouvert 24h/24" },
-  { name: "Parking", icon: Car, description: "Parking privé et sécurisé" },
+  { name: "Restaurant", icon: "kitchen", description: "Restaurant gastronomique ouvert 24h/24" },
+  { name: "Parking", icon: "kitchen", description: "Parking privé et sécurisé" },
   { name: "WiFi gratuit", icon: Wifi, description: "Internet haut débit dans tout l'hôtel" },
   { name: "Room Service", icon: Coffee, description: "Service en chambre 24h/24" },
   { name: "Salle de sport", icon: Dumbbell, description: "Équipements de fitness modernes" },

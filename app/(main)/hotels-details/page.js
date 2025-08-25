@@ -1,5 +1,5 @@
 "use client";
-import { PropertyGallery, PropertyDescriptionShared, PropertyAmenities, PropertyBookingCard, SecuritySection, HotelRooms } from "@/components/ui/common";
+import { PropertyGallery, PropertyDescriptionShared, PropertyAmenities, PropertyBookingCard, SecuritySection, HotelRooms, Newsletter } from "@/components/ui/common";
 import { hotelData } from "./data/hotelData";
 
 export default function HotelDetails() {
@@ -58,6 +58,9 @@ export default function HotelDetails() {
           <SecuritySection />
         </div>
       </div>
+
+      {/* Section Newsletter - Sortie du conteneur pour largeur complète */}
+      <Newsletter />
     </div>
   );
 }
