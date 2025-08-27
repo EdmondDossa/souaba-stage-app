@@ -19,12 +19,15 @@ export default function PropertyCard({
   showAmenities = false,
   showEllipsis = false,
   ellipsis = 0,
+  showPrice = true,
+  ownerInfo = null,
   ...rest
 }) {
-
   return (
     <div
-      className={`relative w-full max-w-[320px] overflow-hidden ${className || ""}`}
+      className={`relative w-full max-w-[320px] overflow-hidden ${
+        className || ""
+      }`}
       {...rest}
     >
       {/* Image Container */}
@@ -36,10 +39,10 @@ export default function PropertyCard({
           {/* Price Tag */}
           <div className="absolute bottom-1 left-4 w-full">
             <div className="flex justify-between items-center">
-              <strong className="font-montserrat-medium text-white  text-[17px] font-bold"> {price}</strong>
-              {
-                showEllipsis &&  <PropertyEllipsis current={ellipsis} />
-              }
+              <strong className="font-montserrat-medium text-white block text-[17px] font-bold">
+                {showPrice && price}
+              </strong>
+              {showEllipsis && <PropertyEllipsis current={ellipsis} />}
             </div>
           </div>
           {/* Stars Rating */}
@@ -59,7 +62,31 @@ export default function PropertyCard({
           </button>
         </div>
       </div>
-
+      {ownerInfo && (
+        <div className="flex items-center absolute top-50 text-[13px] gap-x-2 mx-2">
+          <div className="shrink-0">
+            {" "}
+            <Image
+              className="w-11 h-11"
+              width={200}
+              height={200}
+              alt=""
+              src={ownerInfo.photo}
+            />{" "}
+          </div>
+          <div className="text-white">
+            <span className="block"> Répertorié par: </span>
+            <strong className="block font-montserrat-bold">
+              {" "}
+              {ownerInfo.fullname}{" "}
+            </strong>
+            <span className="block whitespace-nowrap">
+              {" "}
+              {`À partir de: ${ownerInfo.minPrice}-${ownerInfo.maxPrice} FCFA `}{" "}
+            </span>
+          </div>
+        </div>
+      )}
       {/* Content Area */}
       <div className="p-4">
         <h3 className="text-xl font-semibold text-gray-900 mb-1">{title}</h3>
@@ -68,22 +95,22 @@ export default function PropertyCard({
 
         {/* Amenities with icons */}
         {showAmenities && (
-          <div className="flex items-center gap-4 text-gray-600">
+          <div className="flex items-center gap-4 text-gray-600  ameneties">
             {/* Bedrooms */}
             <div className="flex items-center gap-1">
-              <Bed size={18} className="text-gray-700" />
+              <Bed size={23} className="text-gray-700" />
               <span className="text-sm font-medium">{bedrooms}</span>
             </div>
-            
+
             {/* Bathrooms */}
             <div className="flex items-center gap-1">
-              <Bath size={18} className="text-gray-700" />
+              <Bath size={23} className="text-gray-700" />
               <span className="text-sm font-medium">{bathrooms}</span>
             </div>
-            
+
             {/* Parking */}
             <div className="flex items-center gap-1">
-              <Car size={18} className="text-gray-700" />
+              <Car size={23} className="text-gray-700" />
               <span className="text-sm font-medium">{parking}</span>
             </div>
           </div>

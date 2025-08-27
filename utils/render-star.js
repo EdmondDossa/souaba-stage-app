@@ -1,6 +1,5 @@
-import { IoStar as Star } from "react-icons/io5";
-import { IoStarHalfOutline as HalfStart } from "react-icons/io5";
-import { IoStarOutline as EmptyStar } from "react-icons/io5";
+import { FaStar as Star } from "react-icons/fa";
+import { FaStarHalfAlt as HalfStar, FaRegStar as EmptyStar  } from "react-icons/fa";
 
  // Fonction pour générer les étoiles
 const renderStars = (rating) => {
@@ -21,7 +20,7 @@ const renderStars = (rating) => {
     // Demi-étoile
     if (hasHalfStar) {
       stars.push(
-        <HalfStart key="half" className="text-primary" />
+        <HalfStar key="half" className="text-primary" />
       );
     }
 

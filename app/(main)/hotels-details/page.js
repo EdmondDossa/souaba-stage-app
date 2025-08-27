@@ -1,11 +1,13 @@
 "use client";
 import { PropertyGallery, PropertyDescriptionShared, PropertyAmenities, PropertyBookingCard, SecuritySection, HotelRooms } from "@/components/ui/common";
 import { hotelData } from "./data/hotelData";
+import { useRouter } from "next/navigation";
 
 export default function HotelDetails() {
+  const router = useRouter();
+
   const handleBooking = () => {
-    console.log("Réservation de l'hôtel");
-    // Logique de réservation
+    router.push("/make-reservation")
   };
 
   return (

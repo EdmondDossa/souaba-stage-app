@@ -5,7 +5,7 @@ import Equipements from "./Equipements";
 import PropertyInformations from "./PropertyInformations";
 import Security from "./Security";
 import Resume from "./Resume";
-import SuccessfulSubmit  from "./SuccessfulSubmit";
+import SuccessfulSubmit  from "./SuccessfulSubmitted";
 import PersonalInformations from "./PersonalInformations";
 import HotelsRoom from "./HotelsRoom";
 

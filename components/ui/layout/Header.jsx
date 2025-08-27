@@ -22,14 +22,14 @@ const Header = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <div className="flex items-center">
+            <Link href="/" className="flex items-center">
               <Image
                 src="/images/logo-primary.png"
                 alt="Logo"
                 width={100}
                 height={100}
               />
-            </div>
+            </Link>
           </div>
 
           {/* Navigation centrale */}

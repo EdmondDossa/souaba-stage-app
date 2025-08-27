@@ -18,7 +18,7 @@ const FormSteps = ({ stepsLabels: steps, currentStep }) => {
             </span>
             <div
               style={{ width: width }}
-              className={`relative h-1 text-center  ${
+              className={`relative h-1 text-center max-w-[210px] ${
                 currentStep >= index ? "bg-primary" : "bg-gray-200"
               } ${currentStep === index ? "-animate-[bounce_600ms_linear_infinite]" : ""} `}
             >

@@ -1,11 +1,14 @@
 "use client";
 import { PropertyCard } from "@/components/ui/common";
 import Paginator from "@/components/ui/common/Paginator";
-import { Dot, SlidersHorizontal } from "lucide-react";
+import { Dot } from "lucide-react";
 import { useState } from "react";
 import FilterSideBar from "@/app/(main)/find-accomodation/components/FilterSideBar";
+import { useRouter } from "next/navigation";
 
 const FindAccomodation = () => {
+  const router = useRouter();
+
   const Properties = [
     {
       imageUrl: "/images/new-property1.jpg",
@@ -69,9 +72,9 @@ const FindAccomodation = () => {
     //
   }
 
-  function handleFilterUpdate(filters){
-    console.log(filters);
-    //
+  function handleFilterUpdate(filters) {
+    const query = new URLSearchParams(filters);
+    router.push(`/found-accomodations?${query}`);
   }
 
   return (
@@ -98,7 +101,7 @@ const FindAccomodation = () => {
             ))}
           </ul>
           <div>
-            <FilterSideBar onFilterUpdate={handleFilterUpdate}  />
+            <FilterSideBar onFilterUpdate={handleFilterUpdate} />
           </div>
         </nav>
 
