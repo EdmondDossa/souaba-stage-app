@@ -97,7 +97,7 @@ const FoundProducts = () => {
   ];
 
   return (
-    <div className="flex items-start">
+    <div className="flex items-start mb-10">
       <div className="w-1/2 pl-20 max-h-screen overflow-y-scroll">
         <h1 className="font-montserrat-bold text-gray-700 text-2xl mt-10">
           10 résultats trouvés
