@@ -58,55 +58,55 @@ export default function PropertyBookingCard({
         <h4 className="font-semibold text-gray-900 text-lg">Point fort de l'établissement</h4>
         <div className="space-y-3">
           <div className="flex items-center space-x-3">
-            <div className="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center">
+            <div className="w-6 h-6 bg-primary rounded-lg flex items-center justify-center">
               <Tv className="w-4 h-4 text-orange-500" />
             </div>
             <span className="text-sm text-gray-700">Télévision avec Netflix</span>
           </div>
           <div className="flex items-center space-x-3">
-            <div className="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center">
+            <div className="w-6 h-6 bg-priamry rounded-lg flex items-center justify-center">
               <Wifi className="w-4 h-4 text-orange-500" />
             </div>
             <span className="text-sm text-gray-700">Internet sans fil gratuit</span>
           </div>
           <div className="flex items-center space-x-3">
-            <div className="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center">
+            <div className="w-6 h-6 bg-priamry rounded-lg flex items-center justify-center">
               <Home className="w-4 h-4 text-orange-500" />
             </div>
             <span className="text-sm text-gray-700">Balcon ou terrasse</span>
           </div>
           <div className="flex items-center space-x-3">
-            <div className="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center">
+            <div className="w-6 h-6 bg-priamry rounded-lg flex items-center justify-center">
               <Car className="w-4 h-4 text-orange-500" />
             </div>
             <span className="text-sm text-gray-700">Parking</span>
           </div>
           <div className="flex items-center space-x-3">
-            <div className="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center">
+            <div className="w-6 h-6 bg-priamry rounded-lg flex items-center justify-center">
               <Shield className="w-4 h-4 text-orange-500" />
             </div>
             <span className="text-sm text-gray-700">Ascenseur</span>
           </div>
           <div className="flex items-center space-x-3">
-            <div className="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center">
+            <div className="w-6 h-6 bg-priamry rounded-lg flex items-center justify-center">
               <UtensilsCrossed className="w-4 h-4 text-orange-500" />
             </div>
             <span className="text-sm text-gray-700">Cuisine</span>
           </div>
           <div className="flex items-center space-x-3">
-            <div className="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center">
+            <div className="w-6 h-6 bg-priamry rounded-lg flex items-center justify-center">
               <Wind className="w-4 h-4 text-orange-500" />
             </div>
             <span className="text-sm text-gray-700">Climatiseur</span>
           </div>
           <div className="flex items-center space-x-3">
-            <div className="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center">
+            <div className="w-6 h-6 bg-priamry rounded-lg flex items-center justify-center">
               <Home className="w-4 h-4 text-orange-500" />
             </div>
             <span className="text-sm text-gray-700">Buanderie</span>
           </div>
           <div className="flex items-center space-x-3">
-            <div className="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center">
+            <div className="w-6 h-6 bg-priamry rounded-lg flex items-center justify-center">
               <Shield className="w-4 h-4 text-orange-500" />
             </div>
             <span className="text-sm text-gray-700">Espace détente</span>
@@ -117,7 +117,7 @@ export default function PropertyBookingCard({
       {/* Bouton de réservation */}
       <button
         onClick={onBook}
-        className="w-full bg-red-500 text-white py-4 rounded-lg font-bold hover:bg-red-600 transition-colors text-base"
+        className="w-full bg-primary text-white py-4 rounded-lg font-bold hover:bg-primary-600 transition-colors text-base"
       >
         Réserver maintenant
       </button>

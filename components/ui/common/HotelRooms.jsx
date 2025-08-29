@@ -112,7 +112,7 @@ export default function HotelRooms() {
                   <div className="text-sm font-medium text-gray-900">Très bien</div>
                   <div className="text-xs text-gray-600">50 avis</div>
                 </div>
-                <button className="bg-orange-500 text-white px-6 py-3 rounded-full text-sm font-bold hover:bg-orange-600 transition-colors whitespace-nowrap">
+                <button className="bg-primary text-white px-6 py-3 rounded-full text-sm font-bold hover:bg-primary-600 transition-colors whitespace-nowrap">
                   Je réserve
                 </button>
               </div>

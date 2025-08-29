@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Heart, Share, Bed, Bath, Car, Star, Shield, MapPin, Calendar, Users, Minus, Plus } from 'lucide-react';
 import Image from 'next/image';
+import { PropertyGallery } from '@/components/ui/common';
 
 const AppartementDetails = () => {
   const searchParams = useSearchParams();
@@ -34,7 +35,8 @@ const AppartementDetails = () => {
       "/images/new-property2.jpg", 
       "/images/new-property3.jpg",
       "/images/new-property4.jpg",
-      "/images/new-property1.jpg"
+      "/images/new-property1.jpg",
+      "/images/new-property2.jpg"
     ],
     bedrooms: 3,
     bathrooms: 2,
@@ -111,61 +113,10 @@ const AppartementDetails = () => {
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Section Galerie d'images */}
       <div className="mb-8">
-        <div className="grid grid-cols-4 gap-2 h-[400px]">
-          {/* Image principale */}
-          <div className="col-span-2 relative rounded-l-lg overflow-hidden">
-            <Image
-              src={property.images[0]}
-              alt="Image principale"
-              fill
-              className="object-cover"
-              priority
-            />
-          </div>
-          
-          {/* Images secondaires */}
-          <div className="grid grid-rows-2 gap-2">
-            <div className="relative overflow-hidden">
-              <Image
-                src={property.images[1]}
-                alt="Image 2"
-                fill
-                className="object-cover"
-              />
-            </div>
-            <div className="relative overflow-hidden">
-              <Image
-                src={property.images[2]}
-                alt="Image 3"
-                fill
-                className="object-cover"
-              />
-            </div>
-          </div>
-          
-          <div className="grid grid-rows-2 gap-2">
-            <div className="relative overflow-hidden rounded-tr-lg">
-              <Image
-                src={property.images[3]}
-                alt="Image 4"
-                fill
-                className="object-cover"
-              />
-            </div>
-            <div className="relative overflow-hidden rounded-br-lg">
-              <Image
-                src={property.images[4]}
-                alt="Image 5"
-                fill
-                className="object-cover"
-              />
-              {/* Badge "+2 photos" */}
-              <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center cursor-pointer hover:bg-opacity-60 transition-all">
-                <span className="text-white font-semibold text-lg">+2 Photos</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <PropertyGallery 
+          images={property.images} 
+          propertyName={property.title}
+        />
       </div>
 
       {/* Section principale */}

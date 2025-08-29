@@ -80,15 +80,15 @@ export default function Home() {
       <div className="relative bg-[url('/images/acceuil-first-image.webp')] bg-cover bg-center h-[60vh] w-full flex items-center justify-center text-center">
         <div className="relative h-full w-full bg-black/50 z-10 flex flex-col items-center justify-center text-white space-y-10 px-10">
           <div>
-            <h2 className="font-bold text-white text-5xl">
+            <h2 className="font-[800] font-montserrat-bold text-white text-5xl">
               Trouvez l'hébergement parfait
             </h2>
-            <h2 className="font-bold text-white text-5xl">
+            <h2 className="font-[800] font-montserrat-bold text-white text-5xl">
               pour votre prochain séjour.
             </h2>
           </div>
-          <div className="w-full flex flex-col lg:flex-row items-center justify-evenly">
-            <h4 className="font-bold text-4xl">Trouver</h4>
+          <div className="w-full flex flex-col lg:flex-row items-center justify-between max-w-5xl mx-auto">
+            <h4 className="font-[800] font-montserrat-bold text-4xl">Trouver</h4>
             <ul className="flex items-center justify-between space-x-10">
               {/* Hôtels */}
               <li
@@ -129,6 +129,16 @@ export default function Home() {
                 onClick={() => setProperty("villa")}
               >
                 Villas
+              </li>
+              {/* Studio */}
+              <li
+                className={`
+                relative cursor-pointer pb-1 font-semibold
+                ${property === "studio" ? "active-border" : ""}
+              `}
+                onClick={() => setProperty("studio")}
+              >
+                Studio
               </li>
             </ul>
           </div>

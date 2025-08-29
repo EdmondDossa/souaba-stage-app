@@ -70,7 +70,7 @@ export default function PropertyAvailability() {
           </div>
         </div>
 
-        <button className="mt-4 w-full md:w-auto bg-orange-500 text-white px-8 py-3 rounded-full font-bold hover:bg-orange-600 transition-colors flex items-center justify-center space-x-2">
+        <button className="mt-4 w-full md:w-auto bg-primary text-white px-8 py-3 rounded-full font-bold hover:bg-primary-600 transition-colors flex items-center justify-center space-x-2">
           <Search size={20} />
           <span>Rechercher</span>
         </button>
