@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Star, MapPin } from 'lucide-react';
 import Image from 'next/image';
-import { PropertyReservationForm, PropertyReviews, PropertyGalleryGrid, SvgIcon, Newsletter } from '../../../components/ui/common';
+import { PropertyReservationForm, PropertyReviews, PropertyGalleryGrid, SvgIcon } from '../../../components/ui/common';
 
 const AppartementDetails = () => {
   const searchParams = useSearchParams();
@@ -252,8 +252,7 @@ const AppartementDetails = () => {
         </div>
       </div>
 
-      {/* Section Newsletter */}
-      <Newsletter />
+      
     </>
   );
 };

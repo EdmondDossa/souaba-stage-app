@@ -1,11 +1,13 @@
 "use client";
-import { PropertyGallery, PropertyDescriptionShared, PropertyAmenities, PropertyBookingCard, SecuritySection, HotelRooms, PropertyReviews, Newsletter } from "@/components/ui/common";
+import { PropertyGallery, PropertyDescriptionShared, PropertyAmenities, PropertyBookingCard, SecuritySection, HotelRooms, PropertyReviews } from "@/components/ui/common";
 import { hotelData } from "./data/hotelData";
+import { useRouter } from "next/navigation";
 
 export default function HotelDetails() {
+  const router = useRouter();
+
   const handleBooking = () => {
-    console.log("Réservation de l'hôtel");
-    // Logique de réservation
+    router.push("/make-reservation")
   };
 
   return (
@@ -68,8 +70,6 @@ export default function HotelDetails() {
         </div>
       </div>
 
-      {/* Section Newsletter - Sortie du conteneur pour largeur complète */}
-      <Newsletter />
     </div>
   );
 }

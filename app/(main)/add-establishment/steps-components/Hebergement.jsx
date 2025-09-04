@@ -7,12 +7,12 @@ import ChoiceCard from "@/components/ui/common/ChoiceCard";
 
 const Hebergement = ({ handleFormDataUpdate, initialState,allowNextStep }) => {
   const [hebergementMode, setHebergementMode] = useState(
-    initialState || "Hotêl"
+    initialState || "Hôtel"
   );
 
   const items = [
     {
-      label: "Hotêl",
+      label: "Hôtel",
       icon: hotelMini,
     },
     {

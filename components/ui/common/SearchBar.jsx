@@ -42,7 +42,7 @@ const Calendar = ({ selectedDate, onDateSelect, onPreviousMonth, onNextMonth }) 
       {generateCalendarDays(selectedDate).map((date, idx) => {
         const isCurrentMonth = date.getMonth() === selectedDate.getMonth();
         const isToday = date.toDateString() === new Date().toDateString();
-        const isSelected = date.getDate() === 20 && isCurrentMonth;
+        const isSelected = isToday && isCurrentMonth;
         return (
           <button
             key={idx}

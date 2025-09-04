@@ -1,6 +1,13 @@
 "use client";
-import FormSteps from "@/components/ui/common/FormSteps";
+
 import { useEffect, useState } from "react";
+import { FaChevronLeft } from "react-icons/fa";
+import { Button } from "@/components/ui/common";
+import { useRouter } from "next/navigation";
+import Wrapper from "./ui/Wrapper";
+import toast from "react-hot-toast";
+import getAxiosInstance from "@/lib/request";
+import FormSteps from "@/components/ui/common/FormSteps";
 import {
   IdentityCard,
   Hebergement,
@@ -11,75 +18,119 @@ import {
   PersonalInformations,
   Resume,
   SuccessfulSubmit,
+  HotelsRoom,
 } from "@/app/(main)/add-establishment/steps-components";
-import { FaChevronLeft } from "react-icons/fa";
-import { Button } from "@/components/ui/common";
-import Wrapper from "./ui/Wrapper";
-import toast from "react-hot-toast";
-import getAxiosInstance from "@/lib/request";
-import { useRouter } from "next/navigation";
 
 const AddEstablishment = () => {
   const http = getAxiosInstance();
   const router = useRouter();
 
-  const stepsLabels = [
-    "Informations personnelles",
-    "Hébergement",
-    "Informations",
-    "Equipements",
-    "Commodités",
-    "Sécurités",
-    "Résumé",
-    "Pièce d'identité",
+  const stepsDefinitions = [
+    {
+      name: "Mes infos",
+      component: PersonalInformations,
+    },
+    {
+      name: "Hébergement",
+      component: Hebergement,
+    },
+    {
+      name: "Informations",
+      component: PropertyInformations,
+    },
+    {
+      name: "Chambres",
+      component: HotelsRoom,
+    },
+    {
+      name: "Equipements",
+      component: Equipements,
+    },
+    {
+      name: "Commodités",
+      component: Commodities,
+    },
+    {
+      name: "Sécurités",
+      component: Security,
+    },
+    {
+      name: "Résumé",
+      component: Resume,
+    },
+    {
+      name: "Pièce d'identité",
+      component: IdentityCard,
+    },
   ];
 
-  const components = [
-    PersonalInformations,
-    Hebergement,
-    PropertyInformations,
-    Equipements,
-    Commodities,
-    Security,
-    Resume,
-    IdentityCard,
-  ];
-
-  const [stepFormValues, setStepFormValues] = useState(() =>
-    stepsLabels.map(() => ({ data: null, allowNextStep: false }))
-  );
+  const [steps, setSteps] = useState(stepsDefinitions);
+  const stepsLabels = steps.map((step) => step.name);
 
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitted, setSubmitted] = useState(false);
 
+  const [stepFormValues, setStepFormValues] = useState(() =>
+    steps.map((step) => ({
+      stepName: step.name,
+      data: null,
+      allowNextStep: false,
+    }))
+  );
+
+  const locate = (step) => step.stepName === stepsLabels[currentStep];
+
+  //when the hebergement type choosen is Hôtel we have one extra step to manage infos about rooms type
+  //by default the hebergement type is hôtel so we have to look at changes in order to update the steps components
+
+  const hebergementType = stepFormValues.find(
+    (step) => step.stepName === "Hébergement"
+  ).data;
+
+  useEffect(() => {
+    if (!hebergementType) return;
+    if (hebergementType === "Hôtel") setSteps(stepsDefinitions);
+    else {
+      //when it is `Hôtel` as hebergement then retrieve the roomtype component step
+      setSteps(
+        stepsDefinitions.filter(
+          (step) => step.name !== "Chambres" 
+        )
+      );
+    }
+  }, [hebergementType]);
+
   function handleFormDataUpdate(data) {
     let formDataCopy = Array.from(stepFormValues);
-    formDataCopy[currentStep].data = data;
+    const index = formDataCopy.findIndex(locate);
+    formDataCopy[index].data = data;
     setStepFormValues(formDataCopy);
   }
 
   function allowNextStep(isAllowed = true) {
     let formDataCopy = Array.from(stepFormValues);
-    formDataCopy[currentStep].allowNextStep = isAllowed;
+    const index = formDataCopy.findIndex(locate);
+    formDataCopy[index].allowNextStep = isAllowed;
     setStepFormValues(formDataCopy);
   }
 
   function renderStepComponentWithData(CurrentStepComponent) {
+    //we can only rely on the step label as state identifier since the index of steps in the array can change anytime
+    const stepValue = stepFormValues.find(locate).data;
     return (
       <CurrentStepComponent
-        key={stepsLabels[currentStep]}
-        formValues={stepFormValues} // only useful for resume step
+        formValues={stepFormValues} // in case a step need the state of others steps
         setCurrentStep={setCurrentStep} // only useful for resume step
-        handleFormDataUpdate={handleFormDataUpdate}
-        initialState={stepFormValues[currentStep].data}
-        allowNextStep={allowNextStep}
+        handleFormDataUpdate={handleFormDataUpdate} //update the global state of the data
+        initialState={stepValue} //the state the current step
+        allowNextStep={allowNextStep} // control either access or rejection to next step
       />
     );
   }
 
   function goToNextStep() {
-    if (stepFormValues[currentStep].allowNextStep)
-      setCurrentStep(currentStep + 1);
+    const index = stepFormValues.findIndex(locate);
+    if (stepFormValues[index].allowNextStep) setCurrentStep(currentStep + 1);
     else {
       toast.error(
         "Des informations requises sur cette page sont manquantes pour continuer."
@@ -117,11 +168,11 @@ const AddEstablishment = () => {
         >
           {/* Current steps components */}
           <div className="w-full p-4 mb-4">
-            {renderStepComponentWithData(components[currentStep])}
+            {renderStepComponentWithData(steps[currentStep].component)}
           </div>
           <div
             className={`flex justify-between ${
-              currentStep !== 0 ? "w-[65%] mx-auto" : ""
+              currentStep !== 0 ? "w-[75%] mx-auto" : ""
             } `}
           >
             <Button

@@ -5,8 +5,10 @@ import Link from "next/link";
 import Image from "next/image";
 import useAuthContext from "@/context/auth";
 import ConditionalComponentRender from "@/components/auth/ConditionalComponentRender";
+import { usePathname } from "next/navigation";
 
 const Header = () => {
+  const pathname = usePathname();
   const { logout } = useAuthContext();
   const [isOpen, setIsOpen] = useState(false);
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
@@ -20,21 +22,21 @@ const Header = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <div className="flex items-center">
+            <Link href="/" className="flex items-center">
               <Image
                 src="/images/logo-primary.png"
                 alt="Logo"
                 width={100}
                 height={100}
               />
-            </div>
+            </Link>
           </div>
 
           {/* Navigation centrale */}
           <nav className="hidden md:flex items-center space-x-8">
             <Link
-              href="/"
-              className="text-gray-800 hover:text-gray-900 px-3 py-2 text-sm font-medium transition-colors"
+              href="/find-accomodation"
+              className={`text-gray-800 hover:text-gray-900  py-2 text-sm font-medium transition-colors ${pathname === "/find-accomodation" ? "active-border":""} `}
             >
               Trouver un hébergement
             </Link>

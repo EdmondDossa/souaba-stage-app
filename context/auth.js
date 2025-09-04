@@ -79,6 +79,7 @@ export function AuthProvider({ children }) {
     register,
     login,
     logout,
+    fetchUser,
     isLogged,
     isLoading,
     user,

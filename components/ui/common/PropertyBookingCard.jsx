@@ -120,7 +120,7 @@ export default function PropertyBookingCard({
       {/* Bouton de réservation */}
       <button
         onClick={onBook}
-        className="w-full bg-red-500 text-white py-4 rounded-lg font-bold hover:bg-red-600 transition-colors text-base"
+        className="w-full bg-primary text-white py-4 rounded-lg font-bold hover:bg-primary-600 transition-colors text-base"
       >
         Réserver maintenant
       </button>

@@ -1,6 +1,8 @@
 import React from "react";
 import Image from "next/image";
-import { Heart, Star, Bed, Bath, Car } from "lucide-react";
+import { Heart, Star, Bed, Bath, Car, Ellipsis } from "lucide-react";
+import PropertyEllipsis from "./PropertyEllipsis";
+import renderStars from "@/utils/render-star";
 
 export default function PropertyCard({
   imageUrl,
@@ -14,71 +16,34 @@ export default function PropertyCard({
   parking = 2,
   className,
   showRate = false,
-  showAmenities = true,
+  showAmenities = false,
+  showEllipsis = false,
+  ellipsis = 0,
+  showPrice = true,
+  ownerInfo = null,
   ...rest
 }) {
-  // Fonction pour générer les étoiles
-  const renderStars = (rating) => {
-    const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 !== 0;
-
-    // Étoiles pleines
-    for (let i = 0; i < fullStars; i++) {
-      stars.push(
-        <Star
-          key={`full-${i}`}
-          size={16}
-          fill="#FFD700"
-          stroke="#FFD700"
-          className="text-yellow-400"
-        />
-      );
-    }
-
-    // Demi-étoile
-    if (hasHalfStar) {
-      stars.push(
-        <div key="half" className="relative">
-          <Star size={16} stroke="#FFD700" fill="none" />
-          <div className="absolute inset-0 overflow-hidden w-1/2">
-            <Star size={16} fill="#FFD700" stroke="#FFD700" />
-          </div>
-        </div>
-      );
-    }
-
-    // Étoiles vides
-    const emptyStars = 5 - Math.ceil(rating);
-    for (let i = 0; i < emptyStars; i++) {
-      stars.push(
-        <Star
-          key={`empty-${i}`}
-          size={16}
-          stroke="#D1D5DB"
-          fill="none"
-          className="text-gray-300"
-        />
-      );
-    }
-
-    return stars;
-  };
-
   return (
     <div
-      className={`relative w-full max-w-sm overflow-hidden ${className || ""}`}
+      className={`relative w-full max-w-[320px] overflow-hidden ${
+        className || ""
+      }`}
       {...rest}
     >
       {/* Image Container */}
       <div
-        className="w-full h-64 bg-cover rounded-xl"
+        className="w-full h-72 bg-cover rounded-xl"
         style={{ backgroundImage: `url(${imageUrl})` }}
       >
         <div className="relative h-full w-full rounded-xl bg-black/50">
           {/* Price Tag */}
-          <div className="absolute bottom-4 left-4 text-white px-3 py-1 text-[17px] font-bold ">
-            {price}
+          <div className="absolute bottom-1 left-4 w-full">
+            <div className="flex justify-between items-center">
+              <strong className="font-montserrat-medium text-white block text-[17px] font-bold">
+                {showPrice && price}
+              </strong>
+              {showEllipsis && <PropertyEllipsis current={ellipsis} />}
+            </div>
           </div>
           {/* Stars Rating */}
           {showRate && (
@@ -97,7 +62,31 @@ export default function PropertyCard({
           </button>
         </div>
       </div>
-
+      {ownerInfo && (
+        <div className="flex items-center absolute top-50 text-[13px] gap-x-2 mx-2">
+          <div className="shrink-0">
+            {" "}
+            <Image
+              className="w-11 h-11"
+              width={200}
+              height={200}
+              alt=""
+              src={ownerInfo.photo}
+            />{" "}
+          </div>
+          <div className="text-white">
+            <span className="block"> Répertorié par: </span>
+            <strong className="block font-montserrat-bold">
+              {" "}
+              {ownerInfo.fullname}{" "}
+            </strong>
+            <span className="block whitespace-nowrap">
+              {" "}
+              {`À partir de: ${ownerInfo.minPrice}-${ownerInfo.maxPrice} FCFA `}{" "}
+            </span>
+          </div>
+        </div>
+      )}
       {/* Content Area */}
       <div className="p-4">
         <h3 className="text-xl font-semibold text-gray-900 mb-1">{title}</h3>
@@ -106,22 +95,22 @@ export default function PropertyCard({
 
         {/* Amenities with icons */}
         {showAmenities && (
-          <div className="flex items-center gap-4 text-gray-600">
+          <div className="flex items-center gap-4 text-gray-600  ameneties">
             {/* Bedrooms */}
             <div className="flex items-center gap-1">
-              <Bed size={18} className="text-gray-700" />
+              <Bed size={23} className="text-gray-700" />
               <span className="text-sm font-medium">{bedrooms}</span>
             </div>
-            
+
             {/* Bathrooms */}
             <div className="flex items-center gap-1">
-              <Bath size={18} className="text-gray-700" />
+              <Bath size={23} className="text-gray-700" />
               <span className="text-sm font-medium">{bathrooms}</span>
             </div>
-            
+
             {/* Parking */}
             <div className="flex items-center gap-1">
-              <Car size={18} className="text-gray-700" />
+              <Car size={23} className="text-gray-700" />
               <span className="text-sm font-medium">{parking}</span>
             </div>
           </div>
