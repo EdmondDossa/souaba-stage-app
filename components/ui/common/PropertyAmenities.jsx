@@ -1,17 +1,5 @@
 import Image from 'next/image';
-
-// Composant pour afficher les icônes SVG
-const SvgIcon = ({ name, size = 24, className = "" }) => {
-  return (
-    <Image
-      src={`/icons/${name}.svg`}
-      alt={name}
-      width={size}
-      height={size}
-      className={className}
-    />
-  );
-};
+import SvgIcon from './SvgIcon';
 
 // Mapping des noms d'amenities vers les noms de fichiers SVG
 const amenityIcons = {

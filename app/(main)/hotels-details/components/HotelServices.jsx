@@ -1,19 +1,8 @@
 import { Utensils, Car, Wifi, Coffee, Dumbbell, Waves } from "lucide-react";
 import Image from "next/image";
 import React from "react";
+import { SvgIcon } from "../../../../components/ui/common";
 
-
-const SvgIcon = ({ name, size = 24, className = "" }) => {
-    return (
-        <Image
-            src={`/icons/${name}.svg`}
-            alt={name}
-            width={size}
-            height={size}
-            className={className}
-        />
-    );
-};
 const hotelServices = [
   { name: "Restaurant", icon: "kitchen", description: "Restaurant gastronomique ouvert 24h/24" },
   { name: "Parking", icon: "kitchen", description: "Parking privé et sécurisé" },

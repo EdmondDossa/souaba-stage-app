@@ -1,5 +1,5 @@
 "use client";
-import { PropertyGallery, PropertyDescriptionShared, PropertyAmenities, PropertyBookingCard, SecuritySection, HotelRooms, Newsletter } from "@/components/ui/common";
+import { PropertyGallery, PropertyDescriptionShared, PropertyAmenities, PropertyBookingCard, SecuritySection, HotelRooms, PropertyReviews, Newsletter } from "@/components/ui/common";
 import { hotelData } from "./data/hotelData";
 
 export default function HotelDetails() {
@@ -56,6 +56,15 @@ export default function HotelDetails() {
         {/* Sécurité et hygiène - Après le tableau */}
         <div className="mt-8 p-6">
           <SecuritySection />
+        </div>
+
+        {/* Avis - Avant la newsletter */}
+        <div className="mt-8 p-6">
+          <PropertyReviews
+            rating={hotelData.rating}
+            reviewCount={hotelData.reviewCount}
+            reviews={hotelData.reviews}
+          />
         </div>
       </div>
 

@@ -3,20 +3,7 @@ import React, { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Star, MapPin } from 'lucide-react';
 import Image from 'next/image';
-import { PropertyReservationForm, Newsletter } from '../../../components/ui/common';
-
-// Composant pour afficher les icônes SVG
-const SvgIcon = ({ name, size = 24, className = "" }) => {
-  return (
-    <Image
-      src={`/icons/${name}.svg`}
-      alt={name}
-      width={size}
-      height={size}
-      className={className}
-    />
-  );
-};
+import { PropertyReservationForm, PropertyReviews, PropertyGalleryGrid, SvgIcon, Newsletter } from '../../../components/ui/common';
 
 const AppartementDetails = () => {
   const searchParams = useSearchParams();
@@ -38,7 +25,10 @@ const AppartementDetails = () => {
       "/images/new-property2.jpg", 
       "/images/new-property3.jpg",
       "/images/new-property4.jpg",
-      "/images/new-property1.jpg"
+      "/images/new-property1.jpg",
+      "/images/new-property2.jpg",
+      "/images/new-property3.jpg",
+      "/images/new-property4.jpg"
     ],
     bedrooms: 3,
     bathrooms: 2,
@@ -116,61 +106,10 @@ const AppartementDetails = () => {
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Section Galerie d'images */}
         <div className="mb-8">
-          <div className="grid grid-cols-4 gap-2 h-[400px]">
-            {/* Image principale */}
-            <div className="col-span-2 relative rounded-l-lg overflow-hidden">
-              <Image
-                src={property.images[0]}
-                alt="Image principale"
-                fill
-                className="object-cover"
-                priority
-              />
-            </div>
-
-            {/* Images secondaires */}
-            <div className="grid grid-rows-2 gap-2">
-              <div className="relative overflow-hidden">
-                <Image
-                  src={property.images[1]}
-                  alt="Image 2"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <div className="relative overflow-hidden">
-                <Image
-                  src={property.images[2]}
-                  alt="Image 3"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-rows-2 gap-2">
-              <div className="relative overflow-hidden rounded-tr-lg">
-                <Image
-                  src={property.images[3]}
-                  alt="Image 4"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <div className="relative overflow-hidden rounded-br-lg">
-                <Image
-                  src={property.images[4]}
-                  alt="Image 5"
-                  fill
-                  className="object-cover"
-                />
-                {/* Badge "+2 photos" */}
-                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center cursor-pointer hover:bg-opacity-60 transition-all">
-                  <span className="text-white font-semibold text-lg">+2 Photos</span>
-                </div>
-              </div>
-            </div>
-          </div>
+          <PropertyGalleryGrid 
+            images={property.images}
+            propertyName={property.title}
+          />
         </div>
 
         {/* Section principale */}
@@ -291,65 +230,11 @@ const AppartementDetails = () => {
             </div>
 
             {/* Avis */}
-            <div>
-              <div className="flex items-center pt-12 space-x-4 mb-6">
-                <h2 className="text-2xl font-bold font-montserrat-bold">Avis</h2>
-                <div className="flex items-center space-x-2">
-                  <Star size={20} fill="#FFD700" className="text-yellow-400" />
-                  <span className="font-bold text-lg">{property.rating}</span>
-                  <span className="text-gray-500">({property.reviewCount} avis)</span>
-                </div>
-              </div>
-
-              {/* Grille de notation */}
-              <div className="grid grid-cols-2  gap-6 mb-8">
-                {[
-                  { label: 'Équipements', rating: 5.0 },
-                  { label: 'Hygiène', rating: 5.0 },
-                  { label: 'Communication', rating: 5.0 },
-                  { label: 'Emplacement de la propriété', rating: 5.0 }
-                ].map((item, index) => (
-                  <div key={index} className="flex justify-between items-center">
-                    <span className="text-sm font-medium">{item.label}</span>
-                    <div className="flex items-center space-x-3">
-                      <div className="w-24 h-2 bg-gray-200 rounded-full">
-                        <div
-                          className="h-full bg-primary rounded-full transition-all duration-300"
-                          style={{ width: `${(item.rating / 5) * 100}%` }}
-                        ></div>
-                      </div>
-                      <span className="text-sm font-semibold min-w-[2rem]">{item.rating}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Commentaires */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {property.reviews.map((review) => (
-                  <div key={review.id} className="space-y-3 p-4 bg-gray-50 rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center">
-                        <span className="text-gray-600 font-semibold text-sm">
-                          {review.author.split(' ').map(n => n[0]).join('')}
-                        </span>
-                      </div>
-                      <div>
-                        <div className="font-semibold text-sm">{review.author}</div>
-                        <div className="text-xs text-gray-500">{review.date}</div>
-                      </div>
-                    </div>
-                    <p className="text-gray-600 text-sm leading-relaxed">
-                      {review.content}
-                    </p>
-                  </div>
-                ))}
-              </div>
-
-              <button className="mt-8 border border-primary text-primary px-8 py-3 rounded-lg hover:bg-primary hover:text-white transition-all font-semibold">
-                Afficher les {property.reviewCount} avis
-              </button>
-            </div>
+            <PropertyReviews
+              rating={property.rating}
+              reviewCount={property.reviewCount}
+              reviews={property.reviews}
+            />
           </div>
 
           {/* Colonne de droite - Formulaire de réservation */}

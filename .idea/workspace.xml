@@ -5,15 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e77da87c-25c5-452b-9150-3306f93cc08b" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/components/ui/common/Newsletter.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/(main)/reservation-valide/page.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/(main)/appartement-details/page.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/(main)/appartement-details/page.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/(main)/hotels-details/components/HotelServices.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/app/(main)/hotels-details/components/HotelServices.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/(main)/hotels-details/page.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/(main)/hotels-details/page.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/ui/common/PropertyAmenities.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/ui/common/PropertyAmenities.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/ui/common/PropertyBookingCard.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/ui/common/PropertyBookingCard.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/ui/common/SecuritySection.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/components/ui/common/SecuritySection.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/components/ui/common/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/components/ui/common/index.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -90,7 +83,8 @@
       <workItem from="1755884251594" duration="9024000" />
       <workItem from="1755964735037" duration="565000" />
       <workItem from="1755965331984" duration="13334000" />
-      <workItem from="1756068136382" duration="9492000" />
+      <workItem from="1756068136382" duration="14701000" />
+      <workItem from="1756398934424" duration="6863000" />
     </task>
     <servers />
   </component>

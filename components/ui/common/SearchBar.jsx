@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useRef } from "react";
-import { Search, MapPin, Building } from "lucide-react";
+import { Search, MapPin, Building, ChevronDown } from "lucide-react";
 import React from "react";
 
 // Constantes
@@ -84,6 +84,7 @@ export default function SearchBar() {
   const [children, setChildren] = useState(0);
   const [babies, setBabies] = useState(0);
   const [showGuestsDropdown, setShowGuestsDropdown] = useState(false);
+  const [activeGuestType, setActiveGuestType] = useState(null); // 'adults', 'children', 'babies'
 
   //Dropdown destination
   const [showDestinationDropdown, setShowDestinationDropdown] = useState(false);
@@ -115,6 +116,7 @@ export default function SearchBar() {
       // Fermer le dropdown invités
       if (guestsRef.current && !guestsRef.current.contains(event.target)) {
         setShowGuestsDropdown(false);
+        setActiveGuestType(null);
       }
     };
 
@@ -313,27 +315,51 @@ export default function SearchBar() {
 
       <div className="relative flex-1 px-4 py-2 cursor-pointer" ref={guestsRef}>
         <label className="block text-start font-montserrat-medium font-bold text-sm text-gray-700">
-          Nombre d'invités
+          Nombre d&apos;invités
         </label>
         <div className="flex space-x-2 items-center text-gray-800">
           {[
-            { label: 'Adultes', value: adults, setter: setAdults, min: 1 },
-            { label: 'Enfants', value: children, setter: setChildren, min: 0 },
-            { label: 'Bébés', value: babies, setter: setBabies, min: 0 }
-          ].map(({ label, value, setter, min }) => (
-            <div key={label} className="flex items-center">
+            { label: 'Adultes', value: adults, type: 'adults', setter: setAdults },
+            { label: 'Enfants', value: children, type: 'children', setter: setChildren },
+            { label: 'Bébés', value: babies, type: 'babies', setter: setBabies }
+          ].map(({ label, value, type, setter }) => (
+            <div key={label} className="flex items-center relative">
               <label className="me-1 font-montserrat-medium text-xs text-gray-400 font-bold">
                 {label}
               </label>
-              <select
-                className="font-mono text-sm"
-                onChange={(e) => setter(parseInt(e.target.value))}
-                value={value}
-              >
-                {GUEST_OPTIONS.slice(min).map(num => (
-                  <option key={num} value={num}>{num}</option>
-                ))}
-              </select>
+              <span className="font-mono text-sm font-bold text-gray-800 mr-1">
+                {value}
+              </span>
+              <ChevronDown 
+                size={12} 
+                className="text-gray-400 cursor-pointer" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveGuestType(type);
+                  setShowGuestsDropdown(true);
+                }}
+              />
+              
+              {/* Dropdown individuel pour chaque type */}
+              {showGuestsDropdown && activeGuestType === type && (
+                <div className="absolute z-50 bg-white border border-gray-200 rounded-lg shadow-lg w-20 left-0 top-full mt-2">
+                  <div className="p-1 max-h-40 overflow-y-auto">
+                    {(type === 'adults' ? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]).map((number) => (
+                      <button
+                        key={number}
+                        onClick={() => {
+                          setter(number);
+                          setShowGuestsDropdown(false);
+                          setActiveGuestType(null);
+                        }}
+                        className="w-full text-left px-2 py-1 text-sm text-gray-700 hover:bg-gray-100 rounded"
+                      >
+                        {number}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>
