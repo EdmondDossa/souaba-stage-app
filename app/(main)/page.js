@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 export default function Home() {
-  const [property, setProperty] = useState("hotels");
+  const [property, setProperty] = useState("Tout voir");
   const newPoperties = [
     {
       imageUrl: "/images/new-property1.jpg",
@@ -75,232 +75,220 @@ export default function Home() {
       isFavorite: false,
     },
   ];
+
+  const subNavItems = [
+    "Tout voir",
+    "Hôtels",
+    "Résidences",
+    "Appartements",
+    "Villas",
+    "Studio",
+  ];
+
   return (
     <>
-      <div className="relative bg-[url('/images/acceuil-first-image.webp')] bg-cover bg-center h-[60vh] w-full flex items-center justify-center text-center">
+      <div className="relative bg-[url('/images/acceuil-first-image.webp')] bg-cover bg-center h-[65vh] w-full flex items-center justify-center text-center">
         <div className="relative h-full w-full bg-black/50 z-10 flex flex-col items-center justify-center text-white space-y-10 px-10">
           <div>
-            <h2 className="font-[800] font-montserrat-bold text-white text-5xl">
+            <h2 className="font-[800] font-montserrat-bold text-white text-6xl mt-4">
               Trouvez l'hébergement parfait
             </h2>
-            <h2 className="font-[800] font-montserrat-bold text-white text-5xl">
+            <h2 className="font-[800] font-montserrat-bold text-white text-6xl mt-3">
               pour votre prochain séjour.
             </h2>
           </div>
-          <div className="w-full flex flex-col lg:flex-row items-center justify-between max-w-5xl mx-auto">
-            <h4 className="font-[800] font-montserrat-bold text-4xl">Trouver</h4>
-            <ul className="flex items-center justify-between space-x-10">
-              {/* Hôtels */}
-              <li
-                className={`
-                relative cursor-pointer pb-1 font-semibold
-                ${property === "hotels" ? "active-border" : ""}
+          <div className="w-full flex flex-col lg:flex-row items-center justify-between max-w-4xl mx-auto mt-5">
+            <h4 className="font-[800] font-montserrat-bold text-5xl uppercase">
+              Trouver
+            </h4>
+            <ul className="flex items-center justify-between space-x-8">
+              {subNavItems.map((item) => {
+                return (
+                  <li
+                    key={item}
+                    className={`
+                relative cursor-pointer pb-1 font-montserrat-medium
+                ${property === item ? "active-border" : "active-border-hover"}
               `}
-                onClick={() => setProperty("hotels")}
-              >
-                Hôtels
-              </li>
-              {/* Résidences */}
-              <li
-                className={`
-                relative cursor-pointer pb-1 font-semibold
-                ${property === "residences" ? "active-border" : ""}
-              `}
-                onClick={() => setProperty("residences")}
-              >
-                Résidences
-              </li>
-              {/* Appartements */}
-              <li
-                className={`
-                relative cursor-pointer pb-1 font-semibold
-                ${property === "appartments" ? "active-border" : ""}
-              `}
-                onClick={() => setProperty("appartments")}
-              >
-                Appartements
-              </li>
-              {/* Villas */}
-              <li
-                className={`
-                relative cursor-pointer pb-1 font-semibold
-                ${property === "villa" ? "active-border" : ""}
-              `}
-                onClick={() => setProperty("villa")}
-              >
-                Villas
-              </li>
-              {/* Studio */}
-              <li
-                className={`
-                relative cursor-pointer pb-1 font-semibold
-                ${property === "studio" ? "active-border" : ""}
-              `}
-                onClick={() => setProperty("studio")}
-              >
-                Studio
-              </li>
+                    onClick={() => setProperty(item)}
+                  >
+                    {item}
+                  </li>
+                );
+              })}
             </ul>
           </div>
           <SearchBar />
         </div>
       </div>
-      <div className="py-8 px-12 space-y-5">
-        <div className="py-2 space-y-2 w-fit">
-          <h1 className="font-bold text-xl lg:text-3xl">
-            Dernières nouvelles{" "}
-          </h1>
-          <h1 className="font-bold text-xl lg:text-3xl">sur les propriétés</h1>
-          <div className="w-1/3 h-1 bg-primary mt-2"></div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-4 scrollbar-hide w-full">
-          {newPoperties.map((property, index) => (
-            <PropertyCard
-              key={index}
-              imageUrl={property.imageUrl}
-              price={property.price}
-              title={property.title}
-              location={property.location}
-              isFavorite={property.isFavorite}
-              className="flex-shrink-0"
-            />
-          ))}
-        </div>
-      </div>
-      <div className="py-8 px-12 space-y-5">
-        <div className="flex justify-between items-center">
-          <div className="py-2 space-y-2 w-fit">
+
+      <section className="max-w-[95%] mx-auto">
+        <div className="py-8 px-12 space-y-5 font-montserrat-bold text-gray-700">
+          <div className="py-2 space-y-2 w-fit ">
             <h1 className="font-bold text-xl lg:text-3xl">
-              Propriétés répertoriées{" "}
+              Dernières nouvelles{" "}
             </h1>
-            <h1 className="font-bold text-xl lg:text-3xl">à proximité</h1>
+            <h1 className="font-bold text-xl lg:text-3xl mb-5">
+              sur les propriétés
+            </h1>
             <div className="w-1/3 h-1 bg-primary mt-2"></div>
           </div>
-          <div className="flex items-center space-x-2 justify-center">
-            <Image
-              src="/icons/ic_map.svg"
-              width={20}
-              height={20}
-              alt=""
-              className=""
-            />
-            <h4 className="font-semibold text-[15px]">Afficher sur la carte</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 -mb-16 scrollbar-hide w-full">
+            {newPoperties.map((property, index) => (
+              <PropertyCard
+                key={index} 
+                imageUrl={property.imageUrl}
+                price={property.price}
+                title={property.title}
+                location={property.location}
+                isFavorite={property.isFavorite}
+                className="flex-shrink-0"
+              />
+            ))}
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-4 scrollbar-hide w-full">
-          {bestPoperties.map((property, index) => (
-            <PropertyCard
-              key={index}
-              imageUrl={property.imageUrl}
-              price={property.price}
-              title={property.title}
-              location={property.location}
-              showRate={property.showRate}
-              rating={property.rating}
-              isFavorite={property.isFavorite}
-              className="flex-shrink-0"
-            />
-          ))}
-        </div>
-      </div>
-       <div className="py-8 px-12 space-y-5">
-        <div className="flex justify-between items-center">
-          <div className="py-2 space-y-2 w-fit">
-            <h1 className="font-bold text-xl lg:text-3xl">
-              Propriétés les{" "}
-            </h1>
-            <h1 className="font-bold text-xl lg:text-3xl">mieux notées</h1>
-            <div className="w-1/3 h-1 bg-primary mt-2"></div>
+
+        <div className="py-8 px-12 space-y-5 font-montserrat-bold text-gray-700">
+          <div className="flex justify-between items-center">
+            <div className="py-2 space-y-2 w-fit">
+              <h1 className="font-bold text-xl lg:text-3xl">
+                Propriétés répertoriées{" "}
+              </h1>
+              <h1 className="font-bold text-xl lg:text-3xl">à proximité</h1>
+              <div className="w-1/3 h-1 bg-primary mt-2"></div>
+            </div>
+            <div className="flex items-center space-x-2 justify-center">
+              <Image
+                src="/icons/ic_map.svg"
+                width={20}
+                height={20}
+                alt=""
+                className=""
+              />
+              <h4 className="font-semibold text-[15px]">
+                Afficher sur la carte
+              </h4>
+            </div>
           </div>
-          <div className="flex items-center space-x-2 justify-center">
-            <Image
-              src="/icons/ic_map.svg"
-              width={20}
-              height={20}
-              alt=""
-              className=""
-            />
-            <h4 className="font-semibold text-[15px]">Afficher sur la carte</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-4 scrollbar-hide -mb-16 w-full">
+            {bestPoperties.map((property, index) => (
+              <PropertyCard
+                key={index}
+                imageUrl={property.imageUrl}
+                price={property.price}
+                title={property.title}
+                location={property.location}
+                rating={property.rating}
+                isFavorite={property.isFavorite}
+                className="flex-shrink-0"
+              />
+            ))}
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-4 scrollbar-hide w-full">
-          {bestPoperties.map((property, index) => (
-            <PropertyCard
-              key={index}
-              imageUrl={property.imageUrl}
-              price={property.price}
-              title={property.title}
-              location={property.location}
-              showRate={property.showRate}
-              rating={property.rating}
-              isFavorite={property.isFavorite}
-              className="flex-shrink-0"
-            />
-          ))}
+
+        <div className="py-8 px-12 space-y-5 font-montserrat-bold text-gray-700">
+          <div className="flex justify-between items-center">
+            <div className="py-2 space-y-2 w-fit">
+              <h1 className="font-bold text-xl lg:text-3xl">Propriétés les </h1>
+              <h1 className="font-bold text-xl lg:text-3xl">mieux notées</h1>
+              <div className="w-1/3 h-1 bg-primary mt-2"></div>
+            </div>
+            <div className="flex items-center space-x-2 justify-center">
+              <Image
+                src="/icons/ic_map.svg"
+                width={20}
+                height={20}
+                alt=""
+                className=""
+              />
+              <h4 className="font-semibold text-[15px]">
+                Afficher sur la carte
+              </h4>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-4 scrollbar-hide -mb-16 w-full">
+            {bestPoperties.map((property, index) => (
+              <PropertyCard
+                key={index}
+                imageUrl={property.imageUrl}
+                price={property.price}
+                title={property.title}
+                location={property.location}
+                showRate={property.showRate}
+                rating={property.rating}
+                isFavorite={property.isFavorite}
+                className="flex-shrink-0"
+              />
+            ))}
+          </div>
         </div>
-      </div>
-      <div className="py-8 px-12 relative  flex items-center justify-center text-center">
-        <div className="rounded-xl bg-[url('/images/acceuil-first-image.webp')] bg-cover bg-center w-full">
-          <div className="rounded-xl py-12  relative h-full w-full bg-black/50 z-10 flex flex-col  text-white space-y-4 px-10">
-            <div className="space-y-3">
-              <div className="w-fit h-fit flex flex-col justify-start space-y-2">
-                <h4 className="font-bold text-2xl  text-start">
-                  Essayez d'héberger{" "}
-                </h4>
-                <h4 className="font-bold text-2xl text-start">avec nous </h4>
-              </div>
-              <p className="text-white text-md text-start">
-                Gagnez plus simplement en louant votre propriété...
-              </p>
-              <div className="flex justify-start items-center mt-10">
-                <Link
-                  href="/add-establishment"
-                  className="hidden sm:inline-flex items-center px-5 py-2.5 bg-green text-white rounded-full text-sm font-bold hover:opacity-80 transition-colors shadow-sm"
-                >
-                  Ajouter votre établissement
-                </Link>
+
+        <div className="py-8 px-12 relative  flex items-center justify-center text-center">
+          <div className="rounded-xl bg-black/40 bg-blend-darken bg-[url('/images/home-illustration.png')] bg-cover bg-center w-full">
+            <div className="rounded-xl py-12  relative h-full w-full z-10 flex flex-col  text-white space-y-4 px-10">
+              <div className="space-y-3">
+                <div className="w-fit h-52 font-montserrat-bold text-4xl  flex flex-col justify-start space-y-2">
+                  <h4 className="font-bold  text-start">
+                    Essayez d'héberger{" "}
+                  </h4>
+                  <h4 className="font-bold text-start">avec nous </h4>
+                </div>
+                <p className="text-white text-md text-start">
+                  Gagnez plus simplement en louant votre propriété...
+                </p>
+                <div className="flex justify-start items-center mt-10">
+                  <Link
+                    href="/add-establishment"
+                    className="hidden sm:inline-flex items-center px-5 py-3.5 font-montserrat-bold bg-green text-white rounded-full text-sm font-bold hover:opacity-80 transition-colors shadow-sm"
+                  >
+                    Ajouter votre établissement
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-      <div className="py-8 px-12 space-y-5">
-        <div className="flex justify-between items-center">
-          <div className="py-2 space-y-2 w-fit">
-            <h1 className="font-bold text-xl lg:text-3xl">
-              Propriétés en vedette{" "}
-            </h1>
-            <h1 className="font-bold text-xl lg:text-3xl">sur notre liste</h1>
-            <div className="w-1/3 h-1 bg-primary mt-2"></div>
+
+        <div className="py-8 px-12 space-y-5 font-montserrat-bold text-gray-700">
+          <div className="flex justify-between items-center">
+            <div className="py-2 space-y-2 w-fit">
+              <h1 className="font-bold text-xl lg:text-3xl">
+                Propriétés en vedette{" "}
+              </h1>
+              <h1 className="font-bold text-xl lg:text-3xl">sur notre liste</h1>
+              <div className="w-1/3 h-1 bg-primary mt-2"></div>
+            </div>
+            <div className="flex items-center space-x-2 justify-center">
+              <Image
+                src="/icons/ic_map.svg"
+                width={20}
+                height={20}
+                alt=""
+                className=""
+              />
+              <h4 className="font-semibold text-[15px]">
+                Afficher sur la carte
+              </h4>
+            </div>
           </div>
-          <div className="flex items-center space-x-2 justify-center">
-            <Image
-              src="/icons/ic_map.svg"
-              width={20}
-              height={20}
-              alt=""
-              className=""
-            />
-            <h4 className="font-semibold text-[15px]">Afficher sur la carte</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-4 scrollbar-hide w-full mb-10">
+            {[...bestPoperties,...newPoperties.slice(0,2)].map((property, index) => (
+              <PropertyCard
+                key={index}
+                imageUrl={property.imageUrl}
+                price={property.price}
+                title={property.title}
+                location={property.location}
+                showRate={false}
+                rating={property.rating}
+                isFavorite={property.isFavorite}
+                className="max-w-full w-1/3"
+                showAmenities={true}
+              />
+            ))}
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-4 scrollbar-hide w-full">
-          {bestPoperties.map((property, index) => (
-            <PropertyCard
-              key={index}
-              imageUrl={property.imageUrl}
-              price={property.price}
-              title={property.title}
-              location={property.location}
-              showRate={false}
-              rating={property.rating}
-              isFavorite={property.isFavorite}
-              className="flex-shrink-0"
-              showAmenities={true}
-            />
-          ))}
-        </div>
-      </div>
+      </section>
     </>
   );
 }

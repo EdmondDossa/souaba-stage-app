@@ -39,7 +39,8 @@
     width: 0%;
   }
   100% {
-    width: 50%;
+    width: 30px;
+    max-width: 45%;
   }
 }
 
@@ -57,6 +58,16 @@
   animation: borderReveal 0.3s ease-out forwards;
 }
 
+.active-border-hover:hover::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background-color: var(--color-primary);
+  animation: borderReveal 0.3s ease-out forwards;
+}
+
 .property-card-title::after {
   content: "";
   position: absolute;
@@ -64,7 +75,7 @@
   left: 0;
   height: 8px;
   border-radius: 80px;
-  width: 45%;
+  width: 50px;
   background-color: var(--color-primary);
 }
 
@@ -85,6 +96,7 @@ input[type="number"]::-webkit-outer-spin-button {
 /* Firefox */
 input[type="number"] {
   -moz-appearance: textfield;
+  appearance: none;
 }
 
 button{

@@ -1,5 +1,5 @@
-import { FaStar as Star } from "react-icons/fa";
 import { FaStarHalfAlt as HalfStar, FaRegStar as EmptyStar  } from "react-icons/fa";
+import { BsStarFill as Star } from "react-icons/bs";
 
  // Fonction pour générer les étoiles
 const renderStars = (rating) => {
@@ -28,7 +28,7 @@ const renderStars = (rating) => {
     const emptyStars = 5 - Math.ceil(rating);
     for (let i = 0; i < emptyStars; i++) {
       stars.push(
-       <EmptyStar key={i} className="text-primary bg" />
+       <Star key={i} className="text-white" />
       );
     }
 

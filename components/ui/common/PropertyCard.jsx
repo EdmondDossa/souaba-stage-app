@@ -25,19 +25,19 @@ export default function PropertyCard({
 }) {
   return (
     <div
-      className={`relative w-full max-w-[320px] overflow-hidden ${
+      className={`relative w-full max-w-[298px] overflow-hidden ${
         className || ""
       }`}
       {...rest}
     >
       {/* Image Container */}
       <div
-        className="w-full h-72 bg-cover rounded-xl"
+        className="w-full h-96  bg-cover rounded-xl"
         style={{ backgroundImage: `url(${imageUrl})` }}
       >
-        <div className="relative h-full w-full rounded-xl bg-black/50">
+        <div className="relative h-full w-full  rounded-xl bg-black/50">
           {/* Price Tag */}
-          <div className="absolute bottom-1 left-4 w-full">
+          <div className="absolute  bottom-1 left-4 w-full">
             <div className="flex justify-between items-center">
               <strong className="font-montserrat-medium text-white block text-[17px] font-bold">
                 {showPrice && price}
@@ -89,9 +89,9 @@ export default function PropertyCard({
       )}
       {/* Content Area */}
       <div className="p-4">
-        <h3 className="text-xl font-semibold text-gray-900 mb-1">{title}</h3>
+        <h3 className="text-lg font-semibold font-montserrat-bold text-gray-700 mb-1">{title}</h3>
 
-        <p className="text-gray-600 text-sm mb-3">{location}</p>
+        <p className="text-gray-600 text-sm mb-3 font-montserrat-medium">{location}</p>
 
         {/* Amenities with icons */}
         {showAmenities && (
