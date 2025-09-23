@@ -195,7 +195,7 @@ export default function PropertyReservationForm({
         {/* Bouton de réservation */}
         <button 
           onClick={() => onBook && onBook(reservationData)}
-          className="w-full bg-primary text-white py-4 rounded-lg font-bold text-lg hover:bg-opacity-90 transition-all transform hover:scale-[1.02] active:scale-[0.98]"
+          className="w-full bg-red-500 text-white py-4 rounded-lg font-bold text-lg hover:bg-opacity-90 transition-all transform hover:scale-[1.02] active:scale-[0.98]"
         >
           Réserver maintenant
         </button>
