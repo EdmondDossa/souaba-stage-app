@@ -120,7 +120,7 @@ const FoundProducts = () => {
             <FilterSideBar onFilterUpdate={()=>{}} />
           </div>
         </div>
-        <div className="mt-10 flex flex-col justify-end mx-10">
+        <div className="mt-10 gap-y-10 flex flex-col justify-end me-15">
           {Properties.map((property, index) => (
             <PropertyCard
               key={index}
@@ -132,9 +132,10 @@ const FoundProducts = () => {
               showEllipsis={true}
               ellipsis={property.ellipsis}
               showAmenities={true}
+              coloredAmeneties={true}
               ownerInfo={property.ownerInfo}
               showPrice={false}
-              className="flex-shrink-0 shadow-sm rounded-b-xl mb-10 [&_.ameneties_svg]:text-primary "
+              className="max-w-full shadow-2xl mb-5 rounded-b-2xl [&_.bg-img]:rounded-b-none"
             />
           ))}
         </div>

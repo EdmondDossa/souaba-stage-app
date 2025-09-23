@@ -133,14 +133,15 @@ export default function Home() {
             </h1>
             <div className="w-1/3 h-1 bg-primary mt-2"></div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 -mb-16 scrollbar-hide w-full">
-            {newPoperties.map((property, index) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-4 scrollbar-hide -mb-16 w-full">
+            {bestPoperties.map((property, index) => (
               <PropertyCard
-                key={index} 
+                key={index}
                 imageUrl={property.imageUrl}
                 price={property.price}
                 title={property.title}
                 location={property.location}
+                rating={property.rating}
                 isFavorite={property.isFavorite}
                 className="flex-shrink-0"
               />

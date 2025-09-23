@@ -103,18 +103,6 @@ const Reservation = () => {
     if (e.target.value.length <= MAX_CANCEL_REASON_LENGTH)
       setCancelReason(e.target.value);
   }
-
-
-  // useEffect(() => {
-  //   function handleClickOutside(e) {
-  //     if (ref?.current && !ref.current.contains(e.target)) {
-  //       cancelReservationCancelling();
-  //     }
-  //   }
-  //   window.addEventListener("click", handleClickOutside);
-  //   return () => window.removeEventListener("click", handleClickOutside);
-  // }, []);
-
   useEffect(() => {
     const filteredReservations = dumpReservations.filter(
       (reservation) => reservation.category === currentCategory
@@ -149,7 +137,7 @@ const Reservation = () => {
           <section className="border-t border-t-gray-200">
             {reservations.map((reservation) => {
               return (
-                <div key={reservation.id} className="even:bg-gray-100 my-5 p-4">
+                <div key={reservation.id} className="my-5 p-4 hover:bg-gray-100 transition">
                   <ReservationRow
                     cancelReservation={cancelReservation}
                     reservation={reservation}
@@ -168,13 +156,13 @@ const Reservation = () => {
           >
             <div className="h-full mx-auto w-[80%] ">
               <label
-                className="text-sm font-montserrat-medium"
+                className="text-sm"
                 htmlFor="cancel-reason"
               >
                 Entrer le motif de votre annulation
               </label>
               <textarea
-                className="w-full block bg-[#FBFBFB] border  border-gray-200 rounded-lg  resize-none p-3 ring-2 ring-white outline-0 focus:ring-primary h-2/3"
+                className="w-full block mt-1 bg-[#FBFBFB] border  border-gray-200 rounded-lg  resize-none p-3 ring-2 ring-white outline-0 focus:ring-primary h-2/3"
                 name="cancel-reason"
                 id="cancel-reason"
                 value={cancelReason}

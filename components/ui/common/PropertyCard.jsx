@@ -1,6 +1,13 @@
 import React from "react";
 import Image from "next/image";
-import { Heart, Star, Bed, Bath, Car, Ellipsis } from "lucide-react";
+import {
+  Heart,
+  Star,
+  Bed,
+  Bath,
+  CarFront as Car,
+  Ellipsis,
+} from "lucide-react";
 import PropertyEllipsis from "./PropertyEllipsis";
 import renderStars from "@/utils/render-star";
 
@@ -17,6 +24,7 @@ export default function PropertyCard({
   className,
   showRate = false,
   showAmenities = false,
+  coloredAmeneties = false,
   showEllipsis = false,
   ellipsis = 0,
   showPrice = true,
@@ -32,10 +40,10 @@ export default function PropertyCard({
     >
       {/* Image Container */}
       <div
-        className="w-full h-96  bg-cover rounded-xl"
+        className="w-full h-96 bg-cover rounded-xl"
         style={{ backgroundImage: `url(${imageUrl})` }}
       >
-        <div className="relative h-full w-full  rounded-xl bg-black/50">
+        <div className="relative card-body h-full w-full rounded-xl bg-black/50 bg-img">
           {/* Price Tag */}
           <div className="absolute  bottom-1 left-4 w-full">
             <div className="flex justify-between items-center">
@@ -45,6 +53,7 @@ export default function PropertyCard({
               {showEllipsis && <PropertyEllipsis current={ellipsis} />}
             </div>
           </div>
+
           {/* Stars Rating */}
           {showRate && (
             <div className="absolute top-4 left-4 p-2  flex items-center gap-1 mb-2">
@@ -60,58 +69,65 @@ export default function PropertyCard({
               strokeWidth={2}
             />
           </button>
+          {ownerInfo && (
+            <div className="flex items-center absolute m-3 bottom-0 text-sm gap-x-2 mx-2">
+              <div className="shrink-0">
+                {" "}
+                <Image
+                  className="w-16 h-16"
+                  width={200}
+                  height={200}
+                  alt=""
+                  src={ownerInfo.photo}
+                />{" "}
+              </div>
+              <div className="text-white">
+                <span className="block"> Répertorié par: </span>
+                <strong className="block font-montserrat-bold">
+                  {" "}
+                  {ownerInfo.fullname}{" "}
+                </strong>
+                <span className="block whitespace-nowrap font-bold">
+                  {" "}
+                  {`À partir de: ${ownerInfo.minPrice}-${ownerInfo.maxPrice} FCFA `}{" "}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
-      {ownerInfo && (
-        <div className="flex items-center absolute top-50 text-[13px] gap-x-2 mx-2">
-          <div className="shrink-0">
-            {" "}
-            <Image
-              className="w-11 h-11"
-              width={200}
-              height={200}
-              alt=""
-              src={ownerInfo.photo}
-            />{" "}
-          </div>
-          <div className="text-white">
-            <span className="block"> Répertorié par: </span>
-            <strong className="block font-montserrat-bold">
-              {" "}
-              {ownerInfo.fullname}{" "}
-            </strong>
-            <span className="block whitespace-nowrap">
-              {" "}
-              {`À partir de: ${ownerInfo.minPrice}-${ownerInfo.maxPrice} FCFA `}{" "}
-            </span>
-          </div>
-        </div>
-      )}
+
       {/* Content Area */}
       <div className="p-4">
-        <h3 className="text-lg font-semibold font-montserrat-bold text-gray-700 mb-1">{title}</h3>
+        <h3 className="text-lg font-semibold font-montserrat-bold text-gray-700 mb-1">
+          {title}
+        </h3>
 
-        <p className="text-gray-600 text-sm mb-3 font-montserrat-medium">{location}</p>
+        <p className="text-gray-600 text-sm mb-3 font-bold">{location}</p>
 
         {/* Amenities with icons */}
         {showAmenities && (
-          <div className="flex items-center gap-4 text-gray-600  ameneties">
+          <div
+            className={`flex items-center gap-4 text-gray-600 ameneties ${
+              coloredAmeneties ? "[&_svg]:text-primary" : ""
+            }`}
+          >
             {/* Bedrooms */}
             <div className="flex items-center gap-1">
-              <Bed size={23} className="text-gray-700" />
-              <span className="text-sm font-medium">{bedrooms}</span>
+              <Bed size={23} className="text-gray-700 " />
+              <span className="text-sm font-montserrat-bold">{bedrooms}</span>
             </div>
 
             {/* Bathrooms */}
             <div className="flex items-center gap-1">
               <Bath size={23} className="text-gray-700" />
-              <span className="text-sm font-medium">{bathrooms}</span>
+              <span className="text-sm font-montserrat-bold">{bathrooms}</span>
             </div>
 
             {/* Parking */}
             <div className="flex items-center gap-1">
-              <Car size={23} className="text-gray-700" />
-              <span className="text-sm font-medium">{parking}</span>
+              <Car size={23} className="text-gray-700 " />
+              <span className="text-sm font-montserrat-bold">{parking}</span>
             </div>
           </div>
         )}
