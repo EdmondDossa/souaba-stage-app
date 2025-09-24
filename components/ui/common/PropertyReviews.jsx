@@ -1,26 +1,29 @@
 "use client";
-import React from 'react';
-import { Star } from 'lucide-react';
+import React from "react";
+import { Star } from "lucide-react";
 
-const PropertyReviews = ({ 
-  rating = 5.0, 
-  reviewCount = 100, 
+const PropertyReviews = ({
+  rating = 5.0,
+  reviewCount = 100,
   reviews = [],
   ratingCategories = [
-    { label: 'Équipements', rating: 5.0 },
-    { label: 'Hygiène', rating: 5.0 },
-    { label: 'Communication', rating: 5.0 },
-    { label: 'Emplacement de la propriété', rating: 5.0 }
-  ]
+    { label: "Équipements", rating: 5.0 },
+    { label: "Hygiène", rating: 5.0 },
+    { label: "Communication", rating: 5.0 },
+    { label: "Emplacement de la propriété", rating: 5.0 },
+  ],
 }) => {
   return (
     <div>
-      <div className="flex items-center pt-12 space-x-4 mb-6">
-        <h2 className="text-2xl font-bold font-montserrat-bold">Avis</h2>
+      <div className="flex space-x-4 mb-6">
+        <div>
+          <h3 className="text-xl  font-bold text-gray-700">
+            Avis
+          </h3>{" "}
+        </div>
         <div className="flex items-center space-x-2">
           <Star size={20} fill="#FFD700" className="text-yellow-400" />
-          <span className="font-bold text-lg">{rating}</span>
-          <span className="text-gray-500">({reviewCount} avis)</span>
+          <span className="font-montserrat-bold text-lg">{(+rating).toFixed(1)}</span>
         </div>
       </div>
 
@@ -36,7 +39,9 @@ const PropertyReviews = ({
                   style={{ width: `${(item.rating / 5) * 100}%` }}
                 ></div>
               </div>
-              <span className="text-sm font-semibold min-w-[2rem]">{item.rating}</span>
+              <span className="text-sm font-semibold min-w-[2rem]">
+                {item.rating}
+              </span>
             </div>
           </div>
         ))}
@@ -49,7 +54,10 @@ const PropertyReviews = ({
             <div className="flex items-center space-x-3">
               <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center">
                 <span className="text-gray-600 font-semibold text-sm">
-                  {review.author.split(' ').map(n => n[0]).join('')}
+                  {review.author
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")}
                 </span>
               </div>
               <div>

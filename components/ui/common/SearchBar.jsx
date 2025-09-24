@@ -60,7 +60,7 @@ const SUGGESTIONS = [
   },
 ];
 
-function SearchBar() {
+function SearchBar({ isCentered = true }) {
   const [destination, setDestination] = useState("");
   const [arrivalDate, setArrivalDate] = useState("");
   const [departureDate, setDepartureDate] = useState("");
@@ -190,7 +190,11 @@ function SearchBar() {
   };
 
   return (
-    <div className="relative bg-white rounded-full p-2 shadow-lg flex items-center justify-between max-w-4xl mx-auto border border-gray-200 ">
+    <div
+      className={`relative bg-white rounded-full p-2 shadow-lg flex items-center justify-between max-w-4xl  border border-gray-200  ${
+        isCentered ? "mx-auto" : ""
+      }`}
+    >
       <div className="px-4 py-2 relative" ref={destinationRef}>
         <label
           htmlFor="destination"
@@ -319,24 +323,27 @@ function SearchBar() {
               value: adults,
               type: "adults",
               setter: setAdults,
-              getter:adults
+              getter: adults,
             },
             {
               label: "Enfants",
               value: children,
               type: "children",
               setter: setChildren,
-              getter:children
+              getter: children,
             },
             {
               label: "Bébés",
               value: babies,
               type: "babies",
               setter: setBabies,
-              getter:babies
+              getter: babies,
             },
           ].map(({ label, value, type, setter, getter }) => (
-            <div key={label} className="flex items-center relative max-w-[90px]">
+            <div
+              key={label}
+              className="flex items-center relative max-w-[90px]"
+            >
               <label
                 onClick={(e) => {
                   e.stopPropagation();
@@ -345,7 +352,7 @@ function SearchBar() {
                 }}
                 className="me-1 text-xs flex items-center text-gray-400 cursor-pointer font-bold gap-x-1"
               >
-                { <span className="w-[45px]"> { getter || label }  </span>  }
+                {<span className="w-[45px]"> {getter || label} </span>}
                 <ChevronDown
                   size={12}
                   className="text-gray-400 cursor-pointer"

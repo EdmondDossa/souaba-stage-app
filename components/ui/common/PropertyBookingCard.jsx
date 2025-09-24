@@ -1,16 +1,33 @@
 "use client";
 import { Heart, Share2, Star } from "lucide-react";
 import { useState } from "react";
-import Image from 'next/image';
-import SvgIcon from './SvgIcon';
+import Image from "next/image";
+import SvgIcon from "./SvgIcon";
 
-export default function PropertyBookingCard({ 
-  title, 
-  location, 
-  rating, 
-  price, 
+const amenityIcons = {
+  wifi: "wifi",
+  parking: "Parking 1",
+  climatisation: "flocon",
+  cuisine: "kitchen",
+  piscine: "piscine",
+  securite: "Security et hygiene",
+  salle_sport: "espace",
+  room_service: "kitchen",
+  television: "tv",
+  balcon: "balcony 1",
+  buanderie: "laundry 1",
+  ascenseur: "ascenseur",
+  espace_detente: "espace",
+};
+
+export default function PropertyBookingCard({
+  title,
+  location,
+  rating,
+  price,
   propertyType = "hôtel",
-  onBook 
+  onBook,
+  amenities,
 }) {
   const [isFavorite, setIsFavorite] = useState(false);
 
@@ -19,111 +36,49 @@ export default function PropertyBookingCard({
       <Star
         key={i}
         size={16}
-        className={i < rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"}
+        className={
+          i < rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
+        }
       />
     ));
   };
 
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6">
-      {/* Header avec favoris et partage */}
-      <div className="flex justify-between items-start mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">{title}</h1>
-          <p className="text-gray-600 text-sm mb-3 flex items-center">
-            <Star className="w-4 h-4 text-orange-500 mr-1" />
-            {location}
-          </p>
-          <div className="flex items-center space-x-1">
-            {renderStars(rating)}
-            <span className="text-sm text-gray-600 ml-1">({rating}.0)</span>
-          </div>
-        </div>
-        <div className="flex space-x-2">
-          <button
-            onClick={() => setIsFavorite(!isFavorite)}
-            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-          >
-            <SvgIcon
-              name="Heart"
-              size={20}
-              className={isFavorite ? "filter brightness-0 saturate-100 hue-rotate-[340deg]" : ""}
-            />
-          </button>
-          <button className="p-2 rounded-full hover:bg-gray-100 transition-colors">
-            <SvgIcon name="share" size={20} className="" />
-          </button>
-        </div>
-      </div>
-
       {/* Points forts */}
-      <div className="space-y-4 mb-8">
-        <h4 className="font-semibold text-gray-900 text-lg">Point fort de l'établissement</h4>
-        <div className="space-y-3">
-          <div className="flex items-center space-x-3">
-            <div className="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center">
-              <SvgIcon name="tv" size={16} className="" />
-            </div>
-            <span className="text-sm text-gray-700">Télévision avec Netflix</span>
-          </div>
-          <div className="flex items-center space-x-3">
-            <div className="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center">
-              <SvgIcon name="wifi" size={16} className="" />
-            </div>
-            <span className="text-sm text-gray-700">Internet sans fil gratuit</span>
-          </div>
-          <div className="flex items-center space-x-3">
-            <div className="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center">
-              <SvgIcon name="balcony 1" size={16} className="" />
-            </div>
-            <span className="text-sm text-gray-700">Balcon ou terrasse</span>
-          </div>
-          <div className="flex items-center space-x-3">
-            <div className="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center">
-              <SvgIcon name="Parking 1" size={16} className="" />
-            </div>
-            <span className="text-sm text-gray-700">Parking</span>
-          </div>
-          <div className="flex items-center space-x-3">
-            <div className="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center">
-              <SvgIcon name="ascenseur" size={16} className="" />
-            </div>
-            <span className="text-sm text-gray-700">Ascenseur</span>
-          </div>
-          <div className="flex items-center space-x-3">
-            <div className="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center">
-              <SvgIcon name="kitchen" size={16} className="" />
-            </div>
-            <span className="text-sm text-gray-700">Cuisine</span>
-          </div>
-          <div className="flex items-center space-x-3">
-            <div className="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center">
-              <SvgIcon name="flocon" size={16} className="" />
-            </div>
-            <span className="text-sm text-gray-700">Climatiseur</span>
-          </div>
-          <div className="flex items-center space-x-3">
-            <div className="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center">
-              <SvgIcon name="laundry 1" size={16} className="" />
-            </div>
-            <span className="text-sm text-gray-700">Buanderie</span>
-          </div>
-          <div className="flex items-center space-x-3">
-            <div className="w-6 h-6 bg-orange-100 rounded-lg flex items-center justify-center">
-              <SvgIcon name="espace" size={16} className="" />
-            </div>
-            <span className="text-sm text-gray-700">Espace détente</span>
+      <div className="mb-8">
+        <h2 className="font-montserrat-bold text-center text-2xl text-gray-700">
+          {" "}
+          Point fort de <br /> l'établissement{" "}
+        </h2>
+        <hr className="mx-4 text-gray-300 h-2 mt-3" />
+        <div className="flex flex-col items-center justify-center py-2">
+          <div className="flex flex-col">
+            {amenities.map((amenity, index) => {
+              return (
+                <div key={index} className="flex items-center space-x-3">
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center">
+                    <SvgIcon name={amenityIcons[amenity.icon]} size={20} />
+                  </div>
+                  <span className="text-gray-700 text-sm font-montserrat-medium">
+                    {amenity.name}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
 
       {/* Bouton de réservation */}
-      <button
-        onClick={onBook}
-        className="w-full bg-red-500 text-white py-4 rounded-lg font-bold hover:bg-primary-600 transition-colors text-base"
-      >
-        Réserver maintenant
-      </button>
+      <div className="mx-auto w-full md:w-[80%]">
+        <button
+          onClick={onBook}
+          className="mx-auto w-full font-montserrat-bold text-center px-4  rounded-3xl bg-red-600 text-white py-4  font-bold hover:bg-primary-600 transition-colors text-sm"
+        >
+          Réserver maintenant
+        </button>
+      </div>
     </div>
   );
 }
