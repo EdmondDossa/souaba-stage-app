@@ -9,13 +9,14 @@ const PropertyReviews = ({
   ratingCategories = [
     { label: "Équipements", rating: 5.0 },
     { label: "Hygiène", rating: 5.0 },
-    { label: "Communication", rating: 5.0 },
+    { label: "Communication", rating: 3.0 },
     { label: "Emplacement de la propriété", rating: 5.0 },
+    { label: "Rapport qualité-prix", rating: 4.0 }
   ],
 }) => {
   return (
     <div>
-      <div className="flex space-x-4 mb-6">
+      <div className="flex space-x-4 mb-6 mt-20">
         <div>
           <h3 className="text-xl  font-bold text-gray-700">
             Avis
@@ -50,7 +51,7 @@ const PropertyReviews = ({
       {/* Commentaires */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
         {reviews.map((review) => (
-          <div key={review.id} className="space-y-3 p-4 bg-gray-50 rounded-lg">
+          <div key={review.id} className="space-y-3 p-4rounded-lg">
             <div className="flex items-center space-x-3">
               <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center">
                 <span className="text-gray-600 font-semibold text-sm">
@@ -72,7 +73,7 @@ const PropertyReviews = ({
         ))}
       </div>
 
-      <button className="mt-8 border border-primary text-primary px-8 py-3 rounded-lg hover:bg-primary hover:text-white transition-all font-semibold">
+      <button className="mt-10 mb-10 border border-primary text-black px-8 py-3 rounded-lg hover:bg-primary hover:text-white transition-all font-semibold">
         Afficher les {reviews.length} avis
       </button>
     </div>

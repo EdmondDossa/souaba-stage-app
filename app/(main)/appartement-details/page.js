@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Star, MapPin } from 'lucide-react';
+import { Star, MapPin, Heart } from 'lucide-react';
 import Image from 'next/image';
 import { PropertyReservationForm, PropertyReviews, PropertyGalleryGrid, SvgIcon, PropertyGallery } from '../../../components/ui/common';
 
@@ -116,7 +116,7 @@ const AppartementDetails = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
           {/* Colonne de gauche - Détails */}
-          <div className="lg:col-span-2 space-y-8">
+          <div className="lg:col-span-2 space-y-5">
 
             {/* En-tête avec titre et actions */}
             <div className="flex justify-between items-start">
@@ -137,10 +137,9 @@ const AppartementDetails = () => {
                   onClick={() => setIsFavorite(!isFavorite)}
                   className="p-3 hover:bg-gray-100 rounded-full transition-colors"
                 >
-                  <SvgIcon
-                    name="Heart"
+                  <Heart
                     size={24}
-                    className={isFavorite ? "filter brightness-0 saturate-100 hue-rotate-[340deg]" : "filter brightness-0 saturate-100 opacity-40"}
+                    className={isFavorite ? "fill-red-500 text-red-500" : "text-gray-400"}
                   />
                 </button>
                 <button className="p-3 hover:bg-gray-100 rounded-full transition-colors">
@@ -187,7 +186,7 @@ const AppartementDetails = () => {
                   </div>
                 ))}
               </div>
-              <button className="mt-6 text-primary border-2 px-7 py-4 rounded-lg border-primary font-semibold  transition-all">
+              <button className="mt-6 text-black border-2 px-7 py-4 rounded-lg border-primary font-semibold  transition-all">
                 Afficher les 10 équipements
               </button>
             </div>

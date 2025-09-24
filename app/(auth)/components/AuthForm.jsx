@@ -2,6 +2,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/common/index";
 import Link from "next/link";
 import AuthWrapper from "./AuthWrapper";
+import SocialLoginButton from "@/components/ui/common/SocialLoginButton";
 
 const AuthForm = ({
   formTitle,
@@ -46,6 +47,14 @@ const AuthForm = ({
             {btnTitle}
           </Button>
         </div>
+        <div className="flex items-center my-6 px-8">
+                  <hr className="flex-1 border-gray-300" />
+                  <span className="px-4 text-gray-500 text-sm">Ou inscrivez-vous avec</span>
+                  <hr className="flex-1 border-gray-300" />
+                </div>
+                <div className="px-8">
+                  <SocialLoginButton />
+                </div>
         {alternativeOptionMessage && (
           <div className="text-sm text-center mt-4">
             <p className="font-bold">

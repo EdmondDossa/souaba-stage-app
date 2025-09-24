@@ -8,11 +8,11 @@ import useAuthContext from "@/context/auth";
 import { useRouter } from "next/navigation";
 import ConnexionHero from "../components/ConnexionHero";
 import { isEmail, isPaswordStrong, isValidFullname, isValidPhoneNumber } from "@/utils/validator";
+import SocialLoginButton from "@/components/ui/common/SocialLoginButton";
 
 const RegisterPage = () => {
   const router = useRouter();
   const { register, isLogged } = useAuthContext();
-
   const [isLoading, setLoading] = useState(false);
   const [formError, setFormError] = useState("");
   const [validationError, setValidationError] = useState("");
@@ -104,8 +104,11 @@ const RegisterPage = () => {
                 termes et conditions
               </Link>
             </label>
+           
           </div>
+           
         </AuthForm>
+        
       </div>
     </section>
   );
