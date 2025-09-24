@@ -1,26 +1,31 @@
 "use client";
 import React from 'react';
 import { Star } from 'lucide-react';
-
+import SvgIcon from './SvgIcon';
 const PropertyReviews = ({ 
   rating = 5.0, 
-  reviewCount = 100, 
+  
   reviews = [],
   ratingCategories = [
     { label: 'Équipements', rating: 5.0 },
-    { label: 'Hygiène', rating: 5.0 },
-    { label: 'Communication', rating: 5.0 },
-    { label: 'Emplacement de la propriété', rating: 5.0 }
+    { label: 'Hygiène', rating: 3.0 },
+    { label: 'Communication', rating: 4.0 },
+    { label: 'Emplacement de la propriété', rating: 5.0 },
+    { label: 'Rapport qualité/Prix', rating: 5.0 },
+   
   ]
 }) => {
   return (
-    <div>
+    <div className='mb-8'>
       <div className="flex items-center pt-12 space-x-4 mb-6">
         <h2 className="text-2xl font-bold font-montserrat-bold">Avis</h2>
         <div className="flex items-center space-x-2">
-          <Star size={20} fill="#FFD700" className="text-yellow-400" />
-          <span className="font-bold text-lg">{rating}</span>
-          <span className="text-gray-500">({reviewCount} avis)</span>
+           <SvgIcon
+                    name="vector"
+                    size={20}
+                    className='pb-1'
+                  />
+          <span className="text-gray-500">{rating}</span>
         </div>
       </div>
 
@@ -29,8 +34,8 @@ const PropertyReviews = ({
         {ratingCategories.map((item, index) => (
           <div key={index} className="flex justify-between items-center">
             <span className="text-sm font-medium">{item.label}</span>
-            <div className="flex items-center space-x-3">
-              <div className="w-24 h-2 bg-gray-200 rounded-full">
+            <div className="flex items-center space-x-2">
+              <div className="w-50 h-2 bg-gray-200 rounded-full">
                 <div
                   className="h-full bg-primary rounded-full transition-all duration-300"
                   style={{ width: `${(item.rating / 5) * 100}%` }}
@@ -43,7 +48,7 @@ const PropertyReviews = ({
       </div>
 
       {/* Commentaires */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
         {reviews.map((review) => (
           <div key={review.id} className="space-y-3 p-4 bg-gray-50 rounded-lg">
             <div className="flex items-center space-x-3">
@@ -65,7 +70,7 @@ const PropertyReviews = ({
       </div>
 
       <button className="mt-8 border border-primary text-primary px-8 py-3 rounded-lg hover:bg-primary hover:text-white transition-all font-semibold">
-        Afficher les {reviewCount} avis
+        Afficher les {reviews.length} avis
       </button>
     </div>
   );

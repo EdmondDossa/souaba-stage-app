@@ -151,17 +151,17 @@ const AppartementDetails = () => {
 
             {/* Équipements */}
             <div className="grid grid-cols-3 gap-4">
-              <div className="border border-gray-200 rounded-lg p-6 text-center hover:shadow-md transition-shadow">
+              <div className="border-2 border-primary rounded-lg p-6 text-center hover:shadow-md transition-shadow">
                 <SvgIcon name="bed" size={28} className="mx-auto mb-3 filter brightness-0 saturate-100 hue-rotate-[200deg]" />
                 <div className="text-xl font-semibold">{property.bedrooms}</div>
                 <div className="text-sm text-gray-600 font-medium">chambres</div>
               </div>
-              <div className="border border-gray-200 rounded-lg p-6 text-center hover:shadow-md transition-shadow">
+              <div className="border-2 border-primary rounded-lg p-6 text-center hover:shadow-md transition-shadow">
                 <SvgIcon name="bathtub" size={28} className="mx-auto mb-3 filter brightness-0 saturate-100 hue-rotate-[200deg]" />
                 <div className="text-xl font-semibold">{property.bathrooms}</div>
                 <div className="text-sm text-gray-600 font-medium">salles de bains</div>
               </div>
-              <div className="border border-gray-200 rounded-lg p-6 text-center hover:shadow-md transition-shadow">
+              <div className="border-2 border-primary rounded-lg p-6 text-center hover:shadow-md transition-shadow">
                 <SvgIcon name="parking" size={28} className="mx-auto mb-3 filter brightness-0 saturate-100 hue-rotate-[200deg]" />
                 <div className="text-xl font-semibold">Parking</div>
                 <div className="text-sm text-gray-600 font-medium">Disponible</div>
@@ -182,12 +182,12 @@ const AppartementDetails = () => {
               <div className="grid grid-cols-2 gap-4">
                 {property.amenities.map((amenity, index) => (
                   <div key={index} className="flex items-center space-x-3 p-2">
-                    <SvgIcon name={amenity.icon} size={24} className="filter brightness-0 saturate-100 opacity-70" />
+                    <SvgIcon name={amenity.icon} size={24} className="filter " />
                     <span className="text-gray-700 font-medium">{amenity.name}</span>
                   </div>
                 ))}
               </div>
-              <button className="mt-6 text-primary font-semibold underline hover:no-underline transition-all">
+              <button className="mt-6 text-primary border-2 px-7 py-4 rounded-lg border-primary font-semibold  transition-all">
                 Afficher les 10 équipements
               </button>
             </div>
@@ -212,7 +212,7 @@ const AppartementDetails = () => {
             </div>
 
             {/* Sécurité et hygiène */}
-            <div>
+            <div className='mt-15'>
               <h2 className="text-2xl font-bold mb-6 pt-10 flex items-center font-montserrat-bold">
 
                 Sécurité et hygiène
@@ -221,7 +221,7 @@ const AppartementDetails = () => {
                 {property.securityFeatures.map((feature, index) => (
                   <div key={index} className="flex items-center space-x-3 p-2">
 
-                    <SvgIcon name="Security et hygiene" size={24} className="mr-3 filter brightness-0 saturate-100 hue-rotate-[200deg]" />
+                    <SvgIcon name="Security et hygiene" size={24} className="mr-3 filter " />
 
                     <span className="text-gray-700 font-medium">{feature}</span>
                   </div>
