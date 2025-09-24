@@ -70,16 +70,14 @@ export default function PropertyReservationForm({
       {/* Prix total */}
       <div className="mb-6">
         <div className="text-xl font-bold mb-1 text-gray-800">
-          Prix Total:
+          Prix Total: {calculateTotal()} {currency}
         </div>
-        <div className="text-3xl font-bold text-primary">
-          {calculateTotal()} {currency}
-        </div>
+       
       </div>
 
-      <div className="space-y-5">
+      <div className="space-y-5 ">
         {/* Dates */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-rows-2 gap-4 items-center ">
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               Arrivée
@@ -87,10 +85,13 @@ export default function PropertyReservationForm({
             <div className="relative">
               <Calendar size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <input
-                type="date"
+                type="text"
+                onFocus={e => e.target.type = 'date'}
+                onBlur={e => e.target.type = 'text'}
                 value={reservationData.checkIn}
                 onChange={(e) => setReservationData(prev => ({...prev, checkIn: e.target.value}))}
                 className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                placeholder="Date d'arrivée"
               />
             </div>
           </div>
@@ -102,10 +103,13 @@ export default function PropertyReservationForm({
             <div className="relative">
               <Calendar size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <input
-                type="date"
+                type="text"
+                onFocus={e => e.target.type = 'date'}
+                onBlur={e => e.target.type = 'text'}
                 value={reservationData.checkOut}
                 onChange={(e) => setReservationData(prev => ({...prev, checkOut: e.target.value}))}
                 className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                placeholder="Date de départ"
               />
             </div>
           </div>
@@ -119,7 +123,7 @@ export default function PropertyReservationForm({
           
           {/* Adultes */}
           <div className="space-y-3">
-            <div className="flex justify-between items-center p-4 border border-gray-300 rounded-lg">
+            <div className="flex justify-between items-center p-4  ">
               <div>
                 <div className="font-semibold">Adultes</div>
                 <div className="text-sm text-gray-500">18 ans ou plus</div>
@@ -127,23 +131,23 @@ export default function PropertyReservationForm({
               <div className="flex items-center space-x-3">
                 <button 
                   onClick={() => updateGuestCount('adults', 'decrement')}
-                  className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                  className="w-8 h-8 rounded-sm border border-gray-300 flex items-center justify-center"
                   disabled={reservationData.adults <= 1}
                 >
-                  <Minus size={16} className={reservationData.adults <= 1 ? "text-gray-300" : "text-gray-600"} />
+                  <Minus size={16} className={reservationData.adults <= 1 ? "text-black" : "text-gray-600"} />
                 </button>
                 <span className="font-semibold min-w-[2rem] text-center">{reservationData.adults}</span>
                 <button
                   onClick={() => updateGuestCount('adults', 'increment')}
-                  className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                  className="w-8 h-8 rounded-sm border border-primary flex items-center justify-center bg-primary"
                 >
-                  <Plus size={16} className="text-gray-600" />
+                  <Plus size={16} className="text-white" />
                 </button>
               </div>
             </div>
-
+               <hr className="border border-gray-200 "/>
             {/* Enfants */}
-            <div className="flex justify-between items-center p-4 border border-gray-300 rounded-lg">
+            <div className="flex justify-between items-center p-4 ">
               <div>
                 <div className="font-semibold">Enfants</div>
                 <div className="text-sm text-gray-500">2-17 ans</div>
@@ -151,23 +155,23 @@ export default function PropertyReservationForm({
               <div className="flex items-center space-x-3">
                 <button 
                   onClick={() => updateGuestCount('children', 'decrement')}
-                  className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                  className="w-8 h-8 rounded-sm border border-gray-300 flex items-center justify-center"
                   disabled={reservationData.children <= 0}
                 >
-                  <Minus size={16} className={reservationData.children <= 0 ? "text-gray-300" : "text-gray-600"} />
+                  <Minus size={16} className={reservationData.children <= 0 ? "text-black" : "text-gray-600"} />
                 </button>
                 <span className="font-semibold min-w-[2rem] text-center">{reservationData.children}</span>
                 <button
                   onClick={() => updateGuestCount('children', 'increment')}
-                  className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
-                >
-                  <Plus size={16} className="text-gray-600" />
+                  className="w-8 h-8 rounded-sm border border-primary flex items-center justify-center bg-primary"                >
+                  <Plus size={16} className="text-white" />
                 </button>
               </div>
             </div>
+            <hr className="border border-gray-200 "/>
 
             {/* Bébés */}
-            <div className="flex justify-between items-center p-4 border border-gray-300 rounded-lg">
+            <div className="flex justify-between items-center p-4">
               <div>
                 <div className="font-semibold">Bébés</div>
                 <div className="text-sm text-gray-500">Moins de 2 ans</div>
@@ -175,17 +179,17 @@ export default function PropertyReservationForm({
               <div className="flex items-center space-x-3">
                 <button 
                   onClick={() => updateGuestCount('babies', 'decrement')}
-                  className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                  className="w-8 h-8 rounded-sm border border-gray-300 flex items-center justify-center"
                   disabled={reservationData.babies <= 0}
                 >
-                  <Minus size={16} className={reservationData.babies <= 0 ? "text-gray-300" : "text-gray-600"} />
+                  <Minus size={16} className={reservationData.babies <= 0 ? "text-black" : "text-gray-600"} />
                 </button>
                 <span className="font-semibold min-w-[2rem] text-center">{reservationData.babies}</span>
                 <button
                   onClick={() => updateGuestCount('babies', 'increment')}
-                  className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                  className="w-8 h-8 rounded-sm border border-primary flex items-center justify-center bg-primary"
                 >
-                  <Plus size={16} className="text-gray-600" />
+                  <Plus size={16} className="text-white" />
                 </button>
               </div>
             </div>
@@ -195,19 +199,13 @@ export default function PropertyReservationForm({
         {/* Bouton de réservation */}
         <button 
           onClick={() => onBook && onBook(reservationData)}
-          className="w-full bg-red-500 text-white py-4 rounded-lg font-bold text-lg hover:bg-opacity-90 transition-all transform hover:scale-[1.02] active:scale-[0.98]"
+          className="w-[200px] bg-red-500 text-white py-4 rounded-3xl ml-20 font-bold text-sm hover:bg-opacity-90 transition-all transform hover:scale-[1.02] active:scale-[0.98]"
         >
           Réserver maintenant
         </button>
 
-        {/* Informations supplémentaires */}
-        <div className="text-center text-sm text-gray-500 space-y-1">
-          <p>Vous ne serez pas débité pour le moment</p>
-          <p className="flex items-center justify-center space-x-1">
-            <Shield size={14} />
-            <span>Paiement sécurisé</span>
-          </p>
-        </div>
+      
+       
       </div>
     </div>
   );

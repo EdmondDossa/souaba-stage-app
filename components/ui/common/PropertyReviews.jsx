@@ -32,8 +32,8 @@ const PropertyReviews = ({
         {ratingCategories.map((item, index) => (
           <div key={index} className="flex justify-between items-center">
             <span className="text-sm font-medium">{item.label}</span>
-            <div className="flex items-center space-x-3">
-              <div className="w-24 h-2 bg-gray-200 rounded-full">
+            <div className="flex items-center space-x-2">
+              <div className="w-50 h-2 bg-gray-200 rounded-full">
                 <div
                   className="h-full bg-primary rounded-full transition-all duration-300"
                   style={{ width: `${(item.rating / 5) * 100}%` }}
@@ -48,7 +48,7 @@ const PropertyReviews = ({
       </div>
 
       {/* Commentaires */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
         {reviews.map((review) => (
           <div key={review.id} className="space-y-3 p-4 bg-gray-50 rounded-lg">
             <div className="flex items-center space-x-3">
@@ -73,7 +73,7 @@ const PropertyReviews = ({
       </div>
 
       <button className="mt-8 border border-primary text-primary px-8 py-3 rounded-lg hover:bg-primary hover:text-white transition-all font-semibold">
-        Afficher les {reviewCount} avis
+        Afficher les {reviews.length} avis
       </button>
     </div>
   );
