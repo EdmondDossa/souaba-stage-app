@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Star, MapPin } from 'lucide-react';
 import Image from 'next/image';
-import { PropertyReservationForm, PropertyReviews, PropertyGalleryGrid, SvgIcon } from '../../../components/ui/common';
+import { PropertyReservationForm, PropertyReviews, PropertyGalleryGrid, SvgIcon, PropertyGallery } from '../../../components/ui/common';
 
 const AppartementDetails = () => {
   const searchParams = useSearchParams();
@@ -106,7 +106,7 @@ const AppartementDetails = () => {
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Section Galerie d'images */}
         <div className="mb-8">
-          <PropertyGalleryGrid 
+          <PropertyGallery
             images={property.images}
             propertyName={property.title}
           />
