@@ -8,7 +8,7 @@ const PropertyReviews = ({
   reviews = [],
   ratingCategories = [
     { label: "Équipements", rating: 5.0 },
-    { label: "Hygiène", rating: 5.0 },
+    { label: "Hygiène", rating: 4.0 },
     { label: "Communication", rating: 5.0 },
     { label: "Emplacement de la propriété", rating: 5.0 },
   ],
@@ -40,7 +40,7 @@ const PropertyReviews = ({
                 ></div>
               </div>
               <span className="text-sm font-semibold min-w-[2rem]">
-                {item.rating}
+                {item.rating.toFixed(1)}
               </span>
             </div>
           </div>
