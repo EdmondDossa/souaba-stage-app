@@ -124,11 +124,11 @@ const AppartementDetails = () => {
                 <h1 className="text-3xl font-bold text-gray-900 mt-10 ml-16 font-montserrat-bold">
                   {property.title}
                 </h1>
-                <div className="flex items-center text-gray-600  ml-16 mt-3 font-montserrat">
+                <div className="flex items-center text-gray-600  ml-16 mt-2 font-montserrat">
                   <MapPin size={16} className="mr-1" />
                   <span className="text-sm">{property.location}</span>
                 </div>
-                <div className="text-xl ml-16 mt-3  font-bold text-primary">
+                <div className="text-xl ml-16 mt-2  font-bold text-gray-900 font-montserrat-bold">
                   {property.price} {property.currency}/ {property.period}
                 </div>
               </div>
@@ -144,7 +144,7 @@ const AppartementDetails = () => {
                   />
                 </button>
                 <button className="p-3 hover:bg-gray-100 rounded-full transition-colors">
-                  <SvgIcon name="share" size={24} className="filter brightness-0 saturate-100 opacity-40" />
+                  <SvgIcon name="share" size={24} className="filter " />
                 </button>
               </div>
             </div>
@@ -200,8 +200,8 @@ const AppartementDetails = () => {
                   <div key={index} className="flex items-start space-x-4">
                     <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
                     <div>
-                      <p className="font-semibold text-gray-900 mb-1">{policy.title}</p>
-                      <p className="text-gray-600">{policy.description}</p>
+                      <p className="font-montserrat-bold  text-black mb-1">{policy.title}</p>
+                      <p className="text-gray-600 ">{policy.description}</p>
                     </div>
                   </div>
                 ))}
