@@ -139,7 +139,8 @@ const AppartementDetails = () => {
                 >
                   <Heart
                     size={24}
-                    className={isFavorite ? "fill-red-500 text-red-500" : "text-gray-400"}
+                    className={isFavorite ? "fill-red-500 stroke-red-500"
+      : "stroke-yellow-500 text-gray-400"}
                   />
                 </button>
                 <button className="p-3 hover:bg-gray-100 rounded-full transition-colors">
@@ -169,8 +170,8 @@ const AppartementDetails = () => {
 
             {/* Description */}
             <div>
-              <h2 className="text-2xl w-[785px]font-bold mb-4 ml-16 font-montserrat-bold">Description de l&apos;appartement</h2>
-              <div className="text-gray-700 ml-16 mt-4 leading-relaxed whitespace-pre-line text-base">
+              <h2 className="text-[15px] w-[785px]font-bold mb-4 ml-16 font-montserrat-bold">Description de l&apos;appartement</h2>
+              <div className="text-gray-400 ml-16 mt-4 leading-relaxed whitespace-pre-line text-base">
                 {property.description}
               </div>
             </div>
