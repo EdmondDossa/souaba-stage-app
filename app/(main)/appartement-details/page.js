@@ -120,15 +120,15 @@ const AppartementDetails = () => {
 
             {/* En-tête avec titre et actions */}
             <div className="flex justify-between items-start">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2 font-montserrat-bold">
+              <div className="h-[120px]">
+                <h1 className="text-3xl font-bold text-gray-900 mt-10 ml-16 font-montserrat-bold">
                   {property.title}
                 </h1>
-                <div className="flex items-center text-gray-600 mb-3">
+                <div className="flex items-center text-gray-600  ml-16 mt-3 font-montserrat">
                   <MapPin size={16} className="mr-1" />
                   <span className="text-sm">{property.location}</span>
                 </div>
-                <div className="text-2xl font-bold text-primary">
+                <div className="text-xl ml-16 mt-3  font-bold text-primary">
                   {property.price} {property.currency}/ {property.period}
                 </div>
               </div>
@@ -149,34 +149,34 @@ const AppartementDetails = () => {
             </div>
 
             {/* Équipements */}
-            <div className="grid grid-cols-3 gap-4">
-              <div className="border-2 border-primary rounded-lg p-6 text-center hover:shadow-md transition-shadow">
-                <SvgIcon name="bed" size={28} className="mx-auto mb-3 filter brightness-0 saturate-100 hue-rotate-[200deg]" />
-                <div className="text-xl font-semibold">{property.bedrooms}</div>
-                <div className="text-sm text-gray-600 font-medium">chambres</div>
+            <div className="grid grid-cols-3 mt-10 ml-16 gap-1 w-[580px]">
+              <div className="border-2 border-primary pl-4 pr-4 pt-10 w-[176px] h-[160px] rounded-lg  p-5 text-center hover:shadow-md transition-shadow">
+                <SvgIcon name="bed" size={35} className="mx-auto mb-3 filter brightness-0 saturate-100 hue-rotate-[200deg]" />
+                <div className="text-md font-semibold">{property.bedrooms} chambres</div>
+                
               </div>
-              <div className="border-2 border-primary rounded-lg p-6 text-center hover:shadow-md transition-shadow">
-                <SvgIcon name="bathtub" size={28} className="mx-auto mb-3 filter brightness-0 saturate-100 hue-rotate-[200deg]" />
-                <div className="text-xl font-semibold">{property.bathrooms}</div>
-                <div className="text-sm text-gray-600 font-medium">salles de bains</div>
+              <div className="border-2 w-[176px] h-[160px] border-primary rounded-lg pl-4 pr-4 pt-10 text-center hover:shadow-md transition-shadow">
+                <SvgIcon name="bathtub" size={35} className="mx-auto mb-3 filter brightness-0 saturate-100 hue-rotate-[200deg]" />
+                <div className="text-md font-semibold">{property.bathrooms} salles de bains</div>
+                
               </div>
-              <div className="border-2 border-primary rounded-lg p-6 text-center hover:shadow-md transition-shadow">
-                <SvgIcon name="parking" size={28} className="mx-auto mb-3 filter brightness-0 saturate-100 hue-rotate-[200deg]" />
-                <div className="text-xl font-semibold">Parking</div>
-                <div className="text-sm text-gray-600 font-medium">Disponible</div>
+              <div className="border-2 w-[176px] h-[160px] border-primary pl-4 pr-4 pt-10 rounded-lg p-6 text-center hover:shadow-md transition-shadow">
+                <SvgIcon name="parking" size={35} className="mx-auto mb-3 filter brightness-0 saturate-100 hue-rotate-[200deg]" />
+                <div className="text-md font-semibold">Parking</div>
+                
               </div>
             </div>
 
             {/* Description */}
             <div>
-              <h2 className="text-2xl font-bold mb-4 font-montserrat-bold">Description de l&apos;appartement</h2>
-              <div className="text-gray-700 leading-relaxed whitespace-pre-line text-base">
+              <h2 className="text-2xl w-[785px]font-bold mb-4 ml-16 font-montserrat-bold">Description de l&apos;appartement</h2>
+              <div className="text-gray-700 ml-16 mt-4 leading-relaxed whitespace-pre-line text-base">
                 {property.description}
               </div>
             </div>
 
             {/* Commodités */}
-            <div>
+            <div className='ml-16'>
               <h2 className="text-2xl font-bold mb-6 font-montserrat-bold pt-10">Commodités offertes</h2>
               <div className="grid grid-cols-2 gap-4">
                 {property.amenities.map((amenity, index) => (
@@ -192,7 +192,7 @@ const AppartementDetails = () => {
             </div>
 
             {/* Conditions d'annulation */}
-            <div>
+            <div className='ml-16 mt-20'>
               <h2 className="text-2xl font-bold mb-6 pt-10 font-montserrat-bold">Conditions d&apos;annulation</h2>
               <div className="space-y-4">
                 {property.cancellationPolicies.map((policy, index) => (
@@ -211,12 +211,12 @@ const AppartementDetails = () => {
             </div>
 
             {/* Sécurité et hygiène */}
-            <div className='mt-15'>
+            <div className='mt-15 ml-16'>
               <h2 className="text-2xl font-bold mb-6 pt-10 flex items-center font-montserrat-bold">
 
                 Sécurité et hygiène
               </h2>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4 w-[580px]">
                 {property.securityFeatures.map((feature, index) => (
                   <div key={index} className="flex items-center space-x-3 p-2">
 
@@ -233,6 +233,7 @@ const AppartementDetails = () => {
               rating={property.rating}
               reviewCount={property.reviewCount}
               reviews={property.reviews}
+              
             />
           </div>
 

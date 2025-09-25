@@ -14,8 +14,12 @@ const PropertyReviews = ({
     { label: "Rapport qualité-prix", rating: 4.0 }
   ],
 }) => {
+  const handleImageError = (e) => {
+    e.target.src = "/images/profile.png";
+  };
+
   return (
-    <div>
+    <div className="ml-16">
       <div className="flex space-x-4 mb-6 mt-20">
         <div>
           <h3 className="text-xl  font-bold text-gray-700">
@@ -29,7 +33,7 @@ const PropertyReviews = ({
       </div>
 
       {/* Grille de notation */}
-      <div className="grid grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-2 gap-3 mb-8">
         {ratingCategories.map((item, index) => (
           <div key={index} className="flex justify-between items-center">
             <span className="text-sm font-medium">{item.label}</span>
@@ -53,14 +57,12 @@ const PropertyReviews = ({
         {reviews.map((review) => (
           <div key={review.id} className="space-y-3 p-4rounded-lg">
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center">
-                <span className="text-gray-600 font-semibold text-sm">
-                  {review.author
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")}
-                </span>
-              </div>
+              <img
+                src={review.profileImage || "/images/profile.png"}
+                alt={`Photo de profil de ${review.author}`}
+                className="w-12 h-12 rounded-full object-cover"
+                onError={handleImageError}
+              />
               <div>
                 <div className="font-semibold text-sm">{review.author}</div>
                 <div className="text-xs text-gray-500">{review.date}</div>
@@ -79,5 +81,6 @@ const PropertyReviews = ({
     </div>
   );
 };
+
 
 export default PropertyReviews;

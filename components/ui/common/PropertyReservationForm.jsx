@@ -1,6 +1,7 @@
 "use client";
 import { Calendar, Minus, Plus, Shield } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
+import { SvgIcon } from "@/components/ui/common";
 
 export default function PropertyReservationForm({ 
   price,
@@ -79,11 +80,12 @@ export default function PropertyReservationForm({
         {/* Dates */}
         <div className="grid grid-rows-2 gap-4 items-center ">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-bold text-black mb-2">
               Arrivée
             </label>
             <div className="relative">
-              <Calendar size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <SvgIcon name="Timeline Week" size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+             
               <input
                 type="text"
                 onFocus={e => e.target.type = 'date'}
@@ -97,11 +99,11 @@ export default function PropertyReservationForm({
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-bold text-black mb-2">
               Départ
             </label>
             <div className="relative">
-              <Calendar size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <SvgIcon name="Timeline Week" size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
                 onFocus={e => e.target.type = 'date'}
@@ -117,7 +119,7 @@ export default function PropertyReservationForm({
 
         {/* Nombre d'invités */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-3">
+          <label className="block text-sm font-bold text-black mb-3">
             Nombre d&apos;invités
           </label>
           
@@ -125,7 +127,7 @@ export default function PropertyReservationForm({
           <div className="space-y-3">
             <div className="flex justify-between items-center p-4  ">
               <div>
-                <div className="font-semibold">Adultes</div>
+                <div className="font-montserrat-bold text-black">Adultes</div>
                 <div className="text-sm text-gray-500">18 ans ou plus</div>
               </div>
               <div className="flex items-center space-x-3">
@@ -149,7 +151,7 @@ export default function PropertyReservationForm({
             {/* Enfants */}
             <div className="flex justify-between items-center p-4 ">
               <div>
-                <div className="font-semibold">Enfants</div>
+                <div className="font-montserrat-bold text-black">Enfants</div>
                 <div className="text-sm text-gray-500">2-17 ans</div>
               </div>
               <div className="flex items-center space-x-3">
@@ -173,7 +175,7 @@ export default function PropertyReservationForm({
             {/* Bébés */}
             <div className="flex justify-between items-center p-4">
               <div>
-                <div className="font-semibold">Bébés</div>
+                <div className="font-montserrat-bold text-black">Bébés</div>
                 <div className="text-sm text-gray-500">Moins de 2 ans</div>
               </div>
               <div className="flex items-center space-x-3">
