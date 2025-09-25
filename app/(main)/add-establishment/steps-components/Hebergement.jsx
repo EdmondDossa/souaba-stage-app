@@ -43,7 +43,7 @@ const Hebergement = ({ handleFormDataUpdate, initialState,allowNextStep }) => {
   return (
     <>
       <StepTitle>Quel genre d'endroit allez-vous héberger ?</StepTitle>
-      <section className="flex flex-wrap justify-center items-center sm:justify-start gap-x-5 gap-y-8">
+      <section className="grid gap-x-4 gap-y-8 grid-cols-[repeat(auto-fill,minmax(250px,1fr))]">
         {items.map((item) => (
           <ChoiceCard
             key={item.label}

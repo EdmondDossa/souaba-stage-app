@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { FaChevronLeft } from "react-icons/fa";
 import { Button } from "@/components/ui/common";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Wrapper from "./ui/Wrapper";
 import toast from "react-hot-toast";
 import getAxiosInstance from "@/lib/request";
@@ -15,21 +15,18 @@ import {
   Equipements,
   PropertyInformations,
   Security,
-  PersonalInformations,
   Resume,
   SuccessfulSubmit,
   HotelsRoom,
 } from "@/app/(main)/add-establishment/steps-components";
+import useAuthContext from "@/context/auth";
 
 const AddEstablishment = () => {
   const http = getAxiosInstance();
   const router = useRouter();
-
+  const  {user} = useAuthContext();
+  
   const stepsDefinitions = [
-    {
-      name: "Mes infos",
-      component: PersonalInformations,
-    },
     {
       name: "Hébergement",
       component: Hebergement,
@@ -64,6 +61,9 @@ const AddEstablishment = () => {
     },
   ];
 
+  const searchParams = useSearchParams();
+  const forTestingPurpose = searchParams.get("env") === "test";
+
   const [steps, setSteps] = useState(stepsDefinitions);
   const stepsLabels = steps.map((step) => step.name);
 
@@ -86,6 +86,10 @@ const AddEstablishment = () => {
   const hebergementType = stepFormValues.find(
     (step) => step.stepName === "Hébergement"
   ).data;
+
+  useEffect(()=>{
+    if(!user.profile && !forTestingPurpose) router.push("/set-profile-info");
+  },[]);
 
   useEffect(() => {
     if (!hebergementType) return;
@@ -153,12 +157,11 @@ const AddEstablishment = () => {
     <SuccessfulSubmit />
   ) : (
     <section>
-      <FormSteps stepsLabels={stepsLabels} currentStep={currentStep} />
-      <section className="w-full md:w-[90%] mx-auto mt-10">
+      <FormSteps steps={steps} currentStep={currentStep} />
+      <section className="w-full md:w-[90%] mx-auto mt-2">
         <Wrapper
           fullWidth={[
             "Hébergement",
-            "Equipements",
             "Commodités",
             "Sécurités",
           ].includes(stepsLabels[currentStep])}
@@ -171,9 +174,7 @@ const AddEstablishment = () => {
             {renderStepComponentWithData(steps[currentStep].component)}
           </div>
           <div
-            className={`flex justify-between ${
-              currentStep !== 0 ? "w-[75%] mx-auto" : ""
-            } `}
+            className={`flex justify-between w-[95%] mx-auto`}
           >
             <Button
               onClick={() => setCurrentStep(currentStep - 1)}
