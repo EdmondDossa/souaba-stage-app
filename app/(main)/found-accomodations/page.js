@@ -98,7 +98,7 @@ const FoundProducts = () => {
 
   return (
     <div className="flex items-start mb-10">
-      <div className="w-1/2 pl-20 max-h-screen">
+      <div className="w-1/2 pl-20 max-h-screen scroll-auto">
         <h1 className="font-montserrat-bold text-gray-700 text-2xl mt-10">
           10 résultats trouvés
         </h1>
@@ -120,7 +120,7 @@ const FoundProducts = () => {
             <FilterSideBar onFilterUpdate={()=>{}} />
           </div>
         </div>
-        <div className="mt-10 max-h-screen  gap-y-10 flex flex-col justify-end me-15">
+        <div className="mt-10 gap-y-10 flex flex-col justify-end me-15">
           {Properties.map((property, index) => (
             <PropertyCard
               key={index}
