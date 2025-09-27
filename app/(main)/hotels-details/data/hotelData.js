@@ -32,13 +32,15 @@ export const hotelData = {
       id: 1,
       author: "Marie Dubois",
       date: "Jan 15 2024",
-      content: "Excellent séjour dans cet hôtel ! Le service était impeccable et les chambres très confortables. Je recommande vivement cet établissement."
+      content: "Excellent séjour dans cet hôtel ! Le service était impeccable et les chambres très confortables. Je recommande vivement cet établissement.",
+      photo:""
     },
     {
       id: 2,
       author: "Pierre Martin",
       date: "Jan 10 2024",
-      content: "Très bel hôtel avec un personnel accueillant. La piscine et les espaces détente sont parfaits pour se relaxer après une journée de visite."
+      content: "Très bel hôtel avec un personnel accueillant. La piscine et les espaces détente sont parfaits pour se relaxer après une journée de visite.",
+      photo:""
     },
     {
       id: 3,

@@ -24,7 +24,7 @@ export default function HotelRooms() {
   const rooms = [
     {
       id: 1,
-      type: "Standard",
+      type: "Chambre Double Standard",
       image: "/images/new-property1.jpg",
       images: [
         "/images/new-property1.jpg",
@@ -47,7 +47,7 @@ export default function HotelRooms() {
         "/images/new-property1.jpg",
         "/images/new-property4.jpg",
       ],
-      description: "Un petite description",
+      description: "Cette chambre double climatisée dispose d'une télévision par sattelite a écran plat et d'une salle de bains privative.Le logement comprend 1 lit",
       capacity: "5",
       price: "900 000 FCFA",
       guests: "1",
@@ -56,10 +56,10 @@ export default function HotelRooms() {
     },
     {
       id: 3,
-      type: "Standard",
+      type: "Chambre Double Standard",
       image: "/images/new-property3.jpg",
       images: ["/images/new-property3.jpg", "/images/new-property1.jpg"],
-      description: "Un petite description",
+      description: "Cette chambre double climatisée dispose d'une télévision par sattelite a écran plat et d'une salle de bains privative.Le logement comprend 1 lit",
       capacity: "5",
       price: "600 000 FCFA",
       guests: "1",
@@ -234,6 +234,7 @@ export default function HotelRooms() {
         </div>
       </div>
       {/* Overview Modal */}
+
       <OverviewModal
         isOpen={isOverviewOpen}
         selectedRoom={selectedRoom}

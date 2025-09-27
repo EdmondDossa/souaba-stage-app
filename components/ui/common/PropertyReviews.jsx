@@ -8,8 +8,8 @@ const PropertyReviews = ({
   reviews = [],
   ratingCategories = [
     { label: "Équipements", rating: 5.0 },
-    { label: "Hygiène", rating: 5.0 },
-    { label: "Communication", rating: 3.0 },
+    { label: "Hygiène", rating: 4.0 },
+    { label: "Communication", rating: 5.0 },
     { label: "Emplacement de la propriété", rating: 5.0 },
     { label: "Rapport qualité-prix", rating: 4.0 }
   ],
@@ -33,7 +33,7 @@ const PropertyReviews = ({
       </div>
 
       {/* Grille de notation */}
-      <div className="grid w-[900px] grid-cols-2 gap-3 mb-8">
+      <div className="grid w-[800px] grid-cols-2 gap-3 mb-8">
         {ratingCategories.map((item, index) => (
           <div key={index} className="flex justify-between items-center">
             <span className="text-sm font-medium">{item.label}</span>
@@ -45,7 +45,7 @@ const PropertyReviews = ({
                 ></div>
               </div>
               <span className="text-sm font-semibold min-w-[2rem]">
-                {item.rating}
+                {item.rating.toFixed(1)}
               </span>
             </div>
           </div>
@@ -53,7 +53,7 @@ const PropertyReviews = ({
       </div>
 
       {/* Commentaires */}
-      <div className="grid w-[900px] grid-cols-1 md:grid-cols-2 gap-6 pt-6">
+      <div className="grid w-[800px] grid-cols-1 md:grid-cols-2 gap-6 pt-6">
         {reviews.map((review) => (
           <div key={review.id} className="space-y-3 p-4rounded-lg">
             <div className="flex items-center space-x-3">

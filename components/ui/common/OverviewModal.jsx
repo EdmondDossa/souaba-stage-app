@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import SvgIcon from "./SvgIcon";
 
 const Star = ({ size = 16, className = "" }) => (
@@ -71,60 +72,80 @@ export default function OverviewModal({ isOpen, selectedRoom, onClose }) {
       aria-label={`${selectedRoom.type} overview`}
     >
       <div
-        className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden flex"
+        className="bg-white rounded-xl w-5xl h-[90vh]  overflow-hidden flex"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Section gauche - Images */}
-        <div className="flex-1 flex flex-col">
+        <div className=" flex flex-col ml-[2px] w-[75%]">
           {/* Image principale */}
-          <div className="relative flex-1 bg-gray-100 min-h-[320px]">
-            {images.length ? (
-              <Image
-                src={images[currentImageIndex]}
-                alt={selectedRoom.type || "room image"}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 50vw"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-gray-400">
-                Pas d'image
-              </div>
-            )}
-
-            {/* Boutons de navigation */}
+          <div className="bg-gradient-to-b relative from-gray-100 from-[85%] to-gray-800/50 w-[95%] mx-auto rounded-xl mt-2 px-3 pt-4 flex-1 min-h-[220px]">
+            <div className="relative h-full mx-auto w-[95%] bg-gray-100 rounded-lg overflow-hidden">
+              {images.length ? (
+                <Image
+                  src={images[currentImageIndex]}
+                  alt={selectedRoom.type || "room image"}
+                  fill
+                  className="object-cover w-full bg-black bg-blend-overlay"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-gray-400">
+                  Pas d'image
+                </div>
+              )}
+              {/* Ombre/gradient qui s'étend sur l'image */}
+              <div className="absolute inset-0 bg-gradient-to-t from-gray-800/30 via-transparent to-transparent"></div>
+              
+              {/* Boutons de navigation */}
+              {images.length > 1 && (
+                <>
+                  <button
+                    onClick={prevImage}
+                    aria-label="Image précédente"
+                    className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all z-10"
+                  >
+                    <ChevronLeft className="w-6 h-6" />
+                  </button>
+                  <button
+                    onClick={nextImage}
+                    aria-label="Image suivante"
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all z-10"
+                  >
+                    <ChevronRight className="w-6 h-6" />
+                  </button>
+                </>
+              )}
+            </div>
+            
+            {/* Indicateurs de navigation */}
             {images.length > 1 && (
-              <>
-                <button
-                  onClick={prevImage}
-                  aria-label="Image précédente"
-                  className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-80 hover:bg-opacity-100 text-gray-800 w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all"
-                >
-                  <span className="text-xl">‹</span>
-                </button>
-                <button
-                  onClick={nextImage}
-                  aria-label="Image suivante"
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-80 hover:bg-opacity-100 text-gray-800 w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all"
-                >
-                  <span className="text-xl">›</span>
-                </button>
-              </>
+              <div className="flex items-center justify-center bottom-3 left-0 right-0 absolute gap-x-3">
+                {images.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentImageIndex(i)}
+                    className={`w-3 h-3 rounded-full transition-all ${
+                      i === currentImageIndex ? 'bg-white' : 'bg-gray-900/50'
+                    }`}
+                    aria-label={`Aller à l'image ${i + 1}`}
+                  />
+                ))}
+              </div>
             )}
           </div>
 
           {/* Galerie de miniatures */}
           {images.length > 1 && (
-            <div className="p-4 bg-white border-t">
-              <div className="flex space-x-2 overflow-x-auto">
+            <div className="py-4 w-[90%] mx-auto max-h-[25vh] overflow-y-auto">
+              <div className="flex space-x-2">
                 {images.map((img, index) => (
                   <button
                     key={index}
                     onClick={() => setCurrentImageIndex(index)}
-                    className={`relative w-20 h-16 rounded overflow-hidden flex-shrink-0 border-2 transition-all ${
+                    className={`relative w-16 h-12 rounded overflow-hidden flex-shrink-0 border-2 transition-all ${
                       index === currentImageIndex
                         ? "border-orange-500 opacity-100"
-                        : "border-gray-200 opacity-70 hover:opacity-100"
+                        : "border-gray-200 opacity-80 hover:opacity-100"
                     }`}
                     aria-label={`Voir image ${index + 1}`}
                   >
@@ -137,48 +158,44 @@ export default function OverviewModal({ isOpen, selectedRoom, onClose }) {
         </div>
 
         {/* Section droite - Détails */}
-        <div className="w-96 bg-white flex flex-col">
-          {/* En-tête */}
-          <div className="flex justify-between items-start p-6 border-b">
-            <h2 className="text-2xl font-bold text-gray-900">{selectedRoom.type}</h2>
-            <button onClick={closeOverview} className="text-gray-400 hover:text-gray-600 text-2xl" aria-label="Fermer">
+        <div className="w-[45%] -ml-6 bg-white flex flex-col">
+          {/* En-tête fixe */}
+          <div className="flex justify-between items-start p-6 pb-4 ">
+            <h2 className="text-xl font-bold text-black">{selectedRoom.type}</h2>
+            <button onClick={closeOverview} className="text-gray-400 hover:text-gray-600 text-xl" aria-label="Fermer">
               ×
             </button>
           </div>
 
-          {/* Contenu défilable */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-6">
-            {/* Icônes d'équipements principaux */}
-            <div className="flex items-center space-x-4 text-sm text-gray-600">
-              <div className="flex items-center space-x-1">
-                <span>👁️</span>
-                <span>Vue</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <span className="w-6 h-6"><SvgIcon name="flocon" size={16} /></span>
-                <span>Climatisation</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <span className="w-6 h-6"><SvgIcon name="bathtub" size={16} /></span>
-                <span>Salle de bains</span>
-              </div>
-            </div>
+          
+          <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+            {/* Toutes les icônes d'équipements dans une seule div */}
+            <div className="space-y-4">
+              <div className="flex items-center flex-wrap gap-x-6 gap-y-2 text-sm text-gray-600">
 
-            <div className="flex items-center space-x-4 text-sm text-gray-600">
-              <div className="flex items-center space-x-1">
-                <span className="w-6 h-6"><SvgIcon name="tv" size={16} /></span>
-                <span>Télévision à écran plat</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <span className="w-6 h-6"><SvgIcon name="wifi" size={16} /></span>
-                <span>Wi-Fi Gratuit</span>
+                <div className="flex items-center space-x-2">
+                  <SvgIcon name="flocon" size={16} />
+                  <span>Climatisation</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <SvgIcon name="bathtub" className="fill-primary" size={16} />
+                  <span>Salle de bains privative</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <SvgIcon name="tv" size={16} />
+                  <span>Télévision à écran plat</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <SvgIcon name="wifi" size={16} />
+                  <span>Wi-Fi Gratuit</span>
+                </div>
               </div>
             </div>
 
             {/* Configuration du lit */}
-            <div className="border-b pb-4">
-              <div className="flex items-center space-x-2 text-gray-900">
-                <span className="w-6 h-6"><SvgIcon name="bed" size={16} /></span>
+            <div>
+              <div className="flex items-center space-x-2 text-black">
+                <SvgIcon name="bed" size={16} />
                 <span className="font-medium">1 lit double</span>
               </div>
             </div>
@@ -186,28 +203,25 @@ export default function OverviewModal({ isOpen, selectedRoom, onClose }) {
             {/* Note et commentaires */}
             <div>
               <div className="flex items-center space-x-2 mb-2">
-                <div className="flex items-center space-x-1">
-                  {Array.from({ length: Math.max(0, Math.min(5, selectedRoom.rating || 0)) }, (_, i) => (
-                    <Star key={i} size={16} className="fill-yellow-400 text-yellow-400" />
-                  ))}
-                </div>
+                
                 <span className="text-sm text-gray-600">
-                  Lits confortables, notés {selectedRoom.rating ?? "—"} (d'après {selectedRoom.reviewsCount ?? "—"} commentaires)
+                  Lits confortables, notés {selectedRoom.rating ?? "7.7"} (d'après {selectedRoom.reviewsCount ?? "107"} commentaires)
                 </span>
               </div>
             </div>
 
-            {/* Description détaillée */}
+            {/* Description */}
             <div>
-              <p className="text-gray-700 text-sm leading-relaxed">
-                {selectedRoom.description ??
-                  "Cette chambre double climatisée dispose d'une télévision par satellite à écran plat et d'une salle de bains privative. Le logement comprend 1 lit."}
+              <p className="text-black text-sm leading-relaxed">
+                {selectedRoom.description ?? 
+                  "Cette chambre double climatisée dispose d'une télévision par satellite à écran plat et d'une salle de bains privative. Le logement comprend 1 lit."
+                }
               </p>
             </div>
 
             {/* Salle de bains privative */}
             <div>
-              <h4 className="font-semibold text-gray-900 mb-3">Dans votre salle de bains privative :</h4>
+              <h4 className="font-semibold text-black mb-3">Dans votre salle de bains privative :</h4>
               <div className="grid grid-cols-2 gap-2 text-sm text-gray-700">
                 <div className="flex items-center space-x-2"><span>✓</span><span>Douche</span></div>
                 <div className="flex items-center space-x-2"><span>✓</span><span>Sèche-cheveux</span></div>
@@ -217,13 +231,16 @@ export default function OverviewModal({ isOpen, selectedRoom, onClose }) {
 
             {/* Vue */}
             <div>
-              <h4 className="font-semibold text-gray-900 mb-3">Vue :</h4>
-              <div className="flex items-center space-x-2 text-sm text-gray-700"><span>✓</span><span>Vue</span></div>
+              <h4 className="font-semibold text-black mb-3">Vue :</h4>
+              <div className="flex items-center space-x-2 text-sm text-gray-700">
+                <span>✓</span>
+                <span>Vue</span>
+              </div>
             </div>
 
             {/* Équipements */}
             <div>
-              <h4 className="font-semibold text-gray-900 mb-3">Équipements :</h4>
+              <h4 className="font-semibold text-black mb-3">Équipements :</h4>
               <div className="grid grid-cols-2 gap-2 text-sm text-gray-700">
                 <div className="flex items-center space-x-2"><span>✓</span><span>Climatisation</span></div>
                 <div className="flex items-center space-x-2"><span>✓</span><span>Chaînes satellite</span></div>
@@ -236,23 +253,9 @@ export default function OverviewModal({ isOpen, selectedRoom, onClose }) {
 
             {/* Fumeurs */}
             <div>
-              <h4 className="font-semibold text-gray-900 mb-3">Fumeurs :</h4>
+              <h4 className="font-semibold text-black mb-3">Fumeurs :</h4>
               <div className="text-sm text-gray-700">{selectedRoom.smoking ?? "non-fumeurs"}</div>
             </div>
-          </div>
-
-          {/* Prix et réservation */}
-          <div className="p-6 border-t bg-gray-50">
-            <div className="text-center mb-4">
-              <div className="text-2xl font-bold text-gray-900">{selectedRoom.price ?? "—"}</div>
-              <div className="text-sm text-gray-600">par nuit</div>
-            </div>
-            <button
-              className="w-full bg-orange-500 text-white py-3 rounded-lg text-lg font-semibold hover:bg-orange-600 transition-colors"
-              onClick={() => alert("Réserver maintenant — intégrer ton flow de réservation")}
-            >
-              Réserver maintenant
-            </button>
           </div>
         </div>
       </div>
