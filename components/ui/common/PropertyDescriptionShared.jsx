@@ -10,6 +10,7 @@ export default function PropertyDescriptionShared({
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const maxLength = 300;
+  const [isFavorite, setIsFavorite] = useState(false);
 
   const shouldTruncate = description.length > maxLength;
   const displayText = isExpanded
@@ -17,14 +18,23 @@ export default function PropertyDescriptionShared({
     : description.slice(0, maxLength);
 
   return (
-    <div>
-      <div className="mb-6">
+    <div className="">
+      <div className="mb-6 ">
         <div className="flex justify-between items-center">
           <h3 className="text-2xl font-montserrat-bold font-bold text-gray-700 mb-1">
             {name}
           </h3>
           <div className="flex gap-x-3 text-primary">
-            <Heart />
+           <button
+                  onClick={() => setIsFavorite(!isFavorite)}
+                  className=" pb-4 pr-2 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <Heart
+                    size={24}
+                    className={isFavorite ? "fill-red-500 stroke-red-500"
+      : "stroke-yellow-500 text-gray-400"}
+                  />
+                </button>
             <Share2 />
           </div>
         </div>

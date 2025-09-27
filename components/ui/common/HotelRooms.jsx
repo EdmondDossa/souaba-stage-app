@@ -87,7 +87,7 @@ export default function HotelRooms() {
                     <th
                       key={i}
                       scope="col"
-                      className="text-left px-6 py-4 font-montserrat-medium"
+                      className="text-left px-6  py-4 font-montserrat-medium"
                     >
                       {" "}
                       {title}{" "}
@@ -101,7 +101,7 @@ export default function HotelRooms() {
             <tbody className="text-sm text-gray-700">
               {rooms.map((room, i) => {
                 return (
-                  <tr key={room.id} className="border-b border-gray-200 bg-white">
+                  <tr key={room.id} className="border-b w-1 border-gray-200 bg-white">
                     {/* Type de chambre */}
                     <td className="px-6 py-4 align-middle">
                       <div className="text-sm  mb-3 text-gray-700">

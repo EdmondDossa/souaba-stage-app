@@ -19,8 +19,8 @@ const PropertyReviews = ({
   };
 
   return (
-    <div className="ml-16">
-      <div className="flex space-x-4 mb-6 mt-20">
+    <div className="">
+      <div className="flex space-x-4 mb-6 mt-5">
         <div>
           <h3 className="text-xl  font-bold text-gray-700">
             Avis
@@ -33,7 +33,7 @@ const PropertyReviews = ({
       </div>
 
       {/* Grille de notation */}
-      <div className="grid grid-cols-2 gap-3 mb-8">
+      <div className="grid w-[900px] grid-cols-2 gap-3 mb-8">
         {ratingCategories.map((item, index) => (
           <div key={index} className="flex justify-between items-center">
             <span className="text-sm font-medium">{item.label}</span>
@@ -53,7 +53,7 @@ const PropertyReviews = ({
       </div>
 
       {/* Commentaires */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
+      <div className="grid w-[900px] grid-cols-1 md:grid-cols-2 gap-6 pt-6">
         {reviews.map((review) => (
           <div key={review.id} className="space-y-3 p-4rounded-lg">
             <div className="flex items-center space-x-3">

@@ -65,7 +65,7 @@ export default function HotelDetails() {
         <div className="mt-24"></div>
         {/* Places disponibles */}
         <div>
-          <h3 className="text-xl  mt-10 font-montserrat-bold font-bold text-gray-700 mb-3">
+          <h3 className="text-xl ml-10  mt-10 font-montserrat-bold font-bold text-gray-700 mb-3">
             Disponibilité
           </h3>
           <div className="mt-5">
@@ -86,7 +86,7 @@ export default function HotelDetails() {
         </div>
 
         {/* Avis - Avant la newsletter */}
-        <div className="mt-8 p-6">
+        <div className=" p-6">
           <PropertyReviews
             rating={hotelData.rating}
             reviewCount={hotelData.reviewCount}
