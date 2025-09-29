@@ -2,11 +2,9 @@ import React from "react";
 import Image from "next/image";
 import {
   Heart,
-  Star,
   Bed,
   Bath,
   CarFront as Car,
-  Ellipsis,
 } from "lucide-react";
 import PropertyEllipsis from "./PropertyEllipsis";
 import renderStars from "@/utils/render-star";
