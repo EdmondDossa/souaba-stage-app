@@ -1,8 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import SvgIcon from "./SvgIcon";
+import { ChevronLeft, ChevronRight, Snowflake, Bath, Tv, Wifi, BedDouble, Eye } from "lucide-react";
+
 
 const Star = ({ size = 16, className = "" }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden>
@@ -15,7 +15,7 @@ const Star = ({ size = 16, className = "" }) => (
 export default function OverviewModal({ isOpen, selectedRoom, onClose }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  // Normaliser images (soit selectedRoom.images soit selectedRoom.image)
+
   const images = selectedRoom?.images?.length
     ? selectedRoom.images
     : selectedRoom?.image
@@ -44,7 +44,7 @@ export default function OverviewModal({ isOpen, selectedRoom, onClose }) {
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [isOpen, currentImageIndex, images]);
 
   if (!isOpen || !selectedRoom) return null;
@@ -93,7 +93,7 @@ export default function OverviewModal({ isOpen, selectedRoom, onClose }) {
                   Pas d'image
                 </div>
               )}
-              {/* Ombre/gradient qui s'étend sur l'image */}
+              
               <div className="absolute inset-0 bg-gradient-to-t from-gray-800/30 via-transparent to-transparent"></div>
               
               {/* Boutons de navigation */}
@@ -159,7 +159,7 @@ export default function OverviewModal({ isOpen, selectedRoom, onClose }) {
 
         {/* Section droite - Détails */}
         <div className="w-[45%] -ml-6 bg-white flex flex-col">
-          {/* En-tête fixe */}
+          
           <div className="flex justify-between items-start p-6 pb-4 ">
             <h2 className="text-xl font-bold text-black">{selectedRoom.type}</h2>
             <button onClick={closeOverview} className="text-gray-400 hover:text-gray-600 text-xl" aria-label="Fermer">
@@ -169,33 +169,36 @@ export default function OverviewModal({ isOpen, selectedRoom, onClose }) {
 
           
           <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
-            {/* Toutes les icônes d'équipements dans une seule div */}
+           
             <div className="space-y-4">
               <div className="flex items-center flex-wrap gap-x-6 gap-y-2 text-sm text-gray-600">
-
                 <div className="flex items-center space-x-2">
-                  <SvgIcon name="flocon" size={16} />
+                  <Eye size={16} />
+                  <span>Vue</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Snowflake size={16} />
                   <span>Climatisation</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <SvgIcon name="bathtub" className="fill-primary" size={16} />
+                  <Bath size={16} />
                   <span>Salle de bains privative</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <SvgIcon name="tv" size={16} />
+                  <Tv size={16} />
                   <span>Télévision à écran plat</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <SvgIcon name="wifi" size={16} />
+                  <Wifi size={16} />
                   <span>Wi-Fi Gratuit</span>
                 </div>
               </div>
             </div>
 
-            {/* Configuration du lit */}
+          
             <div>
               <div className="flex items-center space-x-2 text-black">
-                <SvgIcon name="bed" size={16} />
+                <BedDouble size={16} className="text-gray-700" />
                 <span className="font-medium">1 lit double</span>
               </div>
             </div>
