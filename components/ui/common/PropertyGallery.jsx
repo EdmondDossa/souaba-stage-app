@@ -51,6 +51,8 @@ export default function PropertyGallery({ images, propertyName }) {
           <div className="absolute inset-0 bg-black/50"></div>
         </div>
       </div>
+      
+      
 
       {/* Grille d'images secondaires */}
       <div className="grid grid-cols-2 gap-2 h-[350px]">
@@ -94,7 +96,7 @@ export default function PropertyGallery({ images, propertyName }) {
         ))}
       </div>
       <>
-        {showModal && (
+        {showModal && ( 
           <div
             className="fixed inset-0  bg-black/80 flex items-center justify-center z-50 p-4"
             onClick={closeModal}
@@ -130,12 +132,23 @@ export default function PropertyGallery({ images, propertyName }) {
                       </button>
                     </>
                   )}
+                {/* Indicateurs de navigation */}
+                {images.length > 1 && (
+                  <div className="flex items-center justify-center bottom-3 left-0 right-0 absolute gap-x-3">
+                    {images.map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => openModal(i)}
+                        className={`w-3 h-3 rounded-full transition-all ${
+                          i === modalImageIndex ? 'bg-white' : 'bg-gray-900/50'
+                        }`}
+                        aria-label={`Aller à l'image ${i + 1}`}
+                      />
+                    ))}
+              </div>
+            )}
                 </div>
-                <div className="flex items-center justify-center  bottom-3 left-0 right-0 absolute gap-x-3">
-                  {
-                    images.map((_,i) => <div key={i} className={`w-5 h-5 rounded-full bg-gray-900/50`}></div>)
-                  }
-                </div>
+
               </div>
 
               {/* Miniatures */}

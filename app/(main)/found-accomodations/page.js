@@ -97,34 +97,36 @@ const FoundProducts = () => {
   ];
 
   return (
-    <div className="flex items-start mb-10">
-      <div className="w-1/2 pl-20 max-h-screen overflow-y-scroll">
-        <h1 className="font-montserrat-bold text-gray-700 text-2xl mt-10">
-          10 résultats trouvés
-        </h1>
-        <div className="flex items-end gap-x-5">
-          <ul className="flex items-center text-[12px] gap-x-3 mt-5">
-            {filtersThemes.map((theme) => (
-              <li
-                className="flex items-center justify-center p-2 bg-gray-300 hover:bg-gray-200 transition rounded-3xl group cursor-pointer"
-                key={theme}
-              >
-                {theme}
-                <span>
-                  <X className="w-4 h-5 ms-4 group-hover:text-red-600" />
-                </span>
-              </li>
-            ))}
-          </ul>
-          <div>
-            <FilterSideBar onFilterUpdate={()=>{}} />
+    <div className="flex items-start mb-10 overflow-y-auto">
+      <div className="w-1/2 overflow-auto pl-20">
+        <div className="sticky">
+          <h1 className="font-montserrat-bold text-gray-700 text-2xl mt-10">
+            10 résultats trouvés
+          </h1>
+          <div className="flex items-end gap-x-5">
+            <ul className="flex items-center text-[12px] gap-x-3 mt-5">
+              {filtersThemes.map((theme) => (
+                <li
+                  className="flex items-center justify-center p-2 bg-gray-300 hover:bg-gray-200 transition rounded-3xl group cursor-pointer"
+                  key={theme}
+                >
+                  {theme}
+                  <span>
+                    <X className="w-4 h-5 ms-4 group-hover:text-red-600" />
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <div>
+              <FilterSideBar onFilterUpdate={() => {}} />
+            </div>
           </div>
         </div>
-        <div className="mt-10 gap-y-10 flex flex-col justify-end me-15">
+        <div className="mt-10 h-screen gap-y-10 flex flex-col p-4 overflow-y-auto me-15">
           {Properties.map((property, index) => (
             <PropertyCard
               key={index}
-              imageUrl={property.imageUrl}
+              imageUrl={property.imageUrl} 
               price={property.price}
               title={property.title}
               location={property.location}
@@ -133,16 +135,15 @@ const FoundProducts = () => {
               ellipsis={property.ellipsis}
               showAmenities={true}
               coloredAmeneties={true}
-              ownerInfo={property.ownerInfo}
-              showPrice={false}
-              className="max-w-full shadow-2xl mb-5 rounded-b-2xl [&_.bg-img]:rounded-b-none"
+              showPrice={true}
+              className="max-w-full flex-shrink-0 shadow-2xl mb-5 rounded-b-2xl  [&_.bg-img]:rounded-b-none"
             />
           ))}
         </div>
       </div>
       <aside className="w-1/2">
         <Image
-          className="w-full"
+          className="w-full h-[calc(100vh-50px)] object-cover"
           src={foundAccomodityMap}
           alt="found products map"
         />

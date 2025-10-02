@@ -1,45 +1,40 @@
 "use client";
+import { Tooltip } from "react-tooltip";
 
-const FormSteps = ({ stepsLabels: steps, currentStep }) => {
+const FormSteps = ({ steps, currentStep }) => {
   const width = (1 / steps.length) * 60 + "vw";
   const progressBar = (
-    <section className="flex w-full items-center justify-center mt-15">
+    <section className="flex w-full items-center justify-center mt-3">
       {steps.map((step, index) => {
         return (
-          <div key={step} className="flex items-center">
-            <span
-              className={`w-8 h-8 rounded-full border border-black font-montserrat-medium text-center place-content-center block truncate z-10 ${
-                currentStep >= index
-                  ? "bg-primary border-transparent text-white"
+          <div id={step.name.split(" ")[0]} key={step.name} className="flex items-center">
+            <div
+              className={`relative cursor-pointer h-1 text-center mx-0.5 rounded-sm w-[40px] ${
+                currentStep >= index ? "bg-primary" : "bg-gray-300"
+              } ${
+                currentStep === index
+                  ? "-animate-[bounce_600ms_linear_infinite]"
                   : ""
               } `}
-            >
-              {index + 1}{" "}
-            </span>
-            <div
-              style={{ width: width }}
-              className={`relative h-1 text-center max-w-[210px] ${
-                currentStep >= index ? "bg-primary" : "bg-gray-200"
-              } ${currentStep === index ? "-animate-[bounce_600ms_linear_infinite]" : ""} `}
-            >
-              <span className="block text-[12px] font-montserrat-medium  -translate-y-5">
-                {step}
-              </span>
-            </div>
+            ></div>
+            <Tooltip  style={{backgroundColor:"#f3f4f6", color:"black"}} place="bottom" className="bg-white text-black" anchorSelect={`#${step.name.split(" ")[0]}`} content={step.name} />
           </div>
         );
       })}
-      <span
-        className={`w-8 h-8 rounded-full border border-black font-montserrat-medium text-center place-content-center block truncate ${
-          currentStep === steps.length - 1
-            ? "bg-primary border-transparent text-white"
-            : ""
-        } `}
-      ></span>
     </section>
   );
-
-  return progressBar;
+  return (
+    <div className="flex flex-col justify-center items-center mt-10">
+      <h4 className="font-montserrat-bold text-lg">
+        {" "}
+        {steps[currentStep].name}{" "}
+      </h4>
+      <span className="font-montserrat-medium mb-4 block">
+        Etape {currentStep + 1}/{steps.length}
+      </span>
+      {progressBar}
+    </div>
+  );
 };
 
 export default FormSteps;

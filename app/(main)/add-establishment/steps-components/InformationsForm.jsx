@@ -5,6 +5,7 @@ import Image from "next/image";
 const InformationsForm = ({
   bannerImg,
   children,
+  onSubmit,
   formStepTitle
 }) => {
   return (
@@ -15,7 +16,7 @@ const InformationsForm = ({
       </div>
       <Wrapper>
         <StepTitle> { formStepTitle } </StepTitle>
-        <form action="">{children}</form>
+        <form onSubmit={onSubmit} action="">{children}</form>
       </Wrapper>
     </div>
   );

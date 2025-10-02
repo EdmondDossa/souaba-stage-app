@@ -106,7 +106,7 @@ const FindAccomodation = () => {
         </nav>
 
         {/* Property List */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3  gap-10 pb-4 scrollbar-hide w-full mt-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5 pb-4 scrollbar-hide w-full mt-10">
           {Properties.map((property, index) => (
             <PropertyCard
               key={index}
@@ -118,6 +118,7 @@ const FindAccomodation = () => {
               showEllipsis={true}
               ellipsis={property.ellipsis}
               className="max-w-full [&_.card-body]:text-red-500"
+              imageContainerClassName="!h-80"
             />
           ))}
         </div>

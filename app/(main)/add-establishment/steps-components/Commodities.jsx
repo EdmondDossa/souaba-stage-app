@@ -47,7 +47,7 @@ const Commodities = ({
   return (
     <>
       <StepTitle>Ajoutez les commodités disponibles chez vous.</StepTitle>
-      <section className="flex flex-wrap justify-center items-center sm:justify-start gap-x-5 gap-y-8">
+      <section className="grid gap-x-4 gap-y-8 grid-cols-[repeat(auto-fill,minmax(250px,1fr))]">
         {(isHotel ? hotelCommoditiesList : defaultCommoditiesList).map(
           (commoditie) => (
             <ChoiceCard

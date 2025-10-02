@@ -3,38 +3,42 @@ import personalInfoBanner from "@/public/images/add-etablishment/personal-info-b
 import { Input, Label, CountrySelect } from "../ui";
 import { isEmail } from "@/utils/validator";
 import InformationsForm from "./InformationsForm";
+import { Button } from "@/components/ui/common";
+import { useRouter } from "next/navigation";
 
-const PersonalInformations = ({
-  allowNextStep,
-  initialState,
-  handleFormDataUpdate,
-}) => {
-  const [userinfo, setUserInfo] = useState(
-    initialState ?? {
-      email: "",
-      user_address: "",
-      user_city: "",
-      country: "",
-    }
-  );
+
+const PersonalInformations = () => {
+  const router = useRouter();
+  const [userinfo, setUserInfo] = useState({
+    email: "",
+    user_address: "",
+    user_city: "",
+    country: "",
+  });
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    if(!isFormValid()) return;
+    //traitement machin ...
+    //
+    //
+    router.push("/add-establishment?env=test");
+    //env query is just there to make avoid redirection due to absence of logged user
+    //i'll remove it afterr
+  }
 
   const [formError, setFormError] = useState({});
 
   function handleChange(e) {
     const { name, value } = e.target;
     setUserInfo({ ...userinfo, [name]: value });
-    handleFormDataUpdate({ ...userinfo, [name]: value });
   }
 
-  function verifyAvailabilityForNextStep() {
-    if (
+  function isFormValid() {
+    return (
       Object.values(userinfo).every(Boolean) &&
       !Object.values(formError).some(Boolean)
-    ) {
-      allowNextStep(true);
-    } else {
-      return allowNextStep(false);
-    }
+    );
   }
 
   function validate(key) {
@@ -49,9 +53,6 @@ const PersonalInformations = ({
     }
   }
 
-  useEffect(() => {
-    verifyAvailabilityForNextStep();
-  }, [JSON.stringify(formError), JSON.stringify(userinfo)]);
 
   const formFields = [
     {
@@ -74,6 +75,7 @@ const PersonalInformations = ({
   return (
     <>
       <InformationsForm
+        onSubmit={handleSubmit}
         formStepTitle="Veuillez nous renseignez ces quelques informations sur vous..."
         bannerImg={personalInfoBanner}
       >
@@ -98,6 +100,14 @@ const PersonalInformations = ({
             <CountrySelect onChange={handleChange} value={userinfo.country} />
           </div>
         </section>
+        <div className="flex items-end justify-end my-15">
+          <Button
+            size="lg"
+            className="font-montserrat-medium font-bold rounded-lg bg-primary py-3 hover:bg-primary/80 cursor-pointer"
+          >
+            Suivant{" "}
+          </Button>
+        </div>
       </InformationsForm>
     </>
   );

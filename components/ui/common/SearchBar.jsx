@@ -191,7 +191,7 @@ function SearchBar({ isCentered = true }) {
 
   return (
     <div
-      className={`relative ml-16 bg-white rounded-full p-2 shadow-lg flex items-center justify-between max-w-4xl  border border-gray-200  ${
+      className={`relative  bg-white rounded-full p-2 shadow-lg flex items-center justify-between max-w-4xl  border border-gray-200  ${
         isCentered ? "mx-auto" : ""
       }`}
     >

@@ -2,11 +2,9 @@ import React from "react";
 import Image from "next/image";
 import {
   Heart,
-  Star,
   Bed,
   Bath,
   CarFront as Car,
-  Ellipsis,
 } from "lucide-react";
 import PropertyEllipsis from "./PropertyEllipsis";
 import renderStars from "@/utils/render-star";
@@ -29,6 +27,7 @@ export default function PropertyCard({
   ellipsis = 0,
   showPrice = true,
   ownerInfo = null,
+  imageContainerClassName="",
   ...rest
 }) {
   return (
@@ -40,12 +39,12 @@ export default function PropertyCard({
     >
       {/* Image Container */}
       <div
-        className="w-full h-96 bg-cover rounded-xl"
+        className={`w-full h-96 bg-cover rounded-xl ${ imageContainerClassName ?? ""}`}
         style={{ backgroundImage: `url(${imageUrl})` }}
       >
         <div className="relative card-body h-full w-full rounded-xl bg-black/50 bg-img">
           {/* Price Tag */}
-          <div className="absolute  bottom-1 left-4 w-full">
+          <div className="absolute bottom-1 left-4 w-full">
             <div className="flex justify-between items-center">
               <strong className="font-montserrat-medium text-white block text-[17px] font-bold">
                 {showPrice && price}
