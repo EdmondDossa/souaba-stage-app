@@ -15,11 +15,11 @@ const ReservationForm = () => {
 
   const stepsDefinitions = [
     {
-      stepName: "Méthode de paiement",
+      name: "Méthode de paiement",
       component: PaymentMethod,
     },
     {
-      stepName: "Résumé de la réservation",
+      name: "Résumé de la réservation",
       component: ReservationResume,
     },
   ];
@@ -54,7 +54,7 @@ const ReservationForm = () => {
   ) : (
     <section>
       <FormSteps
-        stepsLabels={stepsDefinitions.map((step) => step.stepName)}
+        steps={stepsDefinitions}
         currentStep={currentStep}
       />
       <div className="max-w-[320px] sm:max-w-md mx-auto my-10 ">
