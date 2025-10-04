@@ -3,7 +3,13 @@ import React, { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Star, MapPin, Heart } from 'lucide-react';
 import Image from 'next/image';
-import { PropertyReservationForm, PropertyReviews, PropertyGalleryGrid, SvgIcon, PropertyGallery } from '../../../components/ui/common';
+import { 
+  PropertyReservationForm, 
+  PropertyReviews, 
+  PropertyGalleryGrid, 
+  SvgIcon, 
+  PropertyGallery 
+} from '../../../components/ui/common';
 
 const AppartementDetails = () => {
   const searchParams = useSearchParams();

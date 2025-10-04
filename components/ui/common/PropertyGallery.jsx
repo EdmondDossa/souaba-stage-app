@@ -153,15 +153,15 @@ export default function PropertyGallery({ images, propertyName }) {
 
               {/* Miniatures */}
               <div className="py-4 w-[90%] mx-auto max-h-[25vh] overflow-y-auto">
-                <div className="flex space-x-2">
+                <div className="flex flex-wrap space-x-2">
                   {images.map((image, index) => (
                     <button
                       key={index}
                       onClick={() => setModalImageIndex(index)}
-                      className={`relative w-16 h-12 rounded overflow-hidden flex-shrink-0 border-2 transition-all ${
+                      className={`relative w-16 h-14 rounded overflow-hidden flex-shrink-0 border-2 transition-all ${
                         index === modalImageIndex
-                          ? "border-blue-500 opacity-100"
-                          : "border-gray-200 opacity-80 hover:opacity-100"
+                          ? "border-blue-500"
+                          : "border-gray-200"
                       }`}
                     >
                       <Image
