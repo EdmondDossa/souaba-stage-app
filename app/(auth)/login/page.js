@@ -52,7 +52,6 @@ const LoginPage = () => {
   return (
     <section className="flex">
       <ConnexionHero />
-      <AuthWrapper>
         <AuthForm
           formTitle="Se Connecter"
           btnTitle="Se connecter"
@@ -60,6 +59,7 @@ const LoginPage = () => {
           alternativeOptionMessage="Vous n'avez pas de compte ?"
           alternativeOptionLink="/register"
           isLoading={isLoading}
+          showTopImage={false}
           formError={formError}
           onSubmit={handleSubmit}
         >
@@ -73,12 +73,11 @@ const LoginPage = () => {
 
           <Link
             href="/forgot-password"
-            className="text-primary text-sm text-end block font-bold decoration-1 underline mb-5 -mt-3 hover:decoration-2 hover:decoration-dotted transition"
+            className="text-primary text-sm text-end block font-bold decoration-1 underline mb-5 mt-5 hover:decoration-2 hover:decoration-dotted transition"
           >
             Mot de passe oublié ?
           </Link>
         </AuthForm>
-      </AuthWrapper>
     </section>
   );
 

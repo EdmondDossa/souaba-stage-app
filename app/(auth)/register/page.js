@@ -56,7 +56,6 @@ const RegisterPage = () => {
   return (
     <section className="flex">
       <ConnexionHero />
-      <div className="w-1/2 h-screen overflow-y-auto">
         <AuthForm
           formTitle="Créer Un Compte"
           btnTitle="S'inscrire"
@@ -64,6 +63,7 @@ const RegisterPage = () => {
           alternativeOptionMessage="Vous avez déjà un compte ?"
           alternativeOptionLink="/login"
           onSubmit={handleSubmit}
+          showTopImage={false}
           isLoading={isLoading}
           formError={formError}
         >
@@ -108,8 +108,6 @@ const RegisterPage = () => {
           </div>
            
         </AuthForm>
-        
-      </div>
     </section>
   );
 

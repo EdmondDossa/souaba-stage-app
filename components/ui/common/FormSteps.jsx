@@ -2,7 +2,7 @@
 import { Tooltip } from "react-tooltip";
 
 const FormSteps = ({ steps, currentStep }) => {
-  const width = (1 / steps.length) * 60 + "vw";
+  
   const progressBar = (
     <section className="flex w-full items-center justify-center mt-3">
       {steps.map((step, index) => {

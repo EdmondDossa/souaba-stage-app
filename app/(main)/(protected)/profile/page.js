@@ -32,7 +32,6 @@ const Profiles = () => {
       file.append("file", media[0].file);
       file.append("mediaType","IMAGE");
       const { data } = await http.post("/uploads/single/", file);
-      console.log(data);
       await http.patch("/users/profile", { photo: data.filename });
       await fetchUser(false);
     } catch (error) {

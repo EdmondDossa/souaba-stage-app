@@ -59,7 +59,7 @@ const PropertyInformations = ({
         {
           name: "map",
           label: "",
-          type: "text",
+          type: "url",
           placeholder: "Entrez la localisation google maps",
         },
       ],

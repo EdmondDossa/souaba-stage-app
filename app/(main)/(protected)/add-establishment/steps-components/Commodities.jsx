@@ -13,29 +13,29 @@ const Commodities = ({
   const isHotel =
     formValues.find((step) => step.stepName === "Hébergement").data === "Hôtel";
 
-  const defaultCommoditiesList = [
-    "Télévision",
-    "Wifi",
-    "Rondelle",
-    "Balcon",
-    "Nettoyeur",
-    "Radio",
-    "Ascenseur",
-    "Autre",
+  const defaultCommoditiesList =  [
+    "Piscine",
+    "Jacuzzi",
+    "Patio",
+    "Barbecue",
+    "Brasero",
+    "Billard",
+    "Cheminée",
+    " Piano",
+    "Désinfectants",
+    "Extincteurs",
   ];
-
   const hotelCommoditiesList = [
     "Piscine",
     "Jacuzzi",
     "Patio",
     "Barbecue",
-    "Espace repas en plein air",
     "Brasero",
     "Billard",
     "Cheminée",
-    "Piano",
-    "Accessible à skis",
-    "Douche extérieure",
+    " Piano",
+    "Désinfectants",
+    "Extincteurs",
   ];
 
   useEffect(() => {

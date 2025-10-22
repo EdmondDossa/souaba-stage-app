@@ -246,14 +246,14 @@ const Resume = ({ formValues, allowNextStep, setCurrentStep }) => {
           <ResumeHead icon={textFileIcon} title="Coordonnées" />
           <TableWrapper>
             <TableRow
-              label="Nombre du propriétaire/gestionnaire"
-              content={user.firstname || user.lastname || "NA"}
+              label="Nom du propriétaire/gestionnaire"
+              content={user.profile?.firstName || user.profile?.lastName || "NA"}
             />
             <TableRow
               label="Numéro de téléphone"
               content={user.phone || "NA"}
             />
-            <TableRow label="Email" content={formData["Mes infos"].email} />
+            <TableRow label="Email" content={user?.email} />
           </TableWrapper>
         </section>
         {/* Footer */}

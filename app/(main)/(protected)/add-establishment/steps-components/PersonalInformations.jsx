@@ -1,30 +1,40 @@
 import React, { useEffect, useState } from "react";
 import personalInfoBanner from "@/public/images/add-etablishment/personal-info-banner.png";
 import { Input, Label, CountrySelect } from "../ui";
-import { isEmail } from "@/utils/validator";
+import {  isValidPhoneNumber } from "@/utils/validator";
 import InformationsForm from "./InformationsForm";
 import { Button } from "@/components/ui/common";
 import { useRouter } from "next/navigation";
+import getAxiosInstance from "@/lib/request";
+import toast from "react-hot-toast";
+import useAuthContext from "@/context/auth";
 
 
 const PersonalInformations = () => {
   const router = useRouter();
+  const http = getAxiosInstance();
+  const [isLoading,setLoading] = useState(false);
+  const { fetchUser } = useAuthContext();
+
   const [userinfo, setUserInfo] = useState({
-    email: "",
-    user_address: "",
-    user_city: "",
+    address: "",
+    phone:"",
+    city: "",
     country: "",
   });
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     if(!isFormValid()) return;
-    //traitement machin ...
-    //
-    //
-    router.push("/add-establishment?env=test");
-    //env query is just there to make avoid redirection due to absence of logged user
-    //i'll remove it afterr
+    try {
+      setLoading(true);
+      await http.patch("/users/profile/",userinfo);
+      await fetchUser();
+    } catch (error) {
+        toast.error("Une erreur est survenue. Veuillez réessayezplus tard!");
+    }finally{
+      setLoading(false);
+    }
   }
 
   const [formError, setFormError] = useState({});
@@ -42,10 +52,10 @@ const PersonalInformations = () => {
   }
 
   function validate(key) {
-    if (key === "email") {
-      if (!isEmail(userinfo.email))
-        setFormError({ ...formError, email: "Email invalide." });
-      else setFormError({ ...formError, email: "" });
+    if (key === "phone") {
+      if (!isValidPhoneNumber(userinfo.phone))
+        setFormError({ ...formError, phone: "Le numéro de téléphone ne correspond pas!" });
+      else setFormError({ ...formError, phone: "" });
     } else {
       if (!userinfo[key] || userinfo[key].length < 3) {
         setFormError({ ...formError, [key]: "3 caractères au moins." });
@@ -56,20 +66,20 @@ const PersonalInformations = () => {
 
   const formFields = [
     {
-      label: "Email",
-      name: "email",
-      type: "email",
+      label: "Addresse",
+      name: "address",
+      type: "text",
     },
     {
       label: "Ville",
-      name: "user_city",
+      name: "city",
       type: "text",
     },
     {
-      label: "Addresse",
-      name: "user_address",
-      type: "text",
-    },
+      label: "Phone",
+      name: "phone",
+      type: "tel",
+    }
   ];
 
   return (
@@ -103,6 +113,7 @@ const PersonalInformations = () => {
         <div className="flex items-end justify-end my-15">
           <Button
             size="lg"
+            isLoading={isLoading}
             className="font-montserrat-medium font-bold rounded-lg bg-primary py-3 hover:bg-primary/80 cursor-pointer"
           >
             Suivant{" "}

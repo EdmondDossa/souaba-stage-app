@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image";
 import { FaApple, FaGoogle, FaFacebookF } from "react-icons/fa";
 
 export default function SocialLogin() {
@@ -14,7 +15,7 @@ export default function SocialLogin() {
 
         {/* Bouton Google */}
         <button className="w-14 h-14 flex items-center justify-center rounded-full border border-gray-300 bg-white hover:scale-110 transition-transform">
-          <FaGoogle className="text-red-500 text-2xl" />
+          <Image width={30} height={30} alt="" src="/images/google.png" />
         </button>
 
         {/* Bouton Facebook */}
