@@ -51,6 +51,7 @@ const HotelsRoom = ({ initialState, allowNextStep, handleFormDataUpdate }) => {
           label: "Prix par nuit",
           type: "number",
           placeholder: "Entrez le prix par nuit",
+          unitValue:"FCFA"
         },
         {
           name: "number_of_bathrooms",

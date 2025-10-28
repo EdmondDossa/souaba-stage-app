@@ -73,6 +73,7 @@ const PropertyInformations = ({
         label: "Prix par nuit",
         type: "number",
         placeholder: "Prix par nuit",
+        unitValue:"FCFA",
       },
       {
         name: "capacity",
@@ -85,6 +86,8 @@ const PropertyInformations = ({
         label: "La superficie de la propriété",
         type: "number",
         placeholder: "Entrez la superficie de la propriété",
+        unitValue:"m",
+        unitValueExposant:"2"
       },
     ],
   };
@@ -101,7 +104,7 @@ const PropertyInformations = ({
         name: "floor_number",
         label: "Nombre d'étages",
         type: "number",
-        placeholder: "Entrez la superficie",
+        placeholder: "Entrez le nombre d'étages",
       },
     ],
   };

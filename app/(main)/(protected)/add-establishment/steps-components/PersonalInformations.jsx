@@ -3,12 +3,11 @@ import personalInfoBanner from "@/public/images/add-etablishment/personal-info-b
 import { Input, Label, CountrySelect } from "../ui";
 import {  isValidPhoneNumber } from "@/utils/validator";
 import InformationsForm from "./InformationsForm";
-import { Button } from "@/components/ui/common";
+import { Button, InputRow } from "@/components/ui/common";
 import { useRouter } from "next/navigation";
 import getAxiosInstance from "@/lib/request";
 import toast from "react-hot-toast";
 import useAuthContext from "@/context/auth";
-
 
 const PersonalInformations = () => {
   const router = useRouter();
@@ -40,6 +39,10 @@ const PersonalInformations = () => {
   const [formError, setFormError] = useState({});
 
   function handleChange(e) {
+    if(typeof e === "string"){
+      setUserInfo({ ...userinfo, phone: e });
+      return;
+    }
     const { name, value } = e.target;
     setUserInfo({ ...userinfo, [name]: value });
   }
@@ -52,6 +55,8 @@ const PersonalInformations = () => {
   }
 
   function validate(key) {
+    console.log(userinfo[key]);
+    
     if (key === "phone") {
       if (!isValidPhoneNumber(userinfo.phone))
         setFormError({ ...formError, phone: "Le numéro de téléphone ne correspond pas!" });
@@ -94,8 +99,8 @@ const PersonalInformations = () => {
             return (
               <div key={field.label} className="mb-5">
                 <Label displayName={field.label} />
-                <Input
-                  error={formError[field.name]}
+                <InputRow
+                  errorMessage={formError[field.name]}
                   value={userinfo[field.name]}
                   name={field.name}
                   onChange={handleChange}

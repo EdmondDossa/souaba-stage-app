@@ -173,6 +173,8 @@ function FormSection({
           error={formContentError[field.name]}
           value={formContent[field.name]}
           onBlur={() => onError(field)}
+          unitValue={field.unitValue}
+          unitValueExposant={field.unitValueExposant}
         />
       )}
     </div>
