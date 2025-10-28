@@ -52,6 +52,7 @@ const LoginPage = () => {
   return (
     <section className="flex">
       <ConnexionHero />
+      <div className="h-screen overflow-y-auto scrollbar-hide flex items-center justify-center">
         <AuthForm
           formTitle="Se Connecter"
           btnTitle="Se connecter"
@@ -78,6 +79,7 @@ const LoginPage = () => {
             Mot de passe oublié ?
           </Link>
         </AuthForm>
+      </div>
     </section>
   );
 

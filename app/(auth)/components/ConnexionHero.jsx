@@ -4,7 +4,7 @@ const ConnexionHero = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <div className="flex justify-center items-center w-1/2 min-h-screen bg-[#EEFCFC] bg-center bg-no-repeat object-contain bg-[length:553px_553px] bg-[url(/images/banner-home.png)]">
+    <div className="flex justify-center items-center w-1/2 h-screen bg-center bg-no-repeat object-contain bg-[length:553px_553px] bg-[url(/images/banner-home.png)]">
      
     </div>
   );

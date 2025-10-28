@@ -7,7 +7,12 @@ import Link from "next/link";
 import useAuthContext from "@/context/auth";
 import { useRouter } from "next/navigation";
 import ConnexionHero from "../components/ConnexionHero";
-import { isEmail, isPaswordStrong, isValidFullname, isValidPhoneNumber } from "@/utils/validator";
+import {
+  isEmail,
+  isPaswordStrong,
+  isValidFullname,
+  isValidPhoneNumber,
+} from "@/utils/validator";
 import SocialLoginButton from "@/components/ui/common/SocialLoginButton";
 
 const RegisterPage = () => {
@@ -33,8 +38,9 @@ const RegisterPage = () => {
     //but we have to get it using the fullname
     const fullnamePieces = user.username.trim().split(" ");
     user.firstName = fullnamePieces[0];
-    if(fullnamePieces.length > 1) user.lastName = fullnamePieces.slice(1,).join(" ");
-    
+    if (fullnamePieces.length > 1)
+      user.lastName = fullnamePieces.slice(1).join(" ");
+
     //then we need to create a unique username to the user
     user.username = `${user.firstName}-${Date.now()}`;
     const { success, message, status } = await register(user);
@@ -54,8 +60,9 @@ const RegisterPage = () => {
   }, [isLogged]);
 
   return (
-    <section className="flex">
+    <section className="flex overflow-y-scroll">
       <ConnexionHero />
+      <div className="h-screen overflow-y-auto scrollbar-hide">
         <AuthForm
           formTitle="Créer Un Compte"
           btnTitle="S'inscrire"
@@ -104,10 +111,9 @@ const RegisterPage = () => {
                 termes et conditions
               </Link>
             </label>
-           
           </div>
-           
         </AuthForm>
+      </div>
     </section>
   );
 
