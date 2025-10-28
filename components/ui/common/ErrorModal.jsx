@@ -1,7 +1,10 @@
 import React from "react";
 import { XCircle, X } from "lucide-react";
 
-export default function ErrorModal({message, onClose}) {
+export default function ErrorModal({ message, onClose}) {
+
+  if(!message) return;
+
   return (
     <div className="fixed inset-0 flex text-sm items-center justify-center bg-black/50 z-50">
       <div className="relative w-[400px] bg-white rounded-2xl shadow-lg p-6">

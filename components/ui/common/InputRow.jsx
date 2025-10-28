@@ -15,6 +15,7 @@ const InputRow = ({
   value,
   className = "",
   labelClassName = "",
+  onBlur = ()=>{},
   onChange = () => {},
   ...props
 }) => {
@@ -44,6 +45,7 @@ const InputRow = ({
           buttonStyle={{ border: "none" }}
           placeholder=""
           searchStyle={{ border: "none" }}
+          onChange={onChange}
           inputStyle={{
             border: "none",
             width: "100%",
@@ -52,7 +54,9 @@ const InputRow = ({
             backgroundColor: "#F9F9F9",
           }}
           value={value}
-          inputProps={{ name: name }}
+          inputProps={{ name: name, ...props }}
+          onBlur={onBlur}
+          {...props}
         />
       ) : (
         <input
@@ -62,6 +66,7 @@ const InputRow = ({
           id={name}
           value={value}
           required={required}
+          onBlur={onBlur}
           onChange={onChange}
           {...props}
         />
