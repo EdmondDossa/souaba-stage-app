@@ -2,11 +2,32 @@
 import { PropertyCard } from "@/components/ui/common";
 import Paginator from "@/components/ui/common/Paginator";
 import { Dot } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import FilterSideBar from "@/app/(main)/find-accomodation/components/FilterSideBar";
 import { useRouter } from "next/navigation";
+import getAxiosInstance from "@/lib/request";
 
 const FindAccomodation = () => {
+  
+useEffect(()=>{
+  const http=getAxiosInstance();
+  const fetchAccomodation =async ()=>{
+    try {
+      const response=await http.get("/accommodations");
+      console.log(response.data);
+      
+    } catch (error) {
+      console.log(error);
+      
+    }
+  
+    
+  }
+  fetchAccomodation();
+}
+
+)
+
   const router = useRouter();
 
   const Properties = [

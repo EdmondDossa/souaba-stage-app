@@ -186,6 +186,7 @@ function SearchBar({ isCentered = true }) {
       children,
       babies,
     });
+    
     alert("Recherche lancée ! (Voir la console pour les détails)");
   };
 
