@@ -16,6 +16,8 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [hasFetched, setHasFetched] = useState(false);
+  const [searchActive, setSearchActive] = useState(false);
+  const [searchResult, setSeachResult] = useState([]);
 
   const location = useGeolocation();
   const http = getAxiosInstance();
@@ -56,21 +58,18 @@ export default function Home() {
         setFeatured(featuredResponse.data);
         setRecent(recentResponse.data);
         setProperties(propertiesResponse.data);
-
-        
       } catch (err) {
         console.error("Erreur:", err);
         setError("Erreur de chargement");
-        hasFetchedRef.current = false; 
+        hasFetchedRef.current = false;
       } finally {
         setLoading(false);
       }
     };
     fetchAllData();
-  }, [location]); 
+  }, [location]);
   console.log({ nearby, featured, recent, properties });
 
- 
   const filterPropertiesByType = (properties, selectedType) => {
     if (!properties || !Array.isArray(properties)) return [];
 
@@ -102,7 +101,6 @@ export default function Home() {
     });
   };
 
- 
   let newPoperties = [];
   let nearbyProperties = [];
   let featuredProperties = [];
@@ -113,7 +111,6 @@ export default function Home() {
     featuredProperties = filterPropertiesByType(featured, property);
   }
 
- 
   const bestPoperties = filterPropertiesByType(
     [
       {
@@ -206,222 +203,261 @@ export default function Home() {
               })}
             </ul>
           </div>
-          <SearchBar />
+          <SearchBar
+            searchState={searchActive}
+            searchResult={searchResult}
+            setSearchActive={setSearchActive}
+            setSeachResult={setSeachResult}
+          />
         </div>
       </div>
-
-      <section className="max-w-[95%] mx-auto">
-        <div className="py-8 px-12 space-y-5 font-montserrat-bold text-gray-700">
-          <div className="py-2 space-y-2 w-fit ">
-            <h1 className="font-bold text-xl lg:text-3xl">
-              Dernières nouvelles{" "}
-            </h1>
-            <h1 className="font-bold text-xl lg:text-3xl mb-5">
-              sur les propriétés
-            </h1>
-            <div className="w-1/3 h-1 bg-primary mt-2"></div>
-          </div>
-          {/* Pour la section "Dernières nouvelles sur les propriétés" */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-4 scrollbar-hide -mb-16 w-full">
-            {newPoperties.length > 0 ? (
-              newPoperties.map((property, index) => {
-                // Déterminer le type et extraire les informations appropriées
-                const isHotel = property.type === "hotel";
-                const mediaArray = isHotel
-                  ? property.HotelMedia
-                  : property.AccommodationMedia;
-                const primaryImage =
-                  mediaArray?.find((media) => media.is_primary)?.media
-                    ?.file_path || mediaArray?.[0]?.media?.file_path;
-
-                return (
-                  <PropertyCard
-                    key={index}
-                    imageUrl={primaryImage || "/images/default-property.jpg"}
-                    price={
-                      isHotel
-                        ? "Prix sur demande"
-                        : `${property.price_per_night} FCFA`
-                    }
-                    title={property.name}
-                    location={`${property.address}, ${property.city}, ${property.country}`}
-                    rating={property.avgRating || 0}
-                    isFavorite={false}
-                    className="flex-shrink-0"
-                  />
-                );
-              })
-            ) : (
-              <div className="col-span-full text-center py-8">
-                <p className="text-gray-500 text-lg">
-                  Aucun {property.toLowerCase()} trouvé pour le moment.
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="py-8 px-12 space-y-5 font-montserrat-bold text-gray-700">
-          <div className="flex justify-between items-center">
-            <div className="py-2 space-y-2 w-fit">
+      {searchActive === false ? (
+        <section className="max-w-[95%] mx-auto">
+          <div className="py-8 px-12 space-y-5 font-montserrat-bold text-gray-700">
+            <div className="py-2 space-y-2 w-fit ">
               <h1 className="font-bold text-xl lg:text-3xl">
-                Propriétés répertoriées{" "}
+                Dernières nouvelles{" "}
               </h1>
-              <h1 className="font-bold text-xl lg:text-3xl">à proximité</h1>
+              <h1 className="font-bold text-xl lg:text-3xl mb-5">
+                sur les propriétés
+              </h1>
               <div className="w-1/3 h-1 bg-primary mt-2"></div>
             </div>
-            <div className="flex items-center space-x-2 justify-center">
-              <Image
-                src="/icons/ic_map.svg"
-                width={20}
-                height={20}
-                alt=""
-                className=""
-              />
-              <h4 className="font-semibold text-[15px]">
-                Afficher sur la carte
-              </h4>
-            </div>
-          </div>
-          {/* Propriétés répertoriées à proximité */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-4 scrollbar-hide -mb-16 w-full">
-            {nearbyProperties.map((property, index) => (
-              <PropertyCard
-                key={index}
-                imageUrl={
-                  property.images && property.images.length > 0
-                    ? property.images[0].file_path
-                    : "/images/default-property.jpg"
-                }
-                price={property.price_per_night}
-                title={property.name}
-                location={
-                  property.address +
-                  "," +
-                  property.city +
-                  ", " +
-                  property.country
-                }
-                rating={property.rating}
-                isFavorite={property.isFavorite}
-                className="flex-shrink-0"
-              />
-            ))}
-          </div>
-        </div>
+            {/* Pour la section "Dernières nouvelles sur les propriétés" */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-4 scrollbar-hide -mb-16 w-full">
+              {newPoperties.length > 0 ? (
+                newPoperties.map((property, index) => {
+                  // Déterminer le type et extraire les informations appropriées
+                  const isHotel = property.type === "hotel";
+                  const mediaArray = isHotel
+                    ? property.HotelMedia
+                    : property.AccommodationMedia;
+                  const primaryImage =
+                    mediaArray?.find((media) => media.is_primary)?.media
+                      ?.file_path || mediaArray?.[0]?.media?.file_path;
 
-        <div className="py-8 px-12 space-y-5 font-montserrat-bold text-gray-700">
-          <div className="flex justify-between items-center">
-            <div className="py-2 space-y-2 w-fit">
-              <h1 className="font-bold text-xl lg:text-3xl">Propriétés les </h1>
-              <h1 className="font-bold text-xl lg:text-3xl">mieux notées</h1>
-              <div className="w-1/3 h-1 bg-primary mt-2"></div>
-            </div>
-            <div className="flex items-center space-x-2 justify-center">
-              <Image
-                src="/icons/ic_map.svg"
-                width={20}
-                height={20}
-                alt=""
-                className=""
-              />
-              <h4 className="font-semibold text-[15px]">
-                Afficher sur la carte
-              </h4>
+                  return (
+                    <Link key={index} href={"/appartementdetails/{property.id}"} >
+                    <PropertyCard
+                      key={index}
+                      imageUrl={primaryImage || "/images/default-property.jpg"}
+                      price={
+                        isHotel
+                          ? "Prix sur demande"
+                          : `${property.price_per_night} FCFA`
+                      }
+                      title={property.name}
+                      location={`${property.address}, ${property.city}, ${property.country}`}
+                      rating={property.avgRating || 0}
+                      isFavorite={false}
+                      className="flex-shrink-0"
+                    />
+                    </Link>
+                  );
+                })
+              ) : (
+                <div className="col-span-full text-center py-8">
+                  <p className="text-gray-500 text-lg">
+                    Aucun {property.toLowerCase()} trouvé pour le moment.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-4 scrollbar-hide -mb-16 w-full">
-            {bestPoperties.map((property, index) => (
-              <PropertyCard
-                key={index}
-                imageUrl={property.imageUrl}
-                price={property.price}
-                title={property.title}
-                location={property.location}
-                showRate={property.showRate}
-                rating={property.rating}
-                isFavorite={property.isFavorite}
-                className="flex-shrink-0"
-              />
-            ))}
-          </div>
-        </div>
 
-        <div className="py-8 px-12 relative  flex items-center justify-center text-center">
-          <div className="rounded-xl bg-black/40 bg-blend-darken bg-[url('/images/home-illustration.png')] bg-cover bg-center w-full">
-            <div className="rounded-xl py-12  relative h-full w-full z-10 flex flex-col  text-white space-y-4 px-10">
-              <div className="space-y-3">
-                <div className="w-fit h-52 font-montserrat-bold text-4xl  flex flex-col justify-start space-y-2">
-                  <h4 className="font-bold  text-start">Essayez d'héberger </h4>
-                  <h4 className="font-bold text-start">avec nous </h4>
-                </div>
-                <p className="text-white text-md text-start">
-                  Gagnez plus simplement en louant votre propriété...
-                </p>
-                <div className="flex justify-start items-center mt-10">
-                  <Link
-                    href="/add-establishment"
-                    className="hidden sm:inline-flex items-center px-5 py-3.5 font-montserrat-bold bg-green text-white rounded-full text-sm font-bold hover:opacity-80 transition-colors shadow-sm"
-                  >
-                    Ajouter votre établissement
-                  </Link>
-                </div>
+          <div className="py-8 px-12 space-y-5 font-montserrat-bold text-gray-700">
+            <div className="flex justify-between items-center">
+              <div className="py-2 space-y-2 w-fit">
+                <h1 className="font-bold text-xl lg:text-3xl">
+                  Propriétés répertoriées{" "}
+                </h1>
+                <h1 className="font-bold text-xl lg:text-3xl">à proximité</h1>
+                <div className="w-1/3 h-1 bg-primary mt-2"></div>
+              </div>
+              <div className="flex items-center space-x-2 justify-center">
+                <Image
+                  src="/icons/ic_map.svg"
+                  width={20}
+                  height={20}
+                  alt=""
+                  className=""
+                />
+                <h4 className="font-semibold text-[15px]">
+                  Afficher sur la carte
+                </h4>
               </div>
             </div>
+            {/* Propriétés répertoriées à proximité */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-4 scrollbar-hide -mb-16 w-full">
+              {nearbyProperties.map((property, index) => (
+                <PropertyCard
+                  key={index}
+                  imageUrl={
+                    property.images && property.images.length > 0
+                      ? property.images[0].file_path
+                      : "/images/default-property.jpg"
+                  }
+                  price={property.price_per_night}
+                  title={property.name}
+                  location={
+                    property.address +
+                    "," +
+                    property.city +
+                    ", " +
+                    property.country
+                  }
+                  rating={property.rating}
+                  isFavorite={property.isFavorite}
+                  className="flex-shrink-0"
+                />
+              ))}
+            </div>
           </div>
-        </div>
 
-        <div className="py-8 px-12 space-y-5 font-montserrat-bold text-gray-700">
-          <div className="flex justify-between items-center">
-            <div className="py-2 space-y-2 w-fit">
-              <h1 className="font-bold text-xl lg:text-3xl">
-                Propriétés en vedette{" "}
-              </h1>
-              <h1 className="font-bold text-xl lg:text-3xl">sur notre liste</h1>
-              <div className="w-1/3 h-1 bg-primary mt-2"></div>
+          <div className="py-8 px-12 space-y-5 font-montserrat-bold text-gray-700">
+            <div className="flex justify-between items-center">
+              <div className="py-2 space-y-2 w-fit">
+                <h1 className="font-bold text-xl lg:text-3xl">
+                  Propriétés les{" "}
+                </h1>
+                <h1 className="font-bold text-xl lg:text-3xl">mieux notées</h1>
+                <div className="w-1/3 h-1 bg-primary mt-2"></div>
+              </div>
+              <div className="flex items-center space-x-2 justify-center">
+                <Image
+                  src="/icons/ic_map.svg"
+                  width={20}
+                  height={20}
+                  alt=""
+                  className=""
+                />
+                <h4 className="font-semibold text-[15px]">
+                  Afficher sur la carte
+                </h4>
+              </div>
             </div>
-            <div className="flex items-center space-x-2 justify-center">
-              <Image
-                src="/icons/ic_map.svg"
-                width={20}
-                height={20}
-                alt=""
-                className=""
-              />
-              <h4 className="font-semibold text-[15px]">
-                Afficher sur la carte
-              </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-4 scrollbar-hide -mb-16 w-full">
+              {bestPoperties.map((property, index) => (
+                <PropertyCard
+                  key={index}
+                  imageUrl={property.imageUrl}
+                  price={property.price}
+                  title={property.title}
+                  location={property.location}
+                  showRate={property.showRate}
+                  rating={property.rating}
+                  isFavorite={property.isFavorite}
+                  className="flex-shrink-0"
+                />
+              ))}
             </div>
           </div>
-          {/* Pour la section "Propriétés en vedette" */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-4 scrollbar-hide w-full mb-10">
-            {featuredProperties.map((property, index) => (
-              <PropertyCard
-                key={index}
-                imageUrl={
-                  property.images && property.images.length > 0
-                    ? property.images[0].file_path
-                    : "/images/default-property.jpg"
-                }
-                price={property.price_per_night}
-                title={property.name}
-                location={
-                  property.address +
-                  "," +
-                  property.city +
-                  ", " +
-                  property.country
-                }
-                showRate={false}
-                rating={property.rating}
-                isFavorite={property.isFavorite}
-                className="max-w-full w-1/3"
-                showAmenities={true}
-              />
-            ))}
+
+          <div className="py-8 px-12 relative  flex items-center justify-center text-center">
+            <div className="rounded-xl bg-black/40 bg-blend-darken bg-[url('/images/home-illustration.png')] bg-cover bg-center w-full">
+              <div className="rounded-xl py-12  relative h-full w-full z-10 flex flex-col  text-white space-y-4 px-10">
+                <div className="space-y-3">
+                  <div className="w-fit h-52 font-montserrat-bold text-4xl  flex flex-col justify-start space-y-2">
+                    <h4 className="font-bold  text-start">
+                      Essayez d'héberger{" "}
+                    </h4>
+                    <h4 className="font-bold text-start">avec nous </h4>
+                  </div>
+                  <p className="text-white text-md text-start">
+                    Gagnez plus simplement en louant votre propriété...
+                  </p>
+                  <div className="flex justify-start items-center mt-10">
+                    <Link
+                      href="/add-establishment"
+                      className="hidden sm:inline-flex items-center px-5 py-3.5 font-montserrat-bold bg-green text-white rounded-full text-sm font-bold hover:opacity-80 transition-colors shadow-sm"
+                    >
+                      Ajouter votre établissement
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      </section>
+
+          <div className="py-8 px-12 space-y-5 font-montserrat-bold text-gray-700">
+            <div className="flex justify-between items-center">
+              <div className="py-2 space-y-2 w-fit">
+                <h1 className="font-bold text-xl lg:text-3xl">
+                  Propriétés en vedette{" "}
+                </h1>
+                <h1 className="font-bold text-xl lg:text-3xl">
+                  sur notre liste
+                </h1>
+                <div className="w-1/3 h-1 bg-primary mt-2"></div>
+              </div>
+              <div className="flex items-center space-x-2 justify-center">
+                <Image
+                  src="/icons/ic_map.svg"
+                  width={20}
+                  height={20}
+                  alt=""
+                  className=""
+                />
+                <h4 className="font-semibold text-[15px]">
+                  Afficher sur la carte
+                </h4>
+              </div>
+            </div>
+            {/* Pour la section "Propriétés en vedette" */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-4 scrollbar-hide w-full mb-10">
+              {featuredProperties.map((property, index) => (
+                <PropertyCard
+                  key={index}
+                  imageUrl={
+                    property.images && property.images.length > 0
+                      ? property.images[0].file_path
+                      : "/images/default-property.jpg"
+                  }
+                  price={property.price_per_night}
+                  title={property.name}
+                  location={
+                    property.address +
+                    "," +
+                    property.city +
+                    ", " +
+                    property.country
+                  }
+                  showRate={false}
+                  rating={property.rating}
+                  isFavorite={property.isFavorite}
+                  className="max-w-full w-1/3"
+                  showAmenities={true}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : (
+        <>
+          <div className="py-8 px-12 space-y-5 font-montserrat-bold text-gray-700">
+            <div className="flex justify-between items-center">
+              <div className="py-2 space-y-2 w-fit">
+                <div className="w-1/3 h-1 bg-primary mt-2"></div>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-4 scrollbar-hide -mb-16 w-full">
+              {searchResult.map((property, index) => (
+                <PropertyCard
+                  key={index}
+                  imageUrl={property.imageUrl}
+                  price={property.price}
+                  title={property.title}
+                  location={property.location}
+                  showRate={property.showRate}
+                  rating={property.rating}
+                  isFavorite={property.isFavorite}
+                  className="flex-shrink-0"
+                />
+              ))}
+            </div>
+          </div>
+        </>
+      )}
     </>
   );
 }

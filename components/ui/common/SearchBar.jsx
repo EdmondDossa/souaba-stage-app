@@ -5,8 +5,10 @@ import { Search, MapPin, Building, ChevronDown } from "lucide-react";
 import React from "react";
 import { dateToLetters } from "@/utils/dateToLetters";
 import Calendar from "./Calendar";
-
+import getAxiosInstance from "@/lib/request";
+import { set } from "date-fns";
 // Constantes
+const http=getAxiosInstance();
 const SUGGESTIONS = [
   {
     id: 1,
@@ -60,7 +62,7 @@ const SUGGESTIONS = [
   },
 ];
 
-function SearchBar({ isCentered = true }) {
+function SearchBar({ isCentered = true, searchActive, searchResult, setSearchActive, setSearchResult}) {
   const [destination, setDestination] = useState("");
   const [arrivalDate, setArrivalDate] = useState("");
   const [departureDate, setDepartureDate] = useState("");
@@ -84,7 +86,7 @@ function SearchBar({ isCentered = true }) {
   const departureDateRef = useRef(null);
   const guestsRef = useRef(null);
 
-  // Gestion des clics à l'extérieur pour fermer les dropdowns
+  
   useEffect(() => {
     const handleClickOutside = (event) => {
       // Fermer le dropdown destination
@@ -177,20 +179,25 @@ function SearchBar({ isCentered = true }) {
     }
   };
 
-  const handleSearch = () => {
-    console.log({
-      destination,
-      arrivalDate,
-      departureDate,
-      adults,
-      children,
-      babies,
+const handleSearch = async () => {
+  try {
+    setSearchActive(true);
+    console.log(searchActive);
+    const params = new URLSearchParams({
+      check_in: arrivalDate || "",
+      check_out: departureDate || "",
+      city: destination || "",
+      capacity: String(adults + children + babies),
     });
-    
-    alert("Recherche lancée ! (Voir la console pour les détails)");
-  };
+    const request = await http.get(`/accommodation-unavailable-period/search?${params.toString()}`);
+    setSearchResult(request.data);
+    console.log(searchResult);
+  } catch (error) {
+    console.error(error);
+  }
+};
 
-  return (
+return (
     <div
       className={`relative  bg-white rounded-full p-2 shadow-lg flex items-center justify-between max-w-4xl  border border-gray-200  ${
         isCentered ? "mx-auto" : ""
