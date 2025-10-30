@@ -62,7 +62,7 @@ const RegisterPage = () => {
   return (
     <section className="flex overflow-y-scroll">
       <ConnexionHero />
-      <div className="h-screen overflow-y-auto scrollbar-hide">
+      <div className="h-screen overflow-y-auto scrollbar-hide border-8">
         <AuthForm
           formTitle="Créer Un Compte"
           btnTitle="S'inscrire"

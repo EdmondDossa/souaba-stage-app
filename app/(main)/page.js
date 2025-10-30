@@ -1,11 +1,12 @@
 "use client";
 import { MainLayout } from "@/components/Layout";
-import { PropertyCard, SearchBar } from "@/components/ui/common";
+import { Button, PropertyCard, SearchBar } from "@/components/ui/common";
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import getAxiosInstance from "@/lib/request";
 import { useGeolocation } from "@/utils/useGeolocalisation";
+import NoResults from "@/components/ui/common/NotFoundResults";
 
 export default function Home() {
   const [property, setProperty] = useState("Tout voir");
@@ -17,7 +18,7 @@ export default function Home() {
   const [error, setError] = useState(null);
   const [hasFetched, setHasFetched] = useState(false);
   const [searchActive, setSearchActive] = useState(false);
-  const [searchResult, setSeachResult] = useState([]);
+  const [searchResult, setSearchResult] = useState([]);
 
   const location = useGeolocation();
   const http = getAxiosInstance();
@@ -207,11 +208,20 @@ export default function Home() {
             searchState={searchActive}
             searchResult={searchResult}
             setSearchActive={setSearchActive}
-            setSeachResult={setSeachResult}
+            setSearchResult={setSearchResult}
           />
+          {searchActive && (
+            <Button
+              size="sm"
+              onClick={() => setSearchActive(false)}
+              className="bg-red-500 hover:bg-red-400 mb-3  rounded-md"
+            >
+              Annuler la recherche
+            </Button>
+          )}
         </div>
       </div>
-      {searchActive === false ? (
+      {!searchActive ? (
         <section className="max-w-[95%] mx-auto">
           <div className="py-8 px-12 space-y-5 font-montserrat-bold text-gray-700">
             <div className="py-2 space-y-2 w-fit ">
@@ -237,21 +247,26 @@ export default function Home() {
                       ?.file_path || mediaArray?.[0]?.media?.file_path;
 
                   return (
-                    <Link key={index} href={"/appartementdetails/{property.id}"} >
-                    <PropertyCard
+                    <Link
                       key={index}
-                      imageUrl={primaryImage || "/images/default-property.jpg"}
-                      price={
-                        isHotel
-                          ? "Prix sur demande"
-                          : `${property.price_per_night} FCFA`
-                      }
-                      title={property.name}
-                      location={`${property.address}, ${property.city}, ${property.country}`}
-                      rating={property.avgRating || 0}
-                      isFavorite={false}
-                      className="flex-shrink-0"
-                    />
+                      href={"/appartementdetails/{property.id}"}
+                    >
+                      <PropertyCard
+                        key={index}
+                        imageUrl={
+                          primaryImage || "/images/default-property.jpg"
+                        }
+                        price={
+                          isHotel
+                            ? "Prix sur demande"
+                            : `${property.price_per_night} FCFA`
+                        }
+                        title={property.name}
+                        location={`${property.address}, ${property.city}, ${property.country}`}
+                        rating={property.avgRating || 0}
+                        isFavorite={false}
+                        className="flex-shrink-0"
+                      />
                     </Link>
                   );
                 })
@@ -434,28 +449,38 @@ export default function Home() {
         </section>
       ) : (
         <>
-          <div className="py-8 px-12 space-y-5 font-montserrat-bold text-gray-700">
-            <div className="flex justify-between items-center">
-              <div className="py-2 space-y-2 w-fit">
-                <div className="w-1/3 h-1 bg-primary mt-2"></div>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-4 scrollbar-hide -mb-16 w-full">
-              {searchResult.map((property, index) => (
-                <PropertyCard
-                  key={index}
-                  imageUrl={property.imageUrl}
-                  price={property.price}
-                  title={property.title}
-                  location={property.location}
-                  showRate={property.showRate}
-                  rating={property.rating}
-                  isFavorite={property.isFavorite}
-                  className="flex-shrink-0"
-                />
-              ))}
+          <div className="flex  flex-col items-center mt-3 justify-center">
+            <div>
+              <h1 className="text-4xl  font-montserrat-bold text-gray-600 mt-2 text-center">
+                {searchResult.length} élément(s) trouvé(s)
+              </h1>
             </div>
           </div>
+          {searchResult.length === 0 ? (
+            <NoResults />
+          ) : (
+            <div className="py-8 px-12 space-y-5 font-montserrat-bold text-gray-700">
+              <div className="flex justify-between items-center">
+                <div className="py-2 space-y-2 w-fit">
+                  <div className="w-1/3 h-1 bg-primary mt-2"></div>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-4 scrollbar-hide -mb-16 w-full">
+                {searchResult.map((property, index) => (
+                  <PropertyCard
+                    key={index}
+                    imageUrl={property.AccommodationMedia[0].media.file_path}
+                    price={property.price_per_night + " FCFA"}
+                    title={property.name}
+                    location={`${property.address}, ${property.city}, ${property.country}`}
+                    rating={property.avgRating || 0}
+                    isFavorite={false}
+                    className="flex-shrink-0"
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </>
       )}
     </>

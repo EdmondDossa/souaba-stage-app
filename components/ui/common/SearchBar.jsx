@@ -8,7 +8,7 @@ import Calendar from "./Calendar";
 import getAxiosInstance from "@/lib/request";
 import { set } from "date-fns";
 // Constantes
-const http=getAxiosInstance();
+const http = getAxiosInstance();
 const SUGGESTIONS = [
   {
     id: 1,
@@ -62,7 +62,13 @@ const SUGGESTIONS = [
   },
 ];
 
-function SearchBar({ isCentered = true, searchActive, searchResult, setSearchActive, setSearchResult}) {
+function SearchBar({
+  isCentered = true,
+  searchActive,
+  searchResult,
+  setSearchActive,
+  setSearchResult,
+}) {
   const [destination, setDestination] = useState("");
   const [arrivalDate, setArrivalDate] = useState("");
   const [departureDate, setDepartureDate] = useState("");
@@ -86,7 +92,6 @@ function SearchBar({ isCentered = true, searchActive, searchResult, setSearchAct
   const departureDateRef = useRef(null);
   const guestsRef = useRef(null);
 
-  
   useEffect(() => {
     const handleClickOutside = (event) => {
       // Fermer le dropdown destination
@@ -179,25 +184,33 @@ function SearchBar({ isCentered = true, searchActive, searchResult, setSearchAct
     }
   };
 
-const handleSearch = async () => {
-  try {
-    setSearchActive(true);
-    console.log(searchActive);
-    const params = new URLSearchParams({
-      check_in: arrivalDate || "",
-      check_out: departureDate || "",
-      city: destination || "",
-      capacity: String(adults + children + babies),
-    });
-    const request = await http.get(`/accommodation-unavailable-period/search?${params.toString()}`);
-    setSearchResult(request.data);
-    console.log(searchResult);
-  } catch (error) {
-    console.error(error);
-  }
-};
+  const handleSearch = async () => {
+    try {
+      if(![arrivalDate, departureDate, destination, adults, children, babies].some(Boolean)) return;
+      setSearchActive(true);
+      const check_in = arrivalDate
+        ? arrivalDate.split("/").reverse().join("-")
+        : "";
+      const check_out = departureDate
+        ? departureDate.split("/").reverse().join("-")
+        : "";
+      const params = new URLSearchParams({
+        check_in,
+        check_out,
+        city: destination || "",
+        capacity: String(adults + children + babies),
+      });
+      const request = await http.get(
+        `/accommodation-unavailable-period/search?${params.toString()}`
+      );
+      setSearchResult(request.data);
+      console.log(7,request.data,7);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
-return (
+  return (
     <div
       className={`relative  bg-white rounded-full p-2 shadow-lg flex items-center justify-between max-w-4xl  border border-gray-200  ${
         isCentered ? "mx-auto" : ""
