@@ -32,14 +32,14 @@ export default function PropertyCard({
 }) {
   return (
     <div
-      className={`relative w-full max-w-[298px] overflow-hidden ${
+      className={`relative w-full max-w-[298px] min-w-[200px] overflow-hidden ${
         className || ""
       }`}
       {...rest}
     >
       {/* Image Container */}
       <div
-        className={`w-full h-96 bg-cover rounded-xl ${ imageContainerClassName ?? ""}`}
+        className={`w-full h-72 lg:h-80 mt-2 bg-cover rounded-xl ${ imageContainerClassName ?? ""}`}
         style={{ backgroundImage: `url(${imageUrl})` }}
       >
         <div className="relative card-body h-full w-full rounded-xl bg-black/50 bg-img">

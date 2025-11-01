@@ -7,6 +7,7 @@ import { useState, useEffect, useRef } from "react";
 import getAxiosInstance from "@/lib/request";
 import { useGeolocation } from "@/utils/useGeolocalisation";
 import NoResults from "@/components/ui/common/NotFoundResults";
+import PropertyList from "@/components/ui/common/PropertyList";
 
 export default function Home() {
   const [property, setProperty] = useState("Tout voir");
@@ -116,9 +117,11 @@ export default function Home() {
     [
       {
         imageUrl: "/images/new-property1.jpg",
-        price: "620 000 FCFA",
+        price_per_night: "620 000 FCFA",
         title: "Appartement bien meublé",
-        location: "100 Smart Street, LA, États-Unis",
+        city: "100 Smart Street",
+        address: "LA",
+        country: "États-Unis",
         rating: 2,
         showRate: true,
         isFavorite: false,
@@ -127,9 +130,11 @@ export default function Home() {
       },
       {
         imageUrl: "/images/new-property2.jpg",
-        price: "720 000 FCFA",
+        price_per_night: "720 000 FCFA",
         title: "Appartement Familial Confortable",
-        location: "100 Smart Street, LA, États-Unis",
+        city: "100 Smart Street",
+        address: "LA",
+        country: "États-Unis",
         rating: 3,
         showRate: true,
         isFavorite: true,
@@ -138,9 +143,11 @@ export default function Home() {
       },
       {
         imageUrl: "/images/new-property3.jpg",
-        price: "820 000 FCFA",
+        price_per_night: "820 000 FCFA",
         title: "Maison de plage d'été",
-        location: "100 Smart Street, LA, États-Unis",
+        city: "100 Smart Street",
+        address: "LA",
+        country: "États-Unis",
         isFavorite: false,
         rating: 4,
         showRate: true,
@@ -149,9 +156,11 @@ export default function Home() {
       },
       {
         imageUrl: "/images/new-property4.jpg",
-        price: "920 000 FCFA",
+        price_per_night: "920 000 FCFA",
         title: "Chambre double",
-        location: "100 Smart Street, LA, États-Unis",
+        city: "100 Smart Street",
+        adress: "LA",
+        country: "États-Unis",
         rating: 5,
         showRate: true,
         isFavorite: false,
@@ -175,25 +184,22 @@ export default function Home() {
     <>
       <div className="relative bg-[url('/images/acceuil-first-image.webp')] bg-cover bg-center h-[65vh] w-full flex items-center justify-center text-center">
         <div className="relative h-full w-full bg-black/50 z-10 flex flex-col items-center justify-center text-white space-y-10 px-10">
-          <div>
-            <h2 className="font-[800] font-montserrat-bold text-white text-6xl mt-4">
+          <div className="px-4 max-lg:mt-10">
+            <h2 className="font-[900] font-montserrat-bold  text-white text-[25px] leading-[26px] md:text-4xl lg:text-6xl md:leading-tight mt-10">
               Trouvez l'hébergement parfait
             </h2>
-            <h2 className="font-[800] font-montserrat-bold text-white text-6xl mt-3">
+            <h2 className="font-[800] font-montserrat-bold text-white text-[25px] leading-[26px] md:text-4xl lg:text-6xl mt-1 md:mt-2 md:leading-tight">
               pour votre prochain séjour.
             </h2>
           </div>
-          <div className="w-full flex flex-col lg:flex-row items-center justify-between max-w-4xl mx-auto mt-5">
-            <h4 className="font-[800] font-montserrat-bold text-5xl uppercase">
-              Trouver
-            </h4>
-            <ul className="flex items-center justify-between space-x-8">
-              {subNavItems.map((item) => {
+          <div className="w-full flex flex-col items-center justify-center max-w-4xl mx-auto mt-5">
+            <ul className="flex justify-center break-words items-center md:justify-center space-x-3 md:space-x-8">
+              {subNavItems.map((item, i) => {
                 return (
                   <li
                     key={item}
                     className={`
-                relative cursor-pointer pb-1 font-montserrat-medium
+                relative  whitespace-nowrap text-[15px] lg:text-md cursor-pointer pb-1 md:font-montserrat-medium}
                 ${property === item ? "active-border" : "active-border-hover"}
               `}
                     onClick={() => setProperty(item)}
@@ -214,7 +220,7 @@ export default function Home() {
             <Button
               size="sm"
               onClick={() => setSearchActive(false)}
-              className="bg-red-500 hover:bg-red-400 mb-3  rounded-md"
+              className="bg-red-500 hover:bg-red-400 rounded-md"
             >
               Annuler la recherche
             </Button>
@@ -222,169 +228,46 @@ export default function Home() {
         </div>
       </div>
       {!searchActive ? (
-        <section className="max-w-[95%] mx-auto">
-          <div className="py-8 px-12 space-y-5 font-montserrat-bold text-gray-700">
-            <div className="py-2 space-y-2 w-fit ">
-              <h1 className="font-bold text-xl lg:text-3xl">
-                Dernières nouvelles{" "}
-              </h1>
-              <h1 className="font-bold text-xl lg:text-3xl mb-5">
-                sur les propriétés
-              </h1>
-              <div className="w-1/3 h-1 bg-primary mt-2"></div>
-            </div>
-            {/* Pour la section "Dernières nouvelles sur les propriétés" */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-4 scrollbar-hide -mb-16 w-full">
-              {newPoperties.length > 0 ? (
-                newPoperties.map((property, index) => {
-                  // Déterminer le type et extraire les informations appropriées
-                  const isHotel = property.type === "hotel";
-                  const mediaArray = isHotel
-                    ? property.HotelMedia
-                    : property.AccommodationMedia;
-                  const primaryImage =
-                    mediaArray?.find((media) => media.is_primary)?.media
-                      ?.file_path || mediaArray?.[0]?.media?.file_path;
+        <section className="w-full mt-14 lg:max-w-[95%] mx-auto">
+          <PropertyList
+            sectionTitleFirstBloc="Dernières nouvelles"
+            sectionTitleLastBloc="sur les propriétés"
+            showOnMap={false}
+            propertyList={newPoperties}
+          />
+          <PropertyList
+            sectionTitleFirstBloc="Propriétés répertoriées"
+            sectionTitleLastBloc="à proximité"
+            showOnMap={true}
+            propertyList={nearbyProperties}
+          />
 
-                  return (
-                    <Link
-                      key={index}
-                      href={"/appartementdetails/{property.id}"}
-                    >
-                      <PropertyCard
-                        key={index}
-                        imageUrl={
-                          primaryImage || "/images/default-property.jpg"
-                        }
-                        price={
-                          isHotel
-                            ? "Prix sur demande"
-                            : `${property.price_per_night} FCFA`
-                        }
-                        title={property.name}
-                        location={`${property.address}, ${property.city}, ${property.country}`}
-                        rating={property.avgRating || 0}
-                        isFavorite={false}
-                        className="flex-shrink-0"
-                      />
-                    </Link>
-                  );
-                })
-              ) : (
-                <div className="col-span-full text-center py-8">
-                  <p className="text-gray-500 text-lg">
-                    Aucun {property.toLowerCase()} trouvé pour le moment.
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="py-8 px-12 space-y-5 font-montserrat-bold text-gray-700">
-            <div className="flex justify-between items-center">
-              <div className="py-2 space-y-2 w-fit">
-                <h1 className="font-bold text-xl lg:text-3xl">
-                  Propriétés répertoriées{" "}
-                </h1>
-                <h1 className="font-bold text-xl lg:text-3xl">à proximité</h1>
-                <div className="w-1/3 h-1 bg-primary mt-2"></div>
-              </div>
-              <div className="flex items-center space-x-2 justify-center">
-                <Image
-                  src="/icons/ic_map.svg"
-                  width={20}
-                  height={20}
-                  alt=""
-                  className=""
-                />
-                <h4 className="font-semibold text-[15px]">
-                  Afficher sur la carte
-                </h4>
-              </div>
-            </div>
-            {/* Propriétés répertoriées à proximité */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-4 scrollbar-hide -mb-16 w-full">
-              {nearbyProperties.map((property, index) => (
-                <PropertyCard
-                  key={index}
-                  imageUrl={
-                    property.images && property.images.length > 0
-                      ? property.images[0].file_path
-                      : "/images/default-property.jpg"
-                  }
-                  price={property.price_per_night}
-                  title={property.name}
-                  location={
-                    property.address +
-                    "," +
-                    property.city +
-                    ", " +
-                    property.country
-                  }
-                  rating={property.rating}
-                  isFavorite={property.isFavorite}
-                  className="flex-shrink-0"
-                />
-              ))}
-            </div>
-          </div>
-
-          <div className="py-8 px-12 space-y-5 font-montserrat-bold text-gray-700">
-            <div className="flex justify-between items-center">
-              <div className="py-2 space-y-2 w-fit">
-                <h1 className="font-bold text-xl lg:text-3xl">
-                  Propriétés les{" "}
-                </h1>
-                <h1 className="font-bold text-xl lg:text-3xl">mieux notées</h1>
-                <div className="w-1/3 h-1 bg-primary mt-2"></div>
-              </div>
-              <div className="flex items-center space-x-2 justify-center">
-                <Image
-                  src="/icons/ic_map.svg"
-                  width={20}
-                  height={20}
-                  alt=""
-                  className=""
-                />
-                <h4 className="font-semibold text-[15px]">
-                  Afficher sur la carte
-                </h4>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-4 scrollbar-hide -mb-16 w-full">
-              {bestPoperties.map((property, index) => (
-                <PropertyCard
-                  key={index}
-                  imageUrl={property.imageUrl}
-                  price={property.price}
-                  title={property.title}
-                  location={property.location}
-                  showRate={property.showRate}
-                  rating={property.rating}
-                  isFavorite={property.isFavorite}
-                  className="flex-shrink-0"
-                />
-              ))}
-            </div>
-          </div>
-
-          <div className="py-8 px-12 relative  flex items-center justify-center text-center">
-            <div className="rounded-xl bg-black/40 bg-blend-darken bg-[url('/images/home-illustration.png')] bg-cover bg-center w-full">
-              <div className="rounded-xl py-12  relative h-full w-full z-10 flex flex-col  text-white space-y-4 px-10">
-                <div className="space-y-3">
-                  <div className="w-fit h-52 font-montserrat-bold text-4xl  flex flex-col justify-start space-y-2">
-                    <h4 className="font-bold  text-start">
+          <PropertyList
+            sectionTitleFirstBloc="Propriétés les"
+            sectionTitleLastBloc="mieux notées"
+            showOnMap={true}
+            propertyList={bestPoperties}
+          />
+          {/* CTA Section - Essayez d'héberger avec nous */}
+          <div className="mt-10 md:py-8 md:px-12 relative flex items-center justify-center text-center">
+            <div className="rounded-none md:rounded-xl bg-black/40 bg-blend-darken bg-[url('/images/home-illustration.png')] bg-cover bg-center w-full">
+              <div className="rounded-xl py-8 md:py-12 relative h-full w-full z-10 flex flex-col text-white space-y-3 md:space-y-4 px-6 md:px-10">
+                <div className="space-y-2 md:space-y-3">
+                  <div className="w-fit h-auto md:h-52 font-montserrat-bold text-[26px] md:text-4xl flex flex-col justify-start space-y-1 md:space-y-2">
+                    <h4 className="font-bold text-start leading-tight">
                       Essayez d'héberger{" "}
                     </h4>
-                    <h4 className="font-bold text-start">avec nous </h4>
+                    <h4 className="font-bold text-start leading-tight">
+                      avec nous{" "}
+                    </h4>
                   </div>
-                  <p className="text-white text-md text-start">
+                  <p className="text-white text-[13px] md:text-md text-start">
                     Gagnez plus simplement en louant votre propriété...
                   </p>
-                  <div className="flex justify-start items-center mt-10">
+                  <div className="flex justify-start items-center mt-6 md:mt-10">
                     <Link
                       href="/add-establishment"
-                      className="hidden sm:inline-flex items-center px-5 py-3.5 font-montserrat-bold bg-green text-white rounded-full text-sm font-bold hover:opacity-80 transition-colors shadow-sm"
+                      className="inline-flex items-center px-4 md:px-5 py-2.5 md:py-3.5 font-montserrat-bold bg-green text-white rounded-full text-[12px] md:text-sm font-bold hover:opacity-80 transition-colors shadow-sm"
                     >
                       Ajouter votre établissement
                     </Link>
@@ -394,70 +277,17 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="py-8 px-12 space-y-5 font-montserrat-bold text-gray-700">
-            <div className="flex justify-between items-center">
-              <div className="py-2 space-y-2 w-fit">
-                <h1 className="font-bold text-xl lg:text-3xl">
-                  Propriétés en vedette{" "}
-                </h1>
-                <h1 className="font-bold text-xl lg:text-3xl">
-                  sur notre liste
-                </h1>
-                <div className="w-1/3 h-1 bg-primary mt-2"></div>
-              </div>
-              <div className="flex items-center space-x-2 justify-center">
-                <Image
-                  src="/icons/ic_map.svg"
-                  width={20}
-                  height={20}
-                  alt=""
-                  className=""
-                />
-                <h4 className="font-semibold text-[15px]">
-                  Afficher sur la carte
-                </h4>
-              </div>
-            </div>
-            {/* Pour la section "Propriétés en vedette" */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-4 scrollbar-hide w-full mb-10">
-              {featuredProperties.map((property, index) => (
-                <PropertyCard
-                  key={index}
-                  imageUrl={
-                    property.images && property.images.length > 0
-                      ? property.images[0].file_path
-                      : "/images/default-property.jpg"
-                  }
-                  price={property.price_per_night}
-                  title={property.name}
-                  location={
-                    property.address +
-                    "," +
-                    property.city +
-                    ", " +
-                    property.country
-                  }
-                  showRate={false}
-                  rating={property.rating}
-                  isFavorite={property.isFavorite}
-                  className="max-w-full w-1/3"
-                  showAmenities={true}
-                />
-              ))}
-            </div>
-          </div>
+          <PropertyList
+            sectionTitleFirstBloc="Propriétés en vedette"
+            sectionTitleLastBloc="sur notre liste"
+            showOnMap={true}
+            propertyList={featuredProperties}
+          />
         </section>
       ) : (
         <>
-          <div className="flex  flex-col items-center mt-3 justify-center">
-            <div>
-              <h1 className="text-4xl  font-montserrat-bold text-gray-600 mt-2 text-center">
-                {searchResult.length} élément(s) trouvé(s)
-              </h1>
-            </div>
-          </div>
           {searchResult.length === 0 ? (
-            <NoResults />
+          <div className="flex w-full col-span-4 justify-center items-center mx-auto bg-gray-50 my-2 roundd-md" ><NoResults /></div>
           ) : (
             <div className="py-8 px-12 space-y-5 font-montserrat-bold text-gray-700">
               <div className="flex justify-between items-center">
@@ -465,20 +295,12 @@ export default function Home() {
                   <div className="w-1/3 h-1 bg-primary mt-2"></div>
                 </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-4 scrollbar-hide -mb-16 w-full">
-                {searchResult.map((property, index) => (
-                  <PropertyCard
-                    key={index}
-                    imageUrl={property.AccommodationMedia[0].media.file_path}
-                    price={property.price_per_night + " FCFA"}
-                    title={property.name}
-                    location={`${property.address}, ${property.city}, ${property.country}`}
-                    rating={property.avgRating || 0}
-                    isFavorite={false}
-                    className="flex-shrink-0"
-                  />
-                ))}
-              </div>
+              <PropertyList
+                sectionTitleFirstBloc="Résultats de la recherche"
+                sectionTitleLastBloc={`${searchResult.length} résultat(s) trouvé(s)`}
+                showOnMap={false}
+                propertyList={searchResult}
+              />
             </div>
           )}
         </>
