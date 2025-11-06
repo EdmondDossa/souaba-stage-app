@@ -4,11 +4,11 @@ import Link from "next/link";
 const SuccessfulSubmit = ({ title, children, withLinkToHome = true }) => {
   return (
     <section className="flex flex-col items-center justify-center mt-10 text-md">
-      <div className="w-20 h-20 mb-2 bg-primary rounded-full place-content-center">
-        <Check className="w-12 h-12 mx-auto text-white" />
+      <div className="w-12 h-12 md:w-20 md:h-20 mb-2 bg-primary rounded-full place-content-center">
+        <Check className="w-8 h-8 md:w-12 md:h-12 mx-auto text-white" />
       </div>
       <h1 className="text-xl mb-5 font-bold font-montserrat-medium">{title}</h1>
-      <p className="text-center w-md mb-10 text-gray-500">{children}</p>
+      <p className="text-center w-[90%] max-w-md mb-10 text-gray-500">{children}</p>
       {withLinkToHome && (
         <div>
           <Link

@@ -23,11 +23,10 @@ const PaymentMethod = ({ goToNextStep, setFormValues, formValues }) => {
     setFormValues((prev) => ({ ...prev, paymentMethod: value }));
 
   return (
-    <section className="flex flex-col justify-between  items-center w-full h-[550px] border border-gray-200 px-10 text-sm relative">
+    <section className="flex flex-col justify-between  items-center w-full h-[550px] md:border md:border-gray-200 px-10 text-sm relative">
       <div>
-        <h1 className="font-bold text-xl sm:text-2xl text-center text-gray-600 mt-10 font-montserrat-bold mb-8">
-          {" "}
-          Méthodes de paiement{" "}
+        <h1 className="font-bold text-xl sm:text-2xl text-center text-gray-600 -mt-5 md:mt-10 font-montserrat-bold mb-8">
+          Méthodes de paiement
         </h1>
 
         <RadioGroup.Root
@@ -40,7 +39,7 @@ const PaymentMethod = ({ goToNextStep, setFormValues, formValues }) => {
               key={method.type}
               className="cursor-pointer"
             >
-              <strong className="font-bold text-gray-900 capitalize mb-2 block">
+              <strong className="font-bold text-gray-900 font-montserrat-medium capitalize mb-2 block">
                 {" "}
                 {method.type}{" "}
               </strong>

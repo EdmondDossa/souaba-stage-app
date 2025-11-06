@@ -29,18 +29,36 @@ const Submitted = () => {
   ];
 
   return (
-    <div>
+    <div className="mt-32 md:mt-0">
       <SuccessfulSubmit withLinkToHome={false} title="Félicitations!">
         Votre réservation d'hôtel a bien été effectuée. Vous pouvez la consulter
         dans le menu «Profil».
       </SuccessfulSubmit>
-      <div className="grid sm:grid-cols-2 grid-cols-1 w-1/2 mx-auto mt-10 gap-y-5 bg-gray-50 rounded-lg p-2 ">
-        {extraOptions.map((option) => (
-          <Link href={option.link} className="flex items-center self-end gap-x-2 text-right" key={option.title}>
-            <span className="text-primary text-2xl"> {option.icon}</span>{" "}
-            {option.title}{" "}
-          </Link>
-        ))}
+      <div className="max-w-4xl w-[300px] md:w-full mx-auto md:bg-gray-50 p-4">
+        <div className="flex flex-col md:flex-row md:justify-between gap-y-3 ">
+          {extraOptions.slice(0, 2).map((option) => (
+            <Link
+              href={option.link}
+              className="flex  w-full md:w-1/2 items-center self-start gap-x-2"
+              key={option.title}
+            >
+              <span className="text-primary text-2xl"> {option.icon}</span>{" "}
+              {option.title}{" "}
+            </Link>
+          ))}
+        </div>
+        <div className="flex flex-col md:flex-row md:justify-between mt-5 gap-y-3">
+          {extraOptions.slice(2,5).map((option) => (
+            <Link
+              href={option.link}
+              className="flex w-full md:w-1/2 items-center gap-x-2"
+              key={option.title}
+            >
+              <span className="text-primary text-2xl"> {option.icon}</span>{" "}
+              {option.title}{" "}
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );

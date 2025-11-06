@@ -4,9 +4,10 @@ import propertyTwo from "@/public/images/new-property2.jpg";
 import { useEffect, useRef, useState } from "react";
 import { IoMdCloseCircle } from "react-icons/io";
 import { ReservationRow } from "./ui";
+import Image from "next/image";
+import Paginator from "@/components/ui/common/Paginator";
 
 const Reservation = () => {
-  
   const dumpReservations = [
     {
       id: 1,
@@ -79,7 +80,9 @@ const Reservation = () => {
       category: "Refuser",
     },
   ];
-  
+
+  const MOBILE_MAX_RESERVATION_ITEM_PER_PAGE = 3;
+
   const ref = useRef();
 
   const categories = ["Prochain", "En attente", "Refuser", "Passé"];
@@ -87,13 +90,12 @@ const Reservation = () => {
 
   const [cancelReason, setCancelReason] = useState("");
   const MAX_CANCEL_REASON_LENGTH = 255;
-  
+
   const [isCancellingReservation, setCancellingReservation] = useState(false);
   const cancelReservation = () => setCancellingReservation(true);
   const cancelReservationCancelling = () => setCancellingReservation(false);
 
   const [reservations, setReservations] = useState(dumpReservations);
-
 
   function handleCancel(reservationId) {
     //
@@ -112,19 +114,27 @@ const Reservation = () => {
 
   return (
     <>
-      <div className={`max-w-6xl mx-auto mt-10 `}>
-        <h1 className="text-4xl font-montserrat-bold text-gray-700">
-          Réservations
+      <div className={`max-w-6xl mx-auto mt-32 md:mt-10 md:w-full w-[90%]`}>
+        <h1 className="text-2xl text-center md:text-4xl font-montserrat-bold text-gray-700">
+          Mes réservations
         </h1>
+        <div className="md:hidden flex flex-col items-center justify-center">
+          <Image
+            alt=""
+            src="/images/reservation-hotel-illustration.png"
+            width={590}
+            height={394}
+          />
+        </div>
         <section className="mt-8">
           <nav>
-            <ul className="flex items-center justify-between w-[50%] relative">
+            <ul className="flex items-center justify-between w-full md:w-[50%] relative">
               {categories.map((category) => (
                 <li
                   onClick={() => setCurrentCategory(category)}
-                  className={`text-gray-700 font-montserrat-bold py-4 border-b-[3px] px-4 cursor-pointer transition-all ease-in duration-300 whitespace-nowrap ${
+                  className={`text-gray-700 text-[13px] md:text-md font-montserrat-bold py-2 border-b-[4px] px-4 cursor-pointer transition-all ease-in duration-300 whitespace-nowrap ${
                     currentCategory === category
-                      ? "border-b-gray-800"
+                      ? "border-primary bg-primary/15"
                       : "border-b-white"
                   }`}
                   key={category}
@@ -137,7 +147,10 @@ const Reservation = () => {
           <section className="border-t border-t-gray-200">
             {reservations.map((reservation) => {
               return (
-                <div key={reservation.id} className="my-5 p-4 hover:bg-gray-100 transition">
+                <div
+                  key={reservation.id}
+                  className="my-5 p-4 md:hover:bg-gray-100 transition"
+                >
                   <ReservationRow
                     cancelReservation={cancelReservation}
                     reservation={reservation}
@@ -146,23 +159,28 @@ const Reservation = () => {
               );
             })}
           </section>
+          <Paginator
+            defaultPage={1}
+            onPageChange={()=>{}}
+            nextPageTitle="Voir plus"
+            totalPages={Math.ceil(
+              dumpReservations.length / MOBILE_MAX_RESERVATION_ITEM_PER_PAGE
+            )}
+          />
         </section>
       </div>
       {isCancellingReservation && (
         <>
           <form
             ref={ref}
-            className="fixed inset-0 text-sm translate-y-1/2 pt-8  left-[calc(100vw/2-512px/2)] w-lg z-50 h-96 bg-white border border-gray-200 rounded-lg p-3"
+            className="fixed inset-0 text-sm translate-y-1/2 pt-8 left-[calc(100vw/2-314px/2)] md:left-[calc(100vw/2-512px/2)] w-[314px] md:w-lg z-50 h-80 md:h-96 bg-white border border-gray-200 rounded-lg p-3"
           >
             <div className="h-full mx-auto w-[80%] ">
-              <label
-                className="text-sm"
-                htmlFor="cancel-reason"
-              >
+              <label className="text-[12px] md:text-sm" htmlFor="cancel-reason">
                 Entrer le motif de votre annulation
               </label>
               <textarea
-                className="w-full block mt-1 bg-[#FBFBFB] border  border-gray-200 rounded-lg  resize-none p-3 ring-2 ring-white outline-0 focus:ring-primary h-2/3"
+                className="w-full block mt-2 bg-[#FBFBFB] border border-gray-200 rounded-lg  resize-none p-3 ring-2 ring-white outline-0 focus:ring-primary  h-[140px] md:h-2/3"
                 name="cancel-reason"
                 id="cancel-reason"
                 value={cancelReason}
@@ -173,7 +191,7 @@ const Reservation = () => {
                 {" "}
                 {`${cancelReason.length}/${MAX_CANCEL_REASON_LENGTH} caractères`}
               </span>
-              <div className="flex items-center justify-end gap-x-5 mt-5">
+              <div className="flex items-center justify-center md:justify-end gap-x-5 mt-5">
                 <button
                   type="reset"
                   onClick={cancelReservationCancelling}

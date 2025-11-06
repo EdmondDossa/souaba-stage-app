@@ -17,13 +17,26 @@ export default function Home() {
   const [recent, setRecent] = useState();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [hasFetched, setHasFetched] = useState(false);
   const [searchActive, setSearchActive] = useState(false);
   const [searchResult, setSearchResult] = useState([]);
 
   const location = useGeolocation();
   const http = getAxiosInstance();
   const hasFetchedRef = useRef(false);
+
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== "undefined" && window.innerWidth < 480
+  );
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 480);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   useEffect(() => {
     if (
@@ -184,7 +197,7 @@ export default function Home() {
     <>
       <div className="relative bg-[url('/images/acceuil-first-image.webp')] bg-cover bg-center h-[65vh] w-full flex items-center justify-center text-center">
         <div className="relative h-full w-full bg-black/50 z-10 flex flex-col items-center justify-center text-white space-y-10 px-10">
-          <div className="px-4 max-lg:mt-10">
+          <div className="hidden md:block px-4 max-lg:mt-10">
             <h2 className="font-[900] font-montserrat-bold  text-white text-[25px] leading-[26px] md:text-4xl lg:text-6xl md:leading-tight mt-10">
               Trouvez l'hébergement parfait
             </h2>
@@ -192,14 +205,25 @@ export default function Home() {
               pour votre prochain séjour.
             </h2>
           </div>
+          <div className="block md:hidden px-4 max-lg:mt-10">
+            <h2 className="font-[900] whitespace-nowrap font-montserrat-bold  text-white text-xl sm:text-3xl leading-[26px]  md:leading-tight mt-10">
+              Trouvez l'hébergement
+            </h2>
+            <h2 className="font-[900] whitespace-nowrap font-montserrat-bold text-white text-xl sm:text-3xl leading-[26px]  mt-2 md:mt-2 md:leading-tight">
+              parfait pour votre
+            </h2>
+            <h2 className="font-[900] whitespace-nowrap font-montserrat-bold text-white text-xl sm:text-3xl leading-[26px]  mt-2 md:mt-2 md:leading-tight">
+              prochain séjour.
+            </h2>
+          </div>
           <div className="w-full flex flex-col items-center justify-center max-w-4xl mx-auto mt-5">
             <ul className="flex justify-center break-words items-center md:justify-center space-x-3 md:space-x-8">
-              {subNavItems.map((item, i) => {
+              {(isMobile ? subNavItems.slice(0,3) : subNavItems).map((item, i) => {
                 return (
                   <li
                     key={item}
                     className={`
-                relative  whitespace-nowrap text-[15px] lg:text-md cursor-pointer pb-1 md:font-montserrat-medium}
+                relative font-montserrat-medium font-bold  whitespace-nowrap text-[15px] lg:text-md cursor-pointer pb-1 md:font-montserrat-bold}
                 ${property === item ? "active-border" : "active-border-hover"}
               `}
                     onClick={() => setProperty(item)}
@@ -287,7 +311,9 @@ export default function Home() {
       ) : (
         <>
           {searchResult.length === 0 ? (
-          <div className="flex w-full col-span-4 justify-center items-center mx-auto bg-gray-50 my-2 roundd-md" ><NoResults /></div>
+            <div className="flex w-full col-span-4 justify-center items-center mx-auto bg-gray-50 my-2 roundd-md">
+              <NoResults />
+            </div>
           ) : (
             <div className="py-8 px-12 space-y-5 font-montserrat-bold text-gray-700">
               <div className="flex justify-between items-center">
