@@ -18,6 +18,7 @@ export default function Home() {
   const [hasFetched, setHasFetched] = useState(false);
   const [searchActive, setSearchActive] = useState(false);
   const [searchResult, setSeachResult] = useState([]);
+ 
 
   const location = useGeolocation();
   const http = getAxiosInstance();
@@ -67,7 +68,7 @@ export default function Home() {
       }
     };
     fetchAllData();
-  }, [location]);
+  }, [location, http]);
   console.log({ nearby, featured, recent, properties });
 
   const filterPropertiesByType = (properties, selectedType) => {
@@ -78,7 +79,8 @@ export default function Home() {
     }
 
     return properties.filter((property) => {
-      const isHotel = property.type === "hotel";
+      const isHotel = !!property.hotel_id;
+      const accommodationType = property.type; // APARTMENT, STUDIO, VILLA
 
       switch (selectedType) {
         case "Hôtels":
@@ -86,15 +88,11 @@ export default function Home() {
         case "Résidences":
           return !isHotel && property.name?.toLowerCase().includes("résidence");
         case "Appartements":
-          return (
-            !isHotel &&
-            (property.name?.toLowerCase().includes("appartement") ||
-              property.description?.toLowerCase().includes("appartement"))
-          );
+          return !isHotel && accommodationType === "APARTMENT";
         case "Villas":
-          return !isHotel && property.name?.toLowerCase().includes("villa");
+          return !isHotel && accommodationType === "VILLA";
         case "Studio":
-          return !isHotel && property.name?.toLowerCase().includes("studio");
+          return !isHotel && accommodationType === "STUDIO";
         default:
           return true;
       }
@@ -228,16 +226,20 @@ export default function Home() {
               {newPoperties.length > 0 ? (
                 newPoperties.map((property, index) => {
                   // Déterminer le type et extraire les informations appropriées
-                  const isHotel = property.type === "hotel";
+                  console.log(property);
+                  const isHotel = !!property.hotel_id;
                   const mediaArray = isHotel
                     ? property.HotelMedia
                     : property.AccommodationMedia;
+                  const id = isHotel
+                    ? property.hotel_id
+                    : property.accommodation_id;
                   const primaryImage =
                     mediaArray?.find((media) => media.is_primary)?.media
                       ?.file_path || mediaArray?.[0]?.media?.file_path;
 
                   return (
-                    <Link key={index} href={"/appartementdetails/{property.id}"} >
+                    
                     <PropertyCard
                       key={index}
                       imageUrl={primaryImage || "/images/default-property.jpg"}
@@ -251,8 +253,10 @@ export default function Home() {
                       rating={property.avgRating || 0}
                       isFavorite={false}
                       className="flex-shrink-0"
+                      id={id}
+                      type={isHotel ? "hotel" : property.type}
                     />
-                    </Link>
+                    
                   );
                 })
               ) : (
@@ -289,7 +293,14 @@ export default function Home() {
             </div>
             {/* Propriétés répertoriées à proximité */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-4 scrollbar-hide -mb-16 w-full">
-              {nearbyProperties.map((property, index) => (
+              {nearbyProperties.map((property, index) => {
+                
+                const isHotel = !!property.hotel_id;
+                const id = isHotel
+                    ? property.hotel_id
+                    : property.accommodation_id;
+                return(
+                
                 <PropertyCard
                   key={index}
                   imageUrl={
@@ -309,8 +320,9 @@ export default function Home() {
                   rating={property.rating}
                   isFavorite={property.isFavorite}
                   className="flex-shrink-0"
+                  id={id}
                 />
-              ))}
+              )})}
             </div>
           </div>
 

@@ -8,6 +8,9 @@ import {
 } from "lucide-react";
 import PropertyEllipsis from "./PropertyEllipsis";
 import renderStars from "@/utils/render-star";
+import Link from "next/link";
+
+
 
 export default function PropertyCard({
   imageUrl,
@@ -28,8 +31,13 @@ export default function PropertyCard({
   showPrice = true,
   ownerInfo = null,
   imageContainerClassName="",
+  id,
+  type,
   ...rest
-}) {
+}) 
+
+{
+  const href = type === "hotel" ? `/hotels-details/${id}` : `/appartement-details/${id}`;
   return (
     <div
       className={`relative w-full max-w-[298px] overflow-hidden ${
@@ -38,6 +46,7 @@ export default function PropertyCard({
       {...rest}
     >
       {/* Image Container */}
+      <Link href={href}>
       <div
         className={`w-full h-96 bg-cover rounded-xl ${ imageContainerClassName ?? ""}`}
         style={{ backgroundImage: `url(${imageUrl})` }}
@@ -95,6 +104,7 @@ export default function PropertyCard({
           )}
         </div>
       </div>
+      </Link>
 
       {/* Content Area */}
       <div className="p-4">

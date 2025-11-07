@@ -1,7 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, Snowflake, Bath, Tv, Wifi, BedDouble, Eye } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import SvgIcon from "./SvgIcon";
 
 
 const Star = ({ size = 16, className = "" }) => (
@@ -12,14 +13,12 @@ const Star = ({ size = 16, className = "" }) => (
 
 // Component OverviewModal
 
-export default function OverviewModal({ isOpen, selectedRoom, onClose }) {
+export default function OverviewModal({ isOpen, selectedRoom, onClose, hotelRooms }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-
-  const images = selectedRoom?.images?.length
-    ? selectedRoom.images
-    : selectedRoom?.image
-    ? [selectedRoom.image]
+  // Récupérer les images depuis HotelRoomCategoryMedia
+  const images = selectedRoom?.HotelRoomCategoryMedia?.length
+    ? selectedRoom.HotelRoomCategoryMedia.map(media => media.media?.file_path).filter(Boolean)
     : [];
 
   useEffect(() => {
@@ -83,14 +82,15 @@ export default function OverviewModal({ isOpen, selectedRoom, onClose }) {
               {images.length ? (
                 <Image
                   src={images[currentImageIndex]}
-                  alt={selectedRoom.type || "room image"}
+                  alt={selectedRoom.name || "room image"}
                   fill
                   className="object-cover w-full bg-black bg-blend-overlay"
                   sizes="(max-width: 768px) 100vw, 50vw"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-gray-400">
-                  Pas d'image
+                <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 bg-gray-100">
+                  <SvgIcon name="image-placeholder" size={48} className="mb-2 opacity-30" />
+                  <span className="text-sm">Aucune image disponible</span>
                 </div>
               )}
               
@@ -149,7 +149,7 @@ export default function OverviewModal({ isOpen, selectedRoom, onClose }) {
                     }`}
                     aria-label={`Voir image ${index + 1}`}
                   >
-                    <Image src={img} alt={`${selectedRoom.type} ${index + 1}`} fill className="object-cover" />
+                    <Image src={img} alt={`${selectedRoom.name} ${index + 1}`} fill className="object-cover" />
                   </button>
                 ))}
               </div>
@@ -161,7 +161,7 @@ export default function OverviewModal({ isOpen, selectedRoom, onClose }) {
         <div className="w-[45%] -ml-6 bg-white flex flex-col">
           
           <div className="flex justify-between items-start p-6 pb-4 ">
-            <h2 className="text-xl font-bold text-black">{selectedRoom.type}</h2>
+            <h2 className="text-xl font-bold text-black">{selectedRoom.name}</h2>
             <button onClick={closeOverview} className="text-gray-400 hover:text-gray-600 text-xl" aria-label="Fermer">
               ×
             </button>
@@ -170,95 +170,75 @@ export default function OverviewModal({ isOpen, selectedRoom, onClose }) {
           
           <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
            
+            {/* Équipements/Amenities */}
             <div className="space-y-4">
               <div className="flex items-center flex-wrap gap-x-6 gap-y-2 text-sm text-gray-600">
-                <div className="flex items-center space-x-2">
-                  <Eye size={16} />
-                  <span>Vue</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Snowflake size={16} />
-                  <span>Climatisation</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Bath size={16} />
-                  <span>Salle de bains privative</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Tv size={16} />
-                  <span>Télévision à écran plat</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Wifi size={16} />
-                  <span>Wi-Fi Gratuit</span>
-                </div>
+                {selectedRoom.amenities?.map((amenity, index) => (
+                  <div key={index} className="flex items-center space-x-2">
+                    <SvgIcon name={amenity.toLowerCase()} size={16} />
+                    <span>{amenity}</span>
+                  </div>
+                ))}
               </div>
             </div>
 
           
+            {/* Capacité et Salles de bain */}
             <div>
+              <div className="flex items-center space-x-2 text-black mb-2">
+                <SvgIcon name="bed" size={16} className="text-gray-700" />
+                <span className="font-medium">Capacité: {selectedRoom.capacity} personne(s)</span>
+              </div>
               <div className="flex items-center space-x-2 text-black">
-                <BedDouble size={16} className="text-gray-700" />
-                <span className="font-medium">1 lit double</span>
+                <SvgIcon name="bath" size={16} className="text-gray-700" />
+                <span className="font-medium">{selectedRoom.number_of_bathrooms} salle(s) de bain</span>
               </div>
             </div>
 
-            {/* Note et commentaires */}
+            {/* Prix */}
             <div>
               <div className="flex items-center space-x-2 mb-2">
-                
-                <span className="text-sm text-gray-600">
-                  Lits confortables, notés {selectedRoom.rating ?? "7.7"} (d'après {selectedRoom.reviewsCount ?? "107"} commentaires)
+                <span className="text-lg font-bold text-primary">
+                  {Number(selectedRoom.price_per_night).toLocaleString('fr-FR')} FCFA
                 </span>
+                <span className="text-sm text-gray-600">/ nuit</span>
               </div>
             </div>
 
             {/* Description */}
             <div>
+              <h4 className="font-semibold text-black mb-2">Description :</h4>
               <p className="text-black text-sm leading-relaxed">
-                {selectedRoom.description ?? 
-                  "Cette chambre double climatisée dispose d'une télévision par satellite à écran plat et d'une salle de bains privative. Le logement comprend 1 lit."
-                }
+                {selectedRoom.description || "Aucune description disponible"}
               </p>
             </div>
 
-            {/* Salle de bains privative */}
+            {/* Type de chambre */}
             <div>
-              <h4 className="font-semibold text-black mb-3">Dans votre salle de bains privative :</h4>
-              <div className="grid grid-cols-2 gap-2 text-sm text-gray-700">
-                <div className="flex items-center space-x-2"><span>✓</span><span>Douche</span></div>
-                <div className="flex items-center space-x-2"><span>✓</span><span>Sèche-cheveux</span></div>
-                <div className="flex items-center space-x-2"><span>✓</span><span>Toilettes</span></div>
-              </div>
+              <h4 className="font-semibold text-black mb-2">Type de chambre :</h4>
+              <p className="text-sm text-gray-700">{selectedRoom.type}</p>
             </div>
 
-            {/* Vue */}
+            {/* Disponibilité */}
             <div>
-              <h4 className="font-semibold text-black mb-3">Vue :</h4>
-              <div className="flex items-center space-x-2 text-sm text-gray-700">
-                <span>✓</span>
-                <span>Vue</span>
-              </div>
+              <h4 className="font-semibold text-black mb-2">Disponibilité :</h4>
+              <p className="text-sm text-gray-700">{selectedRoom.number_of_rooms} chambre(s) disponible(s)</p>
             </div>
 
-            {/* Équipements */}
-            <div>
-              <h4 className="font-semibold text-black mb-3">Équipements :</h4>
-              <div className="grid grid-cols-2 gap-2 text-sm text-gray-700">
-                <div className="flex items-center space-x-2"><span>✓</span><span>Climatisation</span></div>
-                <div className="flex items-center space-x-2"><span>✓</span><span>Chaînes satellite</span></div>
-                <div className="flex items-center space-x-2"><span>✓</span><span>Bureau</span></div>
-                <div className="flex items-center space-x-2"><span>✓</span><span>Radio</span></div>
-                <div className="flex items-center space-x-2"><span>✓</span><span>Téléphone</span></div>
-                <div className="flex items-center space-x-2"><span>✓</span><span>Télévision à écran plat</span></div>
+            {/* Équipements détaillés */}
+            {selectedRoom.amenities && selectedRoom.amenities.length > 0 && (
+              <div>
+                <h4 className="font-semibold text-black mb-3">Équipements inclus :</h4>
+                <div className="grid grid-cols-2 gap-2 text-sm text-gray-700">
+                  {selectedRoom.amenities.map((amenity, index) => (
+                    <div key={index} className="flex items-center space-x-2">
+                      <span>✓</span>
+                      <span>{amenity}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-
-            {/* Fumeurs */}
-            <div>
-              <h4 className="font-semibold text-black mb-3">Fumeurs :</h4>
-              <div className="text-sm text-gray-700">{selectedRoom.smoking ?? "non-fumeurs"}</div>
-            </div>
+            )}
           </div>
         </div>
       </div>

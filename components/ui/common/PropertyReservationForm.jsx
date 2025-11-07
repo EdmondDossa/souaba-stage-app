@@ -27,8 +27,6 @@ export default function PropertyReservationForm({
       const scrollY = window.scrollY;
       const componentTop = componentRef.current.offsetTop;
       const componentHeight = componentRef.current.offsetHeight;
-      
-      // Point où on "dépasse" complètement le composant
       const passedPoint = componentTop + componentHeight + 200;
       
       if (scrollY > passedPoint) {
@@ -55,10 +53,6 @@ export default function PropertyReservationForm({
     }));
   };
 
-  const calculateTotal = () => {
-    return "**********";
-  };
-
   return (
     <div 
       ref={componentRef}
@@ -71,7 +65,7 @@ export default function PropertyReservationForm({
       {/* Prix total */}
       <div className="mb-6">
         <div className="text-xl font-bold mb-1 text-gray-800">
-          Prix Total: {calculateTotal()} {currency}
+          Prix Total: {price} {currency}
         </div>
        
       </div>

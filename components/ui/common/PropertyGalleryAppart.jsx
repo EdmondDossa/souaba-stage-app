@@ -3,19 +3,19 @@ import { useState } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-export default function PropertyGalleryHotels({hotelsMedias}) {
+export default function PropertyGalleryAppart({appartMedias}) {
   const [mainImage, setMainImage] = useState(0);
 
   const [showModal, setShowModal] = useState(false);
   const [modalImageIndex, setModalImageIndex] = useState(0);
 
   // Calculer le nombre de photos restantes
-  const remainingPhotos = Math.max(0, hotelsMedias.length - 5);
-  const displayedImages = hotelsMedias.slice(1, 5);
+  const remainingPhotos = Math.max(0, appartMedias.length - 5);
+  const displayedImages = appartMedias.slice(1, 5);
 
   const openModal = (index = 0) => {
     console.log(modalImageIndex);
-    console.log(hotelsMedias[0].media);
+    console.log(appartMedias[0].media);
 
     setModalImageIndex(index);
     setShowModal(true);
@@ -28,11 +28,11 @@ export default function PropertyGalleryHotels({hotelsMedias}) {
   };
 
   const nextModalImage = () => {
-    setModalImageIndex((prev) => (prev + 1) % hotelsMedias.length);
+    setModalImageIndex((prev) => (prev + 1) % appartMedias.length);
   };
 
   const prevModalImage = () => {
-    setModalImageIndex((prev) => (prev - 1 + hotelsMedias.length) % hotelsMedias.length);
+    setModalImageIndex((prev) => (prev - 1 + appartMedias.length) % appartMedias.length);
   };
 
   return (
@@ -44,7 +44,7 @@ export default function PropertyGalleryHotels({hotelsMedias}) {
           className="relative w-full h-full rounded-[8px] overflow-hidden"
         >
           <img
-            src={hotelsMedias[0].media.file_path}
+            src={appartMedias[0].media.file_path}
             alt="room"
             className="w-full h-full object-cover"
           />
@@ -72,14 +72,14 @@ export default function PropertyGalleryHotels({hotelsMedias}) {
                 <div className="absolute inset-0 bg-black/50"></div>
               </div>
             </div>
-            {index === 3 && hotelsMedias.length > 5 && (
+            {index === 3 && appartMedias.length > 5 && (
               <div
                 onClick={() => openModal(mainImage)}
                 className="absolute inset-0 flex items-center justify-center"
               >
                 <div className="text-white flex items-center gap-x-4">
                   <span className="block text-6xl font-montserrat-bold">
-                    +{hotelsMedias.length - 4}
+                    +{appartMedias.length - 4}
                   </span>
                   <div className="flex flex-col">
                     <span className="block text-lg font-montserrat-medium">
@@ -109,14 +109,14 @@ export default function PropertyGalleryHotels({hotelsMedias}) {
               <div className="bg-gradient-to-b relative from-gray-100 from-[85%] to-gray-800/50  w-[90%] mx-auto rounded-xl mt-2 px-4 pt-4">
                 <div className="relative h-[60vh] mx-auto w-[80%] bg-gray-100">
                   <Image
-                    src={hotelsMedias[modalImageIndex].media.file_path}
+                    src={appartMedias[modalImageIndex].media.file_path}
                     alt={`Image ${modalImageIndex + 1}`}
                     fill
                     className="object-cover w-full  bg-black bg-blend-overlay"
                   />
                   <div className="absolute inset-0 bg-radial via-transparent to-transparent from-white/0  from-[80%]"></div>
                   {/* Navigation buttons */}
-                  {hotelsMedias.length > 1 && (
+                  {appartMedias.length > 1 && (
                     <>
                       <button
                         onClick={prevModalImage}
@@ -133,9 +133,9 @@ export default function PropertyGalleryHotels({hotelsMedias}) {
                     </>
                   )}
                 {/* Indicateurs de navigation */}
-                {hotelsMedias.length > 1 && (
+                {appartMedias.length > 1 && (
                   <div className="flex items-center justify-center bottom-3 left-0 right-0 absolute gap-x-3">
-                    {hotelsMedias.map((_, i) => (
+                    {appartMedias.map((_, i) => (
                       <button
                         key={i}
                         onClick={() => openModal(i)}
@@ -154,7 +154,7 @@ export default function PropertyGalleryHotels({hotelsMedias}) {
               {/* Miniatures */}
               <div className="py-4 w-[90%] mx-auto max-h-[25vh] overflow-y-auto">
                 <div className="flex flex-wrap space-x-2">
-                  {hotelsMedias.map((image, index) => (
+                  {appartMedias.map((image, index) => (
                     <button
                       key={index}
                       onClick={() => setModalImageIndex(index)}
