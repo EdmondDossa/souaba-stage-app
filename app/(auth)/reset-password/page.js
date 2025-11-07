@@ -49,7 +49,7 @@ const PasswordChange = () => {
     } else {
       setToken(token);
     }
-  }, []);
+  }, [router, searchParams]);
 
   return (
     <AuthForm

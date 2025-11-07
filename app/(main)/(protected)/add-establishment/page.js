@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FaChevronLeft } from "react-icons/fa";
 import { Button } from "@/components/ui/common";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -64,10 +64,10 @@ const AddEstablishment = () => {
   const router = useRouter();
   const { user } = useAuthContext();
   
-  const stepsDefinitions = [
+  const stepsDefinitions = useMemo(() => [
     ...rawSteps,
     ...(user.profile?.identity_document ? [] : [identitySection]),
-  ];
+  ], [user.profile?.identity_document]);
 
   const searchParams = useSearchParams();
   const forTestingPurpose = searchParams.get("env") === "test";
@@ -97,8 +97,6 @@ const AddEstablishment = () => {
     (step) => step.stepName === "Hébergement"
   ).data;
 
-  if (!user.profile?.city) return <SetProfileInfoForAccomodation />
-
   useEffect(() => {
     if (!hebergementType) return;
     if (hebergementType === "Hôtel") setSteps(stepsDefinitions);
@@ -106,7 +104,7 @@ const AddEstablishment = () => {
       //when it is `Hôtel` as hebergement then retrieve the roomtype component step
       setSteps(stepsDefinitions.filter((step) => step.name !== "Chambres"));
     }
-  }, [hebergementType]);
+  }, [hebergementType, stepsDefinitions]);
 
   function handleFormDataUpdate(data) {
     let formDataCopy = Array.from(stepFormValues);
@@ -334,6 +332,8 @@ const AddEstablishment = () => {
     //to make sure the top of each new component is in view - ie reset scroll position
     window.scrollTo({ top: 0 });
   }, [currentStep]);
+
+  if (!user.profile?.city) return <SetProfileInfoForAccomodation />
 
   return isSubmitted ? (
     <SuccessfulSubmit />

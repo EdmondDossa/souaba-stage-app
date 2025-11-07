@@ -1,13 +1,13 @@
 "use client";
 import propertyOne from "@/public/images/new-property1.jpg";
 import propertyTwo from "@/public/images/new-property2.jpg";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { IoMdCloseCircle } from "react-icons/io";
 import { ReservationRow } from "./ui";
 
 const Reservation = () => {
   
-  const dumpReservations = [
+  const dumpReservations = useMemo(() => [
     {
       id: 1,
       name: "Appartement entièrement meublé",
@@ -78,7 +78,7 @@ const Reservation = () => {
       cost: 1_900_000,
       category: "Refuser",
     },
-  ];
+  ], []);
   
   const ref = useRef();
 
@@ -108,7 +108,7 @@ const Reservation = () => {
       (reservation) => reservation.category === currentCategory
     );
     setReservations(filteredReservations);
-  }, [currentCategory]);
+  }, [currentCategory, dumpReservations]);
 
   return (
     <>

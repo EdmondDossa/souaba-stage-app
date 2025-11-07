@@ -69,7 +69,7 @@ export default function Home() {
       }
     };
     fetchAllData();
-  }, [location]);
+  }, [location, http]);
   console.log({ nearby, featured, recent, properties });
 
   const filterPropertiesByType = (properties, selectedType) => {
@@ -186,7 +186,7 @@ export default function Home() {
         <div className="relative h-full w-full bg-black/50 z-10 flex flex-col items-center justify-center text-white space-y-10 px-10">
           <div className="px-4 max-lg:mt-10">
             <h2 className="font-[900] font-montserrat-bold  text-white text-[25px] leading-[26px] md:text-4xl lg:text-6xl md:leading-tight mt-10">
-              Trouvez l'hébergement parfait
+              Trouvez l&apos;hébergement parfait
             </h2>
             <h2 className="font-[800] font-montserrat-bold text-white text-[25px] leading-[26px] md:text-4xl lg:text-6xl mt-1 md:mt-2 md:leading-tight">
               pour votre prochain séjour.
@@ -255,7 +255,7 @@ export default function Home() {
                 <div className="space-y-2 md:space-y-3">
                   <div className="w-fit h-auto md:h-52 font-montserrat-bold text-[26px] md:text-4xl flex flex-col justify-start space-y-1 md:space-y-2">
                     <h4 className="font-bold text-start leading-tight">
-                      Essayez d'héberger{" "}
+                      Essayez d&apos;héberger{" "}
                     </h4>
                     <h4 className="font-bold text-start leading-tight">
                       avec nous{" "}

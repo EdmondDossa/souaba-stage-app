@@ -47,7 +47,7 @@ const LoginPage = () => {
 
   useEffect(() => {
     if (isLogged) router.replace("/");
-  }, [isLogged]);
+  }, [isLogged, router]);
 
   return (
     <section className="flex">

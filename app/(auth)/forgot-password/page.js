@@ -27,7 +27,7 @@ const PasswordForgot = () => {
       e.target["email"].value = "";
     } catch (error) {
       setFormError(
-        "L'email n'a pas pu être envoyé. Veuilllez réessayé plus tard."
+        "L'email n'a pas pu être envoyé. Veuillez réessayer plus tard."
       );
     } finally {
       setLoading(false);
@@ -62,7 +62,7 @@ const PasswordForgot = () => {
       {emailSent && (
         <p className="py-2 ms-2 text-green font-montserrat-medium text-justify text-sm">
           {" "}
-          Un lien de réinitialisation vous a été envoyé à cette adresse. Si l'adresse entrée est
+          Un lien de réinitialisation vous a été envoyé à cette adresse. Si l&apos;adresse entrée est
           valide vous le recevrez.
         </p>
       )}
