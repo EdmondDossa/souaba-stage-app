@@ -3,10 +3,10 @@ import getAxiosInstance from "@/lib/request";
 import AuthForm from "../components/AuthForm";
 import { InputRow } from "@/components/ui/common";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { isPaswordStrong } from "@/utils/validator";
 
-const PasswordChange = () => {
+const PasswordChangeContent = () => {
   const http = getAxiosInstance();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -79,6 +79,14 @@ const PasswordChange = () => {
         name="confirm-password"
       />
     </AuthForm>
+  );
+};
+
+const PasswordChange = () => {
+  return (
+    <Suspense fallback={<div>Chargement...</div>}>
+      <PasswordChangeContent />
+    </Suspense>
   );
 };
 

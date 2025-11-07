@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import AuthForm from "../components/AuthForm";
 import OtpInput from "@/components/ui/common/OtpInput";
 import getAxiosInstance from "@/lib/request";
@@ -7,7 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { FaSpinner } from "react-icons/fa";
 import { formatTime } from "@/utils";
 
-const RegisterConfirmationOtp = () => {
+const RegisterConfirmationOtpContent = () => {
   const http = getAxiosInstance();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -133,6 +133,14 @@ const RegisterConfirmationOtp = () => {
         </button>
       </div>
     </AuthForm>
+  );
+};
+
+const RegisterConfirmationOtp = () => {
+  return (
+    <Suspense fallback={<div>Chargement...</div>}>
+      <RegisterConfirmationOtpContent />
+    </Suspense>
   );
 };
 

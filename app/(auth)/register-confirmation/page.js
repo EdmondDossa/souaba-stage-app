@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { Suspense, useState } from "react";
 import { RadioGroup } from "radix-ui";
 import AuthForm from "../components/AuthForm";
 import { useSearchParams } from "next/navigation";
 import { hideString } from "@/utils";
 
-const RegisterConfirmation = () => {
+const RegisterConfirmationContent = () => {
   const searchParams = useSearchParams();
   const email = searchParams.get("email");
   const contact = searchParams.get("contact");
@@ -82,4 +82,11 @@ const RegisterConfirmation = () => {
   );
 };
 
+const RegisterConfirmation = () => {
+  return (
+    <Suspense fallback={<div>Chargement...</div>}>
+      <RegisterConfirmationContent />
+    </Suspense>
+  );
+};
 export default RegisterConfirmation;
