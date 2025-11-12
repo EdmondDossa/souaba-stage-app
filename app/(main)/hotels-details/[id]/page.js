@@ -9,22 +9,27 @@ import {
   PropertyReviews,
   SearchBar,
 } from "@/components/ui/common";
-import {hotelData} from "../data/hotelData";
+import { hotelData } from "../data/hotelData";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useRef, use } from "react";
-import getAxiosInstance from '@/lib/request';
+import getAxiosInstance from "@/lib/request";
 import { useParams } from "next/navigation";
 import { HotelsRoom } from "../../(protected)/add-establishment/steps-components";
 
 export default function HotelDetails() {
+
   const router = useRouter();
   const { id } = useParams();
+
   const [hotelsData, setHotelsData] = useState(null);
   const hasfetchedData = useRef(false);
+  
   const http = getAxiosInstance();
+
   const handleBooking = () => {
     router.push("/make-reservation");
   };
+
   useEffect(() => {
     const fetchHotelData = async () => {
       try {
@@ -32,31 +37,24 @@ export default function HotelDetails() {
         hasfetchedData.current = true;
         const response = await http.get(`/hotels?hotel_id=${id}&limit=1`);
         setHotelsData(response.data.data[0]);
-      
       } catch (error) {
         console.error("Error fetching hotel data:", error);
       }
-    }
+    };
     fetchHotelData();
-  
-},[id, http])
+  }, [id]);
 
-if(!hotelsData) return;
-console.log(hotelsData);
-console.log(hotelsData.HotelMedia);
-const hotelsRooms= hotelsData.HotelRoomCategories; 
-const hotelsMedias= hotelsData.HotelMedia;
-console.log(hotelsData);
-console.log(hotelsData.amenities);
-console.log(hotelsRooms);
+  if (!hotelsData) return;
+
+  const hotelsRooms = hotelsData.HotelRoomCategories;
+  const hotelsMedias = hotelsData.HotelMedia;
+
   return (
     <div className="bg-white min-h-screen">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Galerie d'images */}
         <div className="mb-8">
-          <PropertyGallery
-            hotelsMedias={hotelsMedias}
-          />
+          <PropertyGallery hotelsMedias={hotelsMedias} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -93,29 +91,25 @@ console.log(hotelsRooms);
             Disponibilité
           </h3>
           <div className="mt-5">
-            <SearchBar  isCentered={false}/>
+            <SearchBar isCentered={false} />
           </div>
         </div>
 
         {/* Chambres disponibles - Pleine largeur */}
         <div className="mt-8 p-6">
-          <HotelRooms
-          hotelRooms={hotelsRooms} />
+          <HotelRooms hotelRooms={hotelsRooms} />
         </div>
 
         <div className="mt-0 md:mt-52"></div>
 
         {/* Sécurité et hygiène - Après le tableau */}
         <div className="p-6">
-          <SecuritySection 
-          />
+          <SecuritySection />
         </div>
 
         {/* Avis - Avant la newsletter */}
         <div className=" p-6">
-          <PropertyReviews
-            reviews={hotelsData?.reviews || []}
-          />
+          <PropertyReviews reviews={hotelsData?.reviews || []} />
         </div>
       </div>
     </div>

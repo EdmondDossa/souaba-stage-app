@@ -10,7 +10,7 @@ export default function PropertyAmenities({ amenities, title = "Commodités offe
             <div key={index} className="flex items-center space-x-3">
               <div className="w-10 h-10 rounded-lg flex items-center justify-center">
                 <SvgIcon
-                  name={amenity}
+                  name={String(amenity).toLowerCase()}
                   size={20}
                 />
               </div>
