@@ -4,6 +4,7 @@ import { X } from "lucide-react";
 import Image from "next/image";
 import FilterSideBar from "../find-accomodation/components/FilterSideBar";
 import { PropertyCard } from "@/components/ui/common";
+import getAxiosInstance from "@/lib/request";
 
 const FoundProducts = () => {
   const filtersThemes = ["100, Rue Smart", "12 Mars 2021", "Courte Période"];

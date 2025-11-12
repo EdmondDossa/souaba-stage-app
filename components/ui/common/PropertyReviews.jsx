@@ -1,22 +1,94 @@
 "use client";
-import React from "react";
+import React, { useMemo } from "react";
 import { Star } from "lucide-react";
 
 const PropertyReviews = ({
-  rating = 5.0,
-  reviewCount = 100,
+  hotelData,
   reviews = [],
-  ratingCategories = [
-    { label: "Équipements", rating: 5.0 },
-    { label: "Hygiène", rating: 4.0 },
-    { label: "Communication", rating: 5.0 },
-    { label: "Emplacement de la propriété", rating: 5.0 },
-    { label: "Rapport qualité-prix", rating: 4.0 }
-  ],
 }) => {
   const handleImageError = (e) => {
     e.target.src = "/images/profile.png";
   };
+
+  // Calculer les moyennes des notes à partir des reviews de l'API
+  const calculatedRatings = useMemo(() => {
+    if (!reviews || reviews.length === 0) {
+      // Données statiques par défaut si pas de reviews
+      return {
+        globalRating: 5.0,
+        reviewCount: 0,
+        categories: [
+          { label: "Propreté", rating: 5.0, field: "cleanliness_rating" },
+          { label: "Service", rating: 4.0, field: "service_rating" },
+          { label: "Rapport qualité-prix", rating: 4.0, field: "value_for_money_rating" },
+          { label: "Emplacement", rating: 5.0, field: "location_rating" },
+          { label: "Confort", rating: 5.0, field: "comfort_rating" }
+        ]
+      };
+    }
+
+    // Calculer les moyennes réelles depuis l'API
+    const totalReviews = reviews.length;
+    const sumRatings = {
+      cleanliness: 0,
+      service: 0,
+      valueForMoney: 0,
+      location: 0,
+      comfort: 0,
+      global: 0
+    };
+
+    reviews.forEach(review => {
+      sumRatings.cleanliness += review.cleanliness_rating || 0;
+      sumRatings.service += review.service_rating || 0;
+      sumRatings.valueForMoney += review.value_for_money_rating || 0;
+      sumRatings.location += review.location_rating || 0;
+      sumRatings.comfort += review.comfort_rating || 0;
+      sumRatings.global += review.rating || 0;
+    });
+
+    return {
+      globalRating: (sumRatings.global / totalReviews).toFixed(1),
+      reviewCount: totalReviews,
+      categories: [
+        { label: "Propreté", rating: (sumRatings.cleanliness / totalReviews).toFixed(1), field: "cleanliness_rating" },
+        { label: "Service", rating: (sumRatings.service / totalReviews).toFixed(1), field: "service_rating" },
+        { label: "Rapport qualité-prix", rating: (sumRatings.valueForMoney / totalReviews).toFixed(1), field: "value_for_money_rating" },
+        { label: "Emplacement", rating: (sumRatings.location / totalReviews).toFixed(1), field: "location_rating" },
+        { label: "Confort", rating: (sumRatings.comfort / totalReviews).toFixed(1), field: "comfort_rating" }
+      ]
+    };
+  }, [reviews]);
+
+  // Formater les reviews pour l'affichage
+  const formattedReviews = useMemo(() => {
+    if (!reviews || reviews.length === 0) {
+      // Données statiques par défaut
+      return [
+        {
+          id: 1,
+          author: "Utilisateur anonyme",
+          date: "En attente d'avis",
+          content: "Aucun avis disponible pour le moment. Soyez le premier à donner votre avis !",
+          profileImage: "/images/profile.png",
+          rating: 5
+        }
+      ];
+    }
+
+    return reviews.map(review => ({
+      id: review.hotel_review_id,
+      author: review.user?.name || review.user?.email || "Utilisateur anonyme",
+      date: new Date(review.created_at).toLocaleDateString('fr-FR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      }),
+      content: review.comment,
+      profileImage: review.user?.profile_picture || "/images/profile.png",
+      rating: review.rating
+    }));
+  }, [reviews]);
 
   return (
     <div className="">
@@ -28,14 +100,15 @@ const PropertyReviews = ({
         </div>
         <div className="flex items-center space-x-2">
           <Star size={20} fill="#FFD700" className="text-yellow-400" />
-          <span className="font-montserrat-bold text-lg">{(+rating).toFixed(1)}</span>
+          <span className="font-montserrat-bold text-lg">{calculatedRatings.globalRating}</span>
+          <span className="text-sm text-gray-600">({calculatedRatings.reviewCount} avis)</span>
         </div>
       </div>
 
       {/* Grille de notation */}
       <div className="grid w-[800px] grid-cols-2 gap-3 mb-8">
-        {ratingCategories.map((item, index) => (
-          <div key={index} className="flex justify-between items-center">
+        {calculatedRatings.categories.map((item) => (
+          <div key={item.field} className="flex justify-between items-center">
             <span className="text-sm font-medium">{item.label}</span>
             <div className="flex items-center space-x-2">
               <div className="w-50 h-2 bg-gray-200 rounded-full">
@@ -45,7 +118,7 @@ const PropertyReviews = ({
                 ></div>
               </div>
               <span className="text-sm font-semibold min-w-[2rem]">
-                {item.rating.toFixed(1)}
+                {item.rating}
               </span>
             </div>
           </div>
@@ -54,8 +127,8 @@ const PropertyReviews = ({
 
       {/* Commentaires */}
       <div className="grid w-[800px] grid-cols-1 md:grid-cols-2 gap-6 pt-6">
-        {reviews.map((review) => (
-          <div key={review.id} className="space-y-3 p-4rounded-lg">
+        {formattedReviews.slice(0, 6).map((review) => (
+          <div key={review.id} className="space-y-3 p-4 rounded-lg">
             <div className="flex items-center space-x-3">
               <img
                 src={review.profileImage || "/images/profile.png"}
@@ -63,9 +136,17 @@ const PropertyReviews = ({
                 className="w-12 h-12 rounded-full object-cover"
                 onError={handleImageError}
               />
-              <div>
+              <div className="flex-1">
                 <div className="font-semibold text-sm">{review.author}</div>
-                <div className="text-xs text-gray-500">{review.date}</div>
+                <div className="flex items-center space-x-2">
+                  <div className="text-xs text-gray-500">{review.date}</div>
+                  {review.rating && (
+                    <div className="flex items-center space-x-1">
+                      <Star size={12} fill="#FFD700" className="text-yellow-400" />
+                      <span className="text-xs font-medium">{review.rating}</span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
             <p className="text-gray-600 text-sm leading-relaxed">
@@ -75,9 +156,11 @@ const PropertyReviews = ({
         ))}
       </div>
 
-      <button className="mt-10 mb-10 border border-primary text-black px-8 py-3 rounded-lg hover:bg-primary hover:text-white transition-all font-semibold">
-        Afficher les {reviews.length} avis
-      </button>
+      {formattedReviews.length > 0 && (
+        <button className="mt-10 mb-10 border border-primary text-black px-8 py-3 rounded-lg hover:bg-primary hover:text-white transition-all font-semibold">
+          Afficher les {formattedReviews.length} avis
+        </button>
+      )}
     </div>
   );
 };

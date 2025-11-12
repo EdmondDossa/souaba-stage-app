@@ -82,7 +82,7 @@ export default function Home() {
       }
     };
     fetchAllData();
-  }, [location]);
+  }, [location, http]);
   console.log({ nearby, featured, recent, properties });
 
   const filterPropertiesByType = (properties, selectedType) => {
@@ -93,7 +93,8 @@ export default function Home() {
     }
 
     return properties.filter((property) => {
-      const isHotel = property.type === "hotel";
+      const isHotel = !!property.hotel_id;
+      const accommodationType = property.type; // APARTMENT, STUDIO, VILLA
 
       switch (selectedType) {
         case "Hôtels":
@@ -101,15 +102,11 @@ export default function Home() {
         case "Résidences":
           return !isHotel && property.name?.toLowerCase().includes("résidence");
         case "Appartements":
-          return (
-            !isHotel &&
-            (property.name?.toLowerCase().includes("appartement") ||
-              property.description?.toLowerCase().includes("appartement"))
-          );
+          return !isHotel && accommodationType === "APARTMENT";
         case "Villas":
-          return !isHotel && property.name?.toLowerCase().includes("villa");
+          return !isHotel && accommodationType === "VILLA";
         case "Studio":
-          return !isHotel && property.name?.toLowerCase().includes("studio");
+          return !isHotel && accommodationType === "STUDIO";
         default:
           return true;
       }

@@ -1,13 +1,9 @@
 import React from "react";
 import Image from "next/image";
-import {
-  Heart,
-  Bed,
-  Bath,
-  CarFront as Car,
-} from "lucide-react";
+import { Heart, Bed, Bath, CarFront as Car } from "lucide-react";
 import PropertyEllipsis from "./PropertyEllipsis";
 import renderStars from "@/utils/render-star";
+import Link from "next/link";
 
 export default function PropertyCard({
   imageUrl,
@@ -27,9 +23,13 @@ export default function PropertyCard({
   ellipsis = 0,
   showPrice = true,
   ownerInfo = null,
-  imageContainerClassName="",
+  imageContainerClassName = "",
+  id,
+  type,
   ...rest
 }) {
+  const href =
+    type === "hotel" ? `/hotels-details/${id}` : `/appartement-details/${id}`;
   return (
     <div
       className={`relative w-full max-w-[298px] min-w-[200px] overflow-hidden ${
@@ -38,63 +38,67 @@ export default function PropertyCard({
       {...rest}
     >
       {/* Image Container */}
-      <div
-        className={`w-full h-72 lg:h-80 mt-2 bg-cover rounded-xl ${ imageContainerClassName ?? ""}`}
-        style={{ backgroundImage: `url(${imageUrl})` }}
-      >
-        <div className="relative card-body h-full w-full rounded-xl bg-black/50 bg-img">
-          {/* Price Tag */}
-          <div className="absolute bottom-1 left-4 w-full">
-            <div className="flex justify-between items-center">
-              <strong className="font-montserrat-medium text-white block text-[17px] font-bold">
-                {showPrice && price}
-              </strong>
-              {showEllipsis && <PropertyEllipsis current={ellipsis} />}
-            </div>
-          </div>
-
-          {/* Stars Rating */}
-          {showRate && (
-            <div className="absolute top-4 left-4 p-2  flex items-center gap-1 mb-2">
-              {renderStars(rating)}
-            </div>
-          )}
-          {/* Heart Icon */}
-          <button className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-md text-gray-400 hover:text-red-500 transition-colors">
-            <Heart
-              size={20}
-              fill={isFavorite ? "red" : "none"}
-              stroke={isFavorite ? "red" : "currentColor"}
-              strokeWidth={2}
-            />
-          </button>
-          {ownerInfo && (
-            <div className="flex items-center absolute m-3 bottom-0 text-sm gap-x-2 mx-2">
-              <div className="shrink-0">
-                {" "}
-                <Image
-                  className="w-16 h-16"
-                  width={200}
-                  height={200}
-                  alt=""
-                  src={ownerInfo.photo}
-                />{" "}
-              </div>
-              <div className="text-white">
-                <span className="block"> Répertorié par: </span>
-                <strong className="block font-montserrat-bold">
-                  {" "}
-                  {ownerInfo.fullname}{" "}
+      <Link href={href}>
+        <div
+          className={`w-full h-72 lg:h-80 mt-2 bg-cover rounded-xl ${
+            imageContainerClassName ?? ""
+          }`}
+          style={{ backgroundImage: `url(${imageUrl})` }}
+        >
+          <div className="relative card-body h-full w-full rounded-xl bg-black/50 bg-img">
+            {/* Price Tag */}
+            <div className="absolute bottom-1 left-4 w-full">
+              <div className="flex justify-between items-center">
+                <strong className="font-montserrat-medium text-white block text-[17px] font-bold">
+                  {showPrice && price}
                 </strong>
-                <span className="block whitespace-nowrap font-bold">
-                  {" "}
-                  {`À partir de: ${ownerInfo.minPrice}-${ownerInfo.maxPrice} FCFA `}{" "}
-                </span>
+                {showEllipsis && <PropertyEllipsis current={ellipsis} />}
               </div>
             </div>
-          )}
+
+            {/* Stars Rating */}
+            {showRate && (
+              <div className="absolute top-4 left-4 p-2  flex items-center gap-1 mb-2">
+                {renderStars(rating)}
+              </div>
+            )}
+            {/* Heart Icon */}
+            <button className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-md text-gray-400 hover:text-red-500 transition-colors">
+              <Heart
+                size={20}
+                fill={isFavorite ? "red" : "none"}
+                stroke={isFavorite ? "red" : "currentColor"}
+                strokeWidth={2}
+              />
+            </button>
+            {ownerInfo && (
+              <div className="flex items-center absolute m-3 bottom-0 text-sm gap-x-2 mx-2">
+                <div className="shrink-0">
+                  {" "}
+                  <Image
+                    className="w-16 h-16"
+                    width={200}
+                    height={200}
+                    alt=""
+                    src={ownerInfo.photo}
+                  />{" "}
+                </div>
+                <div className="text-white">
+                  <span className="block"> Répertorié par: </span>
+                  <strong className="block font-montserrat-bold">
+                    {" "}
+                    {ownerInfo.fullname}{" "}
+                  </strong>
+                  <span className="block whitespace-nowrap font-bold">
+                    {" "}
+                    {`À partir de: ${ownerInfo.minPrice}-${ownerInfo.maxPrice} FCFA `}{" "}
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      </Link>
 
       {/* Content Area */}
       <div className="p-4">
