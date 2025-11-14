@@ -15,6 +15,7 @@ import { useEffect, useState, useRef, use } from "react";
 import getAxiosInstance from "@/lib/request";
 import { useParams } from "next/navigation";
 import { HotelsRoom } from "../../(protected)/add-establishment/steps-components";
+import MobileSearchMenu from "@/components/ui/common/MobileSearchMenu";
 
 export default function HotelDetails() {
 
@@ -51,7 +52,7 @@ export default function HotelDetails() {
 
   return (
     <div className="bg-white min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-8 mt-10 lg:mt-0">
         {/* Galerie d'images */}
         <div className="mb-8">
           <PropertyGallery hotelsMedias={hotelsMedias} />
@@ -90,8 +91,11 @@ export default function HotelDetails() {
           <h3 className="text-xl ml-10  mt-10 font-montserrat-bold font-bold text-gray-700 mb-3">
             Disponibilité
           </h3>
-          <div className="mt-5">
+          <div className="mt-5 hidden lg:block">
             <SearchBar isCentered={false} />
+          </div>
+          <div className="mt-5 block lg:hidden">
+            <MobileSearchMenu className="max-w-[280px] border border-gray-700 rounded-xl" />
           </div>
         </div>
 

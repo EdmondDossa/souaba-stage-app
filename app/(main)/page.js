@@ -82,8 +82,7 @@ export default function Home() {
       }
     };
     fetchAllData();
-  }, [location, http]);
-  console.log({ nearby, featured, recent, properties });
+  }, [location]);
 
   const filterPropertiesByType = (properties, selectedType) => {
     if (!properties || !Array.isArray(properties)) return [];

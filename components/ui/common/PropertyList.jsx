@@ -106,6 +106,7 @@ const PropertyList = ({
             return (
               <PropertyCard
                 key={index}
+                id={property.accommodation_id ?? property.hotel_id }
                 imageUrl={primaryImage || "/images/acceuil-first-image.webp"}
                 price={
                   isHotel
@@ -117,6 +118,7 @@ const PropertyList = ({
                 rating={property.avgRating || 0}
                 isFavorite={false}
                 className="flex-shrink-0"
+                type={isHotel ? "hotel" : property.type}
               />
             );
           })
