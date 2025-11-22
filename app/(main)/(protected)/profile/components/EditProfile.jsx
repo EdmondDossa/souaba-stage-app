@@ -10,6 +10,7 @@ import {
   isValidPhoneNumber,
 } from "@/utils/validator";
 import toast from "react-hot-toast";
+import PhotosUpload from "../../add-establishment/steps-components/PhotosUpload";
 
 const EditProfile = ({ onEditCancel }) => {
   const http = getAxiosInstance();
@@ -19,7 +20,7 @@ const EditProfile = ({ onEditCancel }) => {
   const [formError, setFormError] = useState({});
   const [isLoading, setLoading] = useState(false);
 
-  const [hasEdit,setHasEdit] = useState(false);
+  const [hasEdit, setHasEdit] = useState(false);
 
   const formFields = [
     {
@@ -80,14 +81,16 @@ const EditProfile = ({ onEditCancel }) => {
   }
 
   function handleChange(e) {
-    if(!hasEdit) setHasEdit(true);
+    if (!hasEdit) setHasEdit(true);
     const { name, value } = e.target;
     setFormValues({ ...formValues, [name]: value });
   }
 
   return (
-    <div className="flex-grow">
-      <h2 className="font-montserrat-bold">Informations Personnelles</h2>
+    <div className="flex-grow -mt-10 lg:mt-0 ">
+      <h2 className="font-montserrat-bold hidden lg:block ">
+        Informations Personnelles
+      </h2>
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
           {formFields.map((field) => (
@@ -120,7 +123,15 @@ const EditProfile = ({ onEditCancel }) => {
             </select>
           </div>
         </div>
-        <div className="flex justify-end gap-x-8 mt-8 font-montserrat-bold">
+        <div className="mt-8 block lg:hidden">
+          <PhotosUpload
+            onPhotosChange={() => {}}
+            iconSize={27}
+            title="Ajouter le recto et après le verso"
+            label="Pièce d'identité"
+          />
+        </div>
+        <div className="flex justify-center lg:justify-end gap-x-8 mt-8 mb-8 lg:mb-0 font-montserrat-bold">
           <Button
             onClick={onEditCancel}
             variant="secondary"

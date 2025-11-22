@@ -1,5 +1,6 @@
 import useAuthContext from "@/context/auth";
 import { IoStar } from "react-icons/io5";
+import PhotosUpload from "../../add-establishment/steps-components/PhotosUpload";
 
 const ViewProfile = ({ initEdit }) => {
   const { user } = useAuthContext();
@@ -29,7 +30,7 @@ const ViewProfile = ({ initEdit }) => {
   ];
 
   return (
-    <div className="flex flex-grow">
+    <div className="lg:flex flex-grow text-sm  hidden">
       <div className="w-1/2">
         <h2 className="font-montserrat-bold">Informations Personnelles</h2>
         <div className="my-7">
@@ -74,8 +75,18 @@ const ViewProfile = ({ initEdit }) => {
           </button>
         </div>
       </div>
-      <div className="w-1/2">
-        <h2 className="font-montserrat-bold">Pièce d'identité</h2>
+      <div className="w-1/2 ms-4">
+        <h2 className="font-montserrat-bold text-center">Pièce d'identité</h2>
+        <div className="w-full">
+          <PhotosUpload
+            onPhotosChange={()=>{}}
+            title="Uploader votre carte"
+            noPhotoText="Aucune image uploader pour l'instant"
+            className="md:w-full h-[150px]"
+            iconSize={40}
+            label=""
+          />
+        </div>
       </div>
     </div>
   );

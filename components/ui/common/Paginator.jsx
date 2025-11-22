@@ -4,7 +4,7 @@ import { useState } from "react";
 import { FaChevronRight } from "react-icons/fa";
 import { FaChevronLeft } from "react-icons/fa6";
 
-const Paginator = ({ defaultPage, onPageChange, totalPages }) => {
+const Paginator = ({ defaultPage, onPageChange, totalPages, nextPageTitle = "Voir la page" }) => {
   const [currentPage, setCurrentPage] = useState(defaultPage || 1);
 
   function getPaginator() {
@@ -88,8 +88,7 @@ const Paginator = ({ defaultPage, onPageChange, totalPages }) => {
         >
           {" "}
           <span className="block absolute -top-3 left-3 backdrop-blur-md text-sm">
-            {" "}
-            Voir la page{" "}
+            { nextPageTitle }
           </span>{" "}
           <span className="absolute right-0 border-l-2 border-gray-300 top-2 py-1">
             {" "}

@@ -16,10 +16,12 @@ const ReservationForm = () => {
   const stepsDefinitions = [
     {
       name: "Méthode de paiement",
+      stepIcon:"/images/calque-paiement-1.png",
       component: PaymentMethod,
     },
     {
       name: "Résumé de la réservation",
+      stepIcon:"/images/calendar-paiement-2.png",
       component: ReservationResume,
     },
   ];
@@ -57,7 +59,7 @@ const ReservationForm = () => {
         steps={stepsDefinitions}
         currentStep={currentStep}
       />
-      <div className="max-w-[320px] sm:max-w-md mx-auto my-10 ">
+      <div className="max-w-md  mx-auto my-10 ">
         {render(stepsDefinitions[currentStep].component)}
       </div>
     </section>

@@ -4,11 +4,11 @@ import { useState } from "react";
 import OverviewModal from "./OverviewModal";
 import SvgIcon from "./SvgIcon";
 
-export default function HotelRooms() {
+export default function HotelRooms({hotelRooms}) {
   // États pour gérer l'overview
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [isOverviewOpen, setIsOverviewOpen] = useState(false);
-
+  
   // Fonction pour ouvrir l'overview
   const openOverview = (room) => {
     setSelectedRoom(room);
@@ -20,53 +20,11 @@ export default function HotelRooms() {
     setSelectedRoom(null);
     setIsOverviewOpen(false);
   };
-
-  const rooms = [
-    {
-      id: 1,
-      type: "Chambre Double Standard",
-      image: "/images/new-property1.jpg",
-      images: [
-        "/images/new-property1.jpg",
-        "/images/new-property2.jpg",
-        "/images/new-property3.jpg",
-      ],
-      description: "Un petite description",
-      capacity: "5",
-      price: "800 000 FCFA",
-      guests: "1",
-      availability: "0 OFFRES",
-      rating: 5,
-    },
-    {
-      id: 2,
-      type: "Suite",
-      image: "/images/new-property2.jpg",
-      images: [
-        "/images/new-property2.jpg",
-        "/images/new-property1.jpg",
-        "/images/new-property4.jpg",
-      ],
-      description: "Cette chambre double climatisée dispose d'une télévision par sattelite a écran plat et d'une salle de bains privative.Le logement comprend 1 lit",
-      capacity: "5",
-      price: "900 000 FCFA",
-      guests: "1",
-      availability: "0 OFFRES",
-      rating: 5,
-    },
-    {
-      id: 3,
-      type: "Chambre Double Standard",
-      image: "/images/new-property3.jpg",
-      images: ["/images/new-property3.jpg", "/images/new-property1.jpg"],
-      description: "Cette chambre double climatisée dispose d'une télévision par sattelite a écran plat et d'une salle de bains privative.Le logement comprend 1 lit",
-      capacity: "5",
-      price: "600 000 FCFA",
-      guests: "1",
-      availability: "0 OFFRES",
-      rating: 5,
-    },
-  ];
+  
+  console.log(hotelRooms);
+  
+  // Utiliser les données de l'API ou un tableau vide par défaut
+  const rooms = hotelRooms || [];
 
   return (
     <div className="space-y-6">
@@ -100,23 +58,28 @@ export default function HotelRooms() {
 
             <tbody className="text-sm text-gray-700">
               {rooms.map((room, i) => {
+                // Récupérer l'image principale ou utiliser une image par défaut
+                const roomImage = room.HotelRoomCategoryMedia?.find(media => media.is_primary)?.media?.file_path 
+                  || room.HotelRoomCategoryMedia?.[0]?.media?.file_path 
+                  || "/images/default-room.jpg";
+                
                 return (
-                  <tr key={room.id} className="border-b w-1 border-gray-200 bg-white">
+                  <tr key={room.room_category_id} className="border-b w-1 border-gray-200 bg-white">
                     {/* Type de chambre */}
                     <td className="px-6 py-4 align-middle">
                       <div className="text-sm  mb-3 text-gray-700">
-                        {room.type}
+                        {room.name}
                       </div>
                       <div className="flex flex-col items-start space-y-2">
                         <button
                           type="button"
                           onClick={() => openOverview(room)}
                           className="w-20 h-20 rounded-md overflow-hidden relative flex-shrink-0 focus:outline-none"
-                          aria-label={`Aperçu ${room.type}`}
+                          aria-label={`Aperçu ${room.name}`}
                         >
                           <Image
-                            src={room.image}
-                            alt={room.type}
+                            src={roomImage}
+                            alt={room.name}
                             width={80}
                             height={64}
                             className="object-cover"
@@ -126,11 +89,11 @@ export default function HotelRooms() {
                         <div className="text-xs font-montserrat-medium mt-2 text-gray-800">
                           <span className="block">
                             {" "}
-                            {room.beds ?? "3"} lits{" "}
+                            {room.number_of_rooms} chambre(s) disponible(s){" "}
                           </span>
                           <span className="block">
                             {" "}
-                            {room.bathrooms ?? "2"} salle(s) de bain{" "}
+                            {room.number_of_bathrooms} salle(s) de bain{" "}
                           </span>
                         </div>
                       </div>
@@ -155,14 +118,14 @@ export default function HotelRooms() {
                     {/* Prix par nuit */}
                     <td className="px-6 py-4 align-middle text-center whitespace-nowrap">
                       <div className="font-bold text-gray-900">
-                        {room.price}
+                        {Number(room.price_per_night).toLocaleString('fr-FR')} FCFA
                       </div>
                     </td>
 
                     {/* Nombre de salle de bain */}
                     <td className="px-6 py-4 align-middle text-center">
                       <div className="font-bold text-gray-900">
-                        {room.bathrooms ?? 1}
+                        {room.number_of_bathrooms}
                       </div>
                     </td>
 
@@ -175,17 +138,17 @@ export default function HotelRooms() {
                           onChange={(e) => {
                             const val = Number(e.target.value);
                             if (typeof room.onSelect === "function")
-                              room.onSelect(val, room.id);
+                              room.onSelect(val, room.room_category_id);
                           }}
                           className="px-3 py-2 border border-gray-300 rounded text-sm"
-                          aria-label={`Sélectionner le nombre de chambres pour ${room.type}`}
+                          aria-label={`Sélectionner le nombre de chambres pour ${room.name}`}
                         >
                           <option value={0}>0 (0FCFA)</option>
-                          <option value={1}>1</option>
-                          <option value={2}>2</option>
-                          <option value={3}>3</option>
-                          <option value={4}>4</option>
-                          <option value={5}>5</option>
+                          {[...Array(Math.min(room.number_of_rooms, 5))].map((_, idx) => (
+                            <option key={idx + 1} value={idx + 1}>
+                              {idx + 1}
+                            </option>
+                          ))}
                         </select>
 
                         {/* Voir plus de détails (icône œil + texte) */}
@@ -239,6 +202,7 @@ export default function HotelRooms() {
         isOpen={isOverviewOpen}
         selectedRoom={selectedRoom}
         onClose={closeOverview}
+        hotelRooms={hotelRooms}
       />
     </div>
   );

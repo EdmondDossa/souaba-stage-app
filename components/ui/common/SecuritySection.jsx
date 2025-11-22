@@ -1,7 +1,7 @@
 import Image from "next/image";
 import SvgIcon from "./SvgIcon";
 
-export default function SecuritySection() {
+export default function SecuritySection({ hotelRooms }) {
   const securityFeatures = [
     {
       icon: "Security et hygiene",

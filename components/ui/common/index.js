@@ -5,6 +5,7 @@ import PropertyCard from "./PropertyCard";
 import InputRow from "./InputRow";
 import OtpInput from "./OtpInput";
 import PropertyGallery from "./PropertyGallery";
+import PropertyGalleryAppart from "./PropertyGalleryAppart";
 import PropertyGalleryGrid from "./PropertyGalleryGrid";
 import PropertyDescriptionShared from "./PropertyDescriptionShared";
 import PropertyAmenities from "./PropertyAmenities";
@@ -15,6 +16,7 @@ import HotelRooms from "./HotelRooms";
 import OverviewModal from "./OverviewModal";
 import PropertyReservationForm from "./PropertyReservationForm";
 import PropertyReviews from "./PropertyReviews";
+import PropertyReviewsAppart from "./PropertyReviewsAppart";
 import SvgIcon from "./SvgIcon";
 import Newsletter from "./Newsletter";
 
@@ -37,5 +39,7 @@ export {
   PropertyReservationForm,
   PropertyReviews,
   SvgIcon,
-  Newsletter
+  Newsletter,
+  PropertyGalleryAppart,
+  PropertyReviewsAppart
 };
