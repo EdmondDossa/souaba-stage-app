@@ -1,4 +1,4 @@
-import React from "react";
+import InputWithMap from "@/components/ui/common/InputWithMap";
 
 function Input({
   name,
@@ -37,7 +37,11 @@ function Input({
               type={type}
               value={value ?? ""}
               onChange={onChange}
-              className={`${commonClass} ${unitValue ? "!w-[calc(100%-5px)] focus:!border-1 !border-3 !border-r-0 !rounded-r-0 ": ""}`}
+              className={`${commonClass} ${
+                unitValue
+                  ? "!w-[calc(100%-5px)] focus:!border-1 !border-3 !border-r-0 !rounded-r-0 "
+                  : ""
+              }`}
               {...props}
             />
             <p className="empty:hidden text-red-500 text-sm font-light">
@@ -52,6 +56,16 @@ function Input({
             </div>
           )}
         </div>
+      ) : type === "map" ? (
+        <InputWithMap
+          id={name}
+          name={name}
+          type={type}
+          value={value ?? ""}
+          onChange={onChange}
+          className={`${commonClass}`}
+          {...props}
+        />
       ) : (
         <>
           <input

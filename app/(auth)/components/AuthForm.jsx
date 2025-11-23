@@ -15,14 +15,15 @@ const AuthForm = ({
   showTopImage = true,
   className,
   isLoading,
+  withSocialLoginSection = false,
   formError = "",
 }) => {
-  const customClasse = `mx-auto w-[385px] py-8 px-5 ${className}`;
+  const customClasse = `mx-auto w-full md:w-[385px] py-8 px-5 ${className}`;
 
   return (
     <AuthWrapper>
       {showTopImage && (
-        <div className="my-10 py-4 flex items-center justify-center">
+        <div className="flex mt-10 py-4 lg:hidden items-center justify-center">
           <Image
             src="/images/logo-primary.png"
             width="120"
@@ -56,9 +57,11 @@ const AuthForm = ({
         <div className="text-gray-900 font-montserrat-medium text-center text-sm my-6 ">
           Ou connectez-vous avec
         </div>
-        <div className="px-8">
-          <SocialLoginButton />
-        </div>
+        {withSocialLoginSection && (
+          <div className="px-8">
+            <SocialLoginButton />
+          </div>
+        )}
         {alternativeOptionMessage && (
           <div className="text-sm text-center mt-4">
             <p className="font-bold">

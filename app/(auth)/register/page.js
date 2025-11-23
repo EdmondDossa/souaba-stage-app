@@ -70,9 +70,10 @@ const RegisterPage = () => {
           alternativeOptionMessage="Vous avez déjà un compte ?"
           alternativeOptionLink="/login"
           onSubmit={handleSubmit}
-          showTopImage={false}
+          showTopImage={true}
           isLoading={isLoading}
           formError={formError}
+          withSocialLoginSection={true}
         >
           <InputRow
             label="Nom Complet"

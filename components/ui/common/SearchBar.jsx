@@ -202,7 +202,6 @@ function SearchBar({
         `/accommodation-unavailable-period/search?${params.toString()}`
       );
       setSearchResult(request.data);
-      console.log(7,request.data,7);
     } catch (error) {
       console.error(error);
     }

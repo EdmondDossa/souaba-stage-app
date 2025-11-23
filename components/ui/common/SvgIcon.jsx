@@ -2,12 +2,11 @@ import Image from "next/image";
 
 const SvgIcon = ({ name, size = 24, className = "" }) => {
   return (
-    <Image
+    <img
       src={`/icons/${name}.svg`}
       alt={name}
-      width={size}
-      height={size}
-      className={className}
+      style={{ width:24, height:24}}
+      className={`block ${className}`}
     />
   );
 };

@@ -3,7 +3,7 @@ import { LuSendHorizontal } from "react-icons/lu";
 const SubscribeToNewsLetter = () => {
   return (
     <section className="flex flex-col  lg:flex-row items-center justify-center gap-x-5 bg-[#E8EAEC] px-3 py-8">
-      <div className="flex flex-col justify-center items-center lg:flex-initial lg:mb-0 mb-4">
+      <div className="flex flex-col justify-center lg:justify-start lg:items-start items-center lg:flex-initial lg:mb-0 mb-4">
         <strong className="text-3xl text-gray-600 font-montserrat-bold block">
           NEWSLETTER
         </strong>
@@ -14,7 +14,7 @@ const SubscribeToNewsLetter = () => {
       <div className="flex items-center">
         <input
           type="text"
-          className="text-md text-gray-600 block md:w-2xl w-[330px] border border-gray-300 bg-white rounded-3xl px-5 py-3 ring-1 ring-gray-200 focus:outline-0 focus:ring-primary outline-none"
+          className="text-md text-gray-600 block md:w-2xl max-w-[300px] lg:max-w-full border border-gray-300 bg-white rounded-3xl px-5 py-3 ring-1 ring-gray-200 focus:outline-0 focus:ring-primary outline-none"
           placeholder="Votre e-mail ..."
         />
         <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center -translate-x-7 hover:scale-105 transition cursor-pointer">

@@ -31,6 +31,8 @@ const HomeTypeDetails = ({
 
   const [formContent, setFormContent] = useState(initData);
 
+  
+
   const [formContentError, setFormContentError] = useState({});
 
   const formProps = {

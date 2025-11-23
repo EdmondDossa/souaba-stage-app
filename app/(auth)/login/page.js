@@ -50,7 +50,7 @@ const LoginPage = () => {
   }, [isLogged, router]);
 
   return (
-    <section className="flex">
+    <section className="flex justify-center items-center lg:justify-start">
       <ConnexionHero />
       <div className="h-screen overflow-y-auto scrollbar-hide flex items-center justify-center">
         <AuthForm
@@ -60,8 +60,9 @@ const LoginPage = () => {
           alternativeOptionMessage="Vous n'avez pas de compte ?"
           alternativeOptionLink="/register"
           isLoading={isLoading}
-          showTopImage={false}
+          showTopImage={true}
           formError={formError}
+          withSocialLoginSection={true}
           onSubmit={handleSubmit}
         >
           <InputRow type="email" label="Email" name="email" required={true} />

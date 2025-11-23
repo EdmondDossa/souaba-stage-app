@@ -11,6 +11,7 @@ import {
   PropertyGalleryGrid,
   SvgIcon,
   PropertyGalleryAppart,
+  PropertyGallery,
 } from "../../../../components/ui/common";
 
 const AppartementDetails = () => {
@@ -128,7 +129,6 @@ const AppartementDetails = () => {
         const request = await http.get(
           `/accommodations?accommodation_id=${params.id}&limit=1`
         );
-        console.log(request);
         setPageData(request.data.data[0]);
       } catch (error) {
         console.error("Error fetching accommodation details:", error);
@@ -139,14 +139,12 @@ const AppartementDetails = () => {
 
   if (!pageData) return;
   const appartMedias = pageData.AccommodationMedia;
-  console.log(pageData);
-  console.log("accommodation details", pageData);
   return (
     <>
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Section Galerie d'images */}
-        <div className="mb-8">
-          <PropertyGalleryAppart appartMedias={appartMedias} />
+        <div className="mb-8 mt-10 lg:mt-0">
+          <PropertyGallery hotelsMedias={appartMedias} />
         </div>
 
         {/* Section principale */}
@@ -154,9 +152,9 @@ const AppartementDetails = () => {
           {/* Colonne de gauche - Détails */}
           <div className="lg:col-span-2 space-y-5">
             {/* En-tête avec titre et actions */}
-            <div className="flex justify-between items-start">
+            <div className="flex justify-between items-center lg:items-start">
               <div className="h-[120px]">
-                <h1 className="text-3xl font-bold text-gray-900 mt-10  font-montserrat-bold">
+                <h1 className="text-xl  lg:text-3xl whitespace-nowrap lg:whitespace-normal font-bold text-gray-900 mt-10  font-montserrat-bold">
                   {pageData ? pageData?.name : property.title}
                 </h1>
                 <div className="flex items-center text-gray-600   mt-2 font-montserrat">
@@ -191,8 +189,8 @@ const AppartementDetails = () => {
             </div>
 
             {/* Équipements */}
-            <div className="grid grid-cols-3 mt-10  gap-1 w-[580px]">
-              <div className="border-2 border-primary pl-4 pr-4 pt-10 w-[176px] h-[160px] rounded-lg  p-5 text-center hover:shadow-md transition-shadow">
+            <div className="grid grid-cols-3 mt-10  gap-1 lg:w-[580px]">
+              <div className="border-2 border-primary pl-4 pr-4 pt-10 w-[110px] h-[130px] md:w-[176px] md:h-[160px] rounded-lg  p-5 text-center hover:shadow-md transition-shadow">
                 <SvgIcon
                   name="bed"
                   size={35}
@@ -202,7 +200,7 @@ const AppartementDetails = () => {
                   {pageData.number_of_rooms} chambres
                 </div>
               </div>
-              <div className="border-2 w-[176px] h-[160px] border-primary rounded-lg pl-4 pr-4 pt-10 text-center hover:shadow-md transition-shadow">
+              <div className="border-2 w-[110px] h-[130px] md:w-[176px] md:h-[160px] border-primary rounded-lg pl-4 pr-4 pt-10 text-center hover:shadow-md transition-shadow">
                 <SvgIcon
                   name="bathtub"
                   size={35}
@@ -212,7 +210,7 @@ const AppartementDetails = () => {
                   {pageData.number_of_bathrooms} salles de bains
                 </div>
               </div>
-              <div className="border-2 w-[176px] h-[160px] border-primary pl-4 pr-4 pt-10 rounded-lg p-6 text-center hover:shadow-md transition-shadow">
+              <div className="border-2 w-[110px] h-[130px] md:w-[176px] md:h-[160px] border-primary pl-4 pr-4 pt-10 rounded-lg p-6 text-center hover:shadow-md transition-shadow">
                 <SvgIcon
                   name="parking"
                   size={35}
@@ -226,17 +224,17 @@ const AppartementDetails = () => {
 
             {/* Description */}
             <div>
-              <h2 className="text-[15px] w-[785px]font-bold mb-4  font-montserrat-bold">
+              <h2 className="text-[16px] w-[785px]font-bold mb-4  font-montserrat-bold">
                 Description de l&apos;appartement
               </h2>
-              <div className="text-gray-400  mt-4 leading-relaxed whitespace-pre-line text-base">
+              <div className="text-gray-400 text-justify text-sm mt-4 leading-relaxed whitespace-pre-line">
                 {pageData?.description}
               </div>
             </div>
 
             {/* Commodités */}
             <div className="">
-              <h2 className="text-2xl font-bold mb-6 font-montserrat-bold pt-10">
+              <h2 className="text-xl lg:text-2xl font-bold mb-6 font-montserrat-bold pt-10">
                 Commodités offertes
               </h2>
               <div className="grid grid-cols-2 gap-4">
@@ -248,7 +246,7 @@ const AppartementDetails = () => {
                     >
                       <SvgIcon
                         name={
-                          typeof amenity === "string" ? amenity : amenity.icon
+                          (typeof amenity === "string" ? amenity : amenity.icon).toLowerCase()
                         }
                         size={24}
                         className="filter "
@@ -268,10 +266,10 @@ const AppartementDetails = () => {
 
             {/* Conditions d'annulation */}
             <div className=" mt-20">
-              <h2 className="text-2xl font-bold mb-6 pt-10 font-montserrat-bold">
+              <h2 className="text-xl lg:text-2xl font-bold mb-6 pt-10 font-montserrat-bold">
                 Conditions d&apos;annulation
               </h2>
-              <div className="space-y-4">
+              <div className="space-y-4 text-[14px]">
                 {property.cancellationPolicies.map((policy, index) => (
                   <div key={index} className="flex items-start space-x-4">
                     <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
@@ -291,10 +289,10 @@ const AppartementDetails = () => {
 
             {/* Sécurité et hygiène */}
             <div className="mt-15 ">
-              <h2 className="text-2xl font-bold mb-6 pt-10 flex items-center font-montserrat-bold">
+              <h2 className="text-xl lg:text-2xl font-bold mb-6 pt-10 flex items-center font-montserrat-bold">
                 Sécurité et hygiène
               </h2>
-              <div className="grid grid-cols-2 gap-4 w-[580px]">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:w-[580px]">
                 {(pageData?.securities || property.securityFeatures).map(
                   (feature, index) => (
                     <div

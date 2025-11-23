@@ -92,7 +92,7 @@ const PropertyReviews = ({
 
   return (
     <div className="">
-      <div className="flex space-x-4 mb-6 mt-5">
+      <div className="flex items-center justify-center lg:justify-start space-x-4 mb-6 mt-5">
         <div>
           <h3 className="text-xl  font-bold text-gray-700">
             Avis
@@ -106,12 +106,12 @@ const PropertyReviews = ({
       </div>
 
       {/* Grille de notation */}
-      <div className="grid w-[800px] grid-cols-2 gap-3 mb-8">
+      <div className="grid w-full lg:w-[800px] grid-cols-1 lg:grid-cols-2 gap-3 mb-8">
         {calculatedRatings.categories.map((item) => (
           <div key={item.field} className="flex justify-between items-center">
             <span className="text-sm font-medium">{item.label}</span>
             <div className="flex items-center space-x-2">
-              <div className="w-50 h-2 bg-gray-200 rounded-full">
+              <div className="w-32 lg:w-50 h-2 bg-gray-200 rounded-full">
                 <div
                   className="h-full bg-primary rounded-full transition-all duration-300"
                   style={{ width: `${(item.rating / 5) * 100}%` }}
@@ -126,7 +126,7 @@ const PropertyReviews = ({
       </div>
 
       {/* Commentaires */}
-      <div className="grid w-[800px] grid-cols-1 md:grid-cols-2 gap-6 pt-6">
+      <div className="grid lg:w-[800px] grid-cols-1 md:grid-cols-2 gap-6 pt-6">
         {formattedReviews.slice(0, 6).map((review) => (
           <div key={review.id} className="space-y-3 p-4 rounded-lg">
             <div className="flex items-center space-x-3">
