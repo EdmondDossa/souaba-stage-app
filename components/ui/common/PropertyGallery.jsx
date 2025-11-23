@@ -61,7 +61,7 @@ export default function PropertyGalleryHotels({ hotelsMedias }) {
       </div>
 
       {/* Grille d'images secondaires */}
-      <div className="flex max-w-[400px] lg:max-w-fit lg:place-items-stretch  lg:justify-start gap-x-3 bg-white lg:bg-auto shadow-2xl lg:m-0 -mt-17 z-10 mx-4 rounded-xl lg:p-0 p-2   lg:w-full lg:grid lg:grid-cols-2 lg:gap-2 g h-[85px] lg:h-[350px]">
+      <div className="flex max-w-[400px] lg:max-w-fit lg:place-items-stretch lg:justify-start gap-x-3 bg-white lg:bg-auto shadow-2xl lg:m-0 -mt-17 z-10 mx-4 rounded-xl lg:p-0 p-2 lg:w-full lg:grid lg:grid-cols-2 lg:gap-2 h-[85px] lg:h-[350px]">
         {displayedImages.map((image, index) => (
           <div
             key={index}
