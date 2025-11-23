@@ -61,15 +61,15 @@ export default function PropertyGalleryHotels({ hotelsMedias }) {
       </div>
 
       {/* Grille d'images secondaires */}
-      <div className="flex  max-w-[400px] lg:max-w-full lg:place-items-stretch  lg:justify-start gap-x-3 bg-white lg:bg-auto shadow-2xl lg:m-0 -mt-28 z-10 mx-4 rounded-xl lg:p-0 p-2  lg:w-full lg:grid lg:grid-cols-2 lg:gap-2 h-[85px] lg:h-[350px]">
+      <div className="flex max-w-[400px] lg:max-w-fit lg:place-items-stretch  lg:justify-start gap-x-3 bg-white lg:bg-auto shadow-2xl lg:m-0 -mt-17 z-10 mx-4 rounded-xl lg:p-0 p-2   lg:w-full lg:grid lg:grid-cols-2 lg:gap-2 g h-[85px] lg:h-[350px]">
         {displayedImages.map((image, index) => (
           <div
             key={index}
-            className="relative rounded-[8px] overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+            className="relative only:col-span-full rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
             onClick={() => handleMobileModalOpen(index)}
           >
-            <div className="w-full h-full rounded-[8px] bg-center bg-no-repeat bg-contain">
-              <div className="relative w-full h-full rounded-[8px] overflow-hidden">
+            <div className="w-full h-full rounded-lg bg-center bg-no-repeat bg-contain">
+              <div className="relative w-full h-full rounded-lg overflow-hidden">
                 <img
                   src={image.media.file_path}
                   alt="room"
