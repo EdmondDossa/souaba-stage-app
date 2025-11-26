@@ -112,7 +112,7 @@ export default function PropertyGalleryHotels({ hotelsMedias }) {
               onClick={(e) => e.stopPropagation()}
             >
               {/* Image principale */}
-              <div className="bg-gradient-to-b relative from-gray-100 from-[85%] to-gray-800/50  w-[90%] mx-auto rounded-xl mt-2 px-4 pt-4">
+              <div className="bg-gradient-to-b relative from-gray-100 from-85% to-gray-800/50  w-[90%] mx-auto rounded-xl mt-2 px-4 pt-4">
                 <div className="relative h-[60vh] mx-auto w-[80%] bg-gray-100">
                   <Image
                     src={hotelsMedias[modalImageIndex].media.file_path}
@@ -165,7 +165,7 @@ export default function PropertyGalleryHotels({ hotelsMedias }) {
                     <button
                       key={index}
                       onClick={() => setModalImageIndex(index)}
-                      className={`relative w-16 h-14 rounded overflow-hidden flex-shrink-0 border-2 transition-all ${
+                      className={`relative w-16 h-14 rounded overflow-hidden shrink-0 border-2 transition-all ${
                         index === modalImageIndex
                           ? "border-blue-500"
                           : "border-gray-200"
