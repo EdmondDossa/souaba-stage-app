@@ -13,6 +13,8 @@ import {
   PropertyGalleryAppart,
   PropertyGallery,
 } from "../../../../components/ui/common";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 const AppartementDetails = () => {
   const params = useParams();
@@ -21,6 +23,7 @@ const AppartementDetails = () => {
   const propertyId = searchParams.get("id");
   const http = getAxiosInstance();
   const [pageData, setPageData] = useState();
+  const router = useRouter();
 
   // État pour les favoris
   const [isFavorite, setIsFavorite] = useState(false);
@@ -129,15 +132,60 @@ const AppartementDetails = () => {
         const request = await http.get(
           `/accommodations?accommodation_id=${params.id}&limit=1`
         );
-        setPageData(request.data.data[0]);
+        if (request.data.data?.[0]) setPageData(request.data.data[0]);
       } catch (error) {
         console.error("Error fetching accommodation details:", error);
+        toast.error("Une erreur est survenue. Veuillez rechargez la page!");
       }
     };
     details();
+    window.scrollTo({ top: 0 });
   }, [params.id]);
 
-  if (!pageData) return;
+  if (!pageData) return null;
+
+  async function saveReservation({
+    checkIn,
+    checkOut,
+    babies,
+    adults,
+    children,
+  }) {
+    const arrivalDate = new Date(checkIn);
+    const departureDate = new Date(checkOut);
+
+    if (departureDate < arrivalDate) {
+      return toast.error("La date de départ doit être après la date d'arrivée");
+    }
+
+    if (new Date(arrivalDate).getTime() + 86_400_000 < new Date().getTime()) {
+      return toast.error(
+        "La date d'arrivée doit être au minimum celle d'aujourd'hui"
+      );
+    }
+
+    //le nombre de jours à faire dans cet appart
+    const days_offset = (new Date(checkOut) - new Date(checkIn)) / 86_400_000;
+    try {
+      const data = {
+        checkInDate: arrivalDate,
+        checkOutDate: departureDate,
+        numberOfGuests: adults + babies + children,
+        totalPrice: days_offset * pageData.price_per_night,
+        accommodationId: params.id,
+      };
+      toast.loading("Réservation en cours ...");
+      const res = await http.post("/reservations", data);
+      router.push(
+        `/make-reservation?r=${res.data.reservation_id}&h=${res.data.accommodation_id}`
+      );
+      toast.dismiss();
+    } catch (error) {
+      console.log(error);
+      toast.error("Une erreur est survenue lors de la réservation!");
+    }
+  }
+
   const appartMedias = pageData.AccommodationMedia;
   return (
     <>
@@ -194,27 +242,27 @@ const AppartementDetails = () => {
                 <SvgIcon
                   name="bed"
                   size={35}
-                  className="mx-auto mb-3 filter brightness-0 saturate-100 hue-rotate-[200deg]"
+                  className="mx-auto mb-3 filter brightness-0 saturate-100 hue-rotate-200"
                 />
                 <div className="text-md font-semibold">
                   {pageData.number_of_rooms} chambres
                 </div>
               </div>
-              <div className="border-2 w-[110px] h-[130px] md:w-[176px] md:h-[160px] border-primary rounded-lg pl-4 pr-4 pt-10 text-center hover:shadow-md transition-shadow">
+              <div className="border-2 w-[110px] h-[130px] md:w-44 md:h-40 border-primary rounded-lg pl-4 pr-4 pt-10 text-center hover:shadow-md transition-shadow">
                 <SvgIcon
                   name="bathtub"
                   size={35}
-                  className="mx-auto mb-3 filter brightness-0 saturate-100 hue-rotate-[200deg]"
+                  className="mx-auto mb-3 filter brightness-0 saturate-100 hue-rotate-200"
                 />
                 <div className="text-md font-semibold">
                   {pageData.number_of_bathrooms} salles de bains
                 </div>
               </div>
-              <div className="border-2 w-[110px] h-[130px] md:w-[176px] md:h-[160px] border-primary pl-4 pr-4 pt-10 rounded-lg p-6 text-center hover:shadow-md transition-shadow">
+              <div className="border-2 w-[110px] h-[130px] md:w-44 md:h-40 border-primary pl-4 pr-4 pt-10 rounded-lg p-6 text-center hover:shadow-md transition-shadow">
                 <SvgIcon
                   name="parking"
                   size={35}
-                  className="mx-auto mb-3 filter brightness-0 saturate-100 hue-rotate-[200deg]"
+                  className="mx-auto mb-3 filter brightness-0 saturate-100 hue-rotate-200"
                 />
                 <div className="text-md font-semibold">
                   {pageData.number_of_parking} parking
@@ -245,9 +293,10 @@ const AppartementDetails = () => {
                       className="flex items-center space-x-3 p-2"
                     >
                       <SvgIcon
-                        name={
-                          (typeof amenity === "string" ? amenity : amenity.icon).toLowerCase()
-                        }
+                        name={(typeof amenity === "string"
+                          ? amenity
+                          : amenity.icon
+                        ).toLowerCase()}
                         size={24}
                         className="filter "
                       />
@@ -328,10 +377,7 @@ const AppartementDetails = () => {
               price={pageData.price_per_night}
               currency={property.currency}
               period={property.period}
-              onBook={(reservationData) => {
-                console.log("Données de réservation:", reservationData);
-                // Logique de réservation
-              }}
+              onBook={saveReservation}
             />
           </div>
         </div>

@@ -43,6 +43,7 @@ export default function HotelDetails() {
       }
     };
     fetchHotelData();
+    window.scrollTo({ top: 0});
   }, [id]);
 
   if (!hotelsData) return;

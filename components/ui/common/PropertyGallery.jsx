@@ -25,7 +25,7 @@ export default function PropertyGalleryHotels({ hotelsMedias }) {
   };
 
   const handleMobileModalOpen = (index) => {
-    setMainImage(index + 1);
+    
   };
 
   const closeModal = () => {

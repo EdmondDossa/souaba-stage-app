@@ -6,6 +6,7 @@ import CashIcon from "@/public/images/cash.png";
 import WarningIcon from "@/public/images/warning.png";
 import Image from "next/image";
 import { Button } from "@/components/ui/common";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 const PaymentMethod = ({ goToNextStep, setFormValues, formValues }) => {
   const paymentMethods = [
@@ -19,8 +20,17 @@ const PaymentMethod = ({ goToNextStep, setFormValues, formValues }) => {
     },
   ];
 
-  const handleValueChange = (value) =>
+  const searchParams = useSearchParams();
+  const params = new URLSearchParams(searchParams);
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const handleValueChange = (value) =>{
     setFormValues((prev) => ({ ...prev, paymentMethod: value }));
+    params.set("payment",value);
+    //on met à jour la méthode de paiement dans l'url
+    router.replace(`${pathname}?${params.toString()}`);
+  } ;
 
   return (
     <section className="flex flex-col justify-between  items-center w-full h-[550px] md:border md:border-gray-200 px-10 text-sm relative">
@@ -79,7 +89,7 @@ const PaymentMethod = ({ goToNextStep, setFormValues, formValues }) => {
       <div className="mt-20 align-bottom self-end w-full place-content-end">
         <Button
           onClick={goToNextStep}
-          className="w-full bg-primary hover:!bg-amber-400 py-3 font-montserrat-bold rounded-lg mb-5"
+          className="w-full bg-primary hover:bg-amber-400! py-3 font-montserrat-bold rounded-lg mb-5"
         >
           Continuer
         </Button>
