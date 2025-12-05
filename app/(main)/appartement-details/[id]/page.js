@@ -151,6 +151,9 @@ const AppartementDetails = () => {
     adults,
     children,
   }) {
+    if (!checkIn || !checkOut) {
+      return toast.error("Vous devez renseignez la date d'arrivée et de départ");
+    }
     const arrivalDate = new Date(checkIn);
     const departureDate = new Date(checkOut);
 

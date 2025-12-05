@@ -9,22 +9,22 @@ const Submitted = () => {
     {
       title: "Voir l'itinéraire",
       icon: <MapPinned />,
-      link: "#",
+      link: "/",
     },
     {
       title: "Ajouter à mon calendrier",
       icon: <CalendarDays />,
-      link: "#",
+      link: "/",
     },
     {
       title: "Télécharger ma réservation en pdf",
       icon: <FaFileDownload />,
-      link: "#",
+      link: "/",
     },
     {
       title: "Faire une nouvelle réservation",
       icon: <FaPlusCircle />,
-      link: "#",
+      link: "/",
     },
   ];
 

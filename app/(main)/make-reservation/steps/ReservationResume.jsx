@@ -8,7 +8,6 @@ import getAxiosInstance from "@/lib/request";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
 import Modal from "@/components/ui/common/Modal";
-import { is } from "date-fns/locale";
 
 const ReservationResume = ({ goToNextStep, goToPrevStep }) => {
   const http = getAxiosInstance();

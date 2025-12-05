@@ -1,116 +1,94 @@
 "use client";
-import propertyOne from "@/public/images/new-property1.jpg";
-import propertyTwo from "@/public/images/new-property2.jpg";
 import { useEffect, useRef, useState } from "react";
 import { IoMdCloseCircle } from "react-icons/io";
 import { ReservationRow } from "./ui";
 import Image from "next/image";
 import Paginator from "@/components/ui/common/Paginator";
+import getAxiosInstance from "@/lib/request";
+import useAuthContext from "@/context/auth";
+import toast from "react-hot-toast";
+import { LoaderCircle } from "lucide-react";
 
 const Reservation = () => {
-  const dumpReservations = [
-    {
-      id: 1,
-      name: "Appartement entièrement meublé",
-      img: propertyOne,
-      arrival_date: "12 Mars 2021",
-      night_number: 3,
-      guests: 5,
-      cost: 900_000,
-      category: "Prochain",
-    },
-    {
-      id: 2,
-      name: "Appartement double avec 3 pièces",
-      img: propertyTwo,
-      arrival_date: "12 Mars 2024",
-      night_number: 3,
-      guests: 5,
-      cost: 900_000,
-      category: "Prochain",
-    },
-    {
-      id: 3,
-      name: "Appartement rouge avec 8 salons",
-      img: propertyOne,
-      arrival_date: "12 Mars 2024",
-      night_number: 3,
-      guests: 5,
-      cost: 900_000,
-      category: "Prochain",
-    },
-    {
-      id: 4,
-      name: "Appartement double avec 3 pièces",
-      img: propertyTwo,
-      arrival_date: "12 Mars 2024",
-      night_number: 3,
-      guests: 5,
-      cost: 1_900_000,
-      category: "Refuser",
-    },
-    {
-      id: 5,
-      name: "Appartement double avec 3 pièces",
-      img: propertyTwo,
-      arrival_date: "12 Mars 2024",
-      night_number: 3,
-      guests: 5,
-      cost: 1_900_000,
-      category: "En attente",
-    },
-    {
-      id: 6,
-      name: "Appartement double avec 3 pièces",
-      img: propertyTwo,
-      arrival_date: "12 Mars 2024",
-      night_number: 3,
-      guests: 5,
-      cost: 1_900_000,
-      category: "Passé",
-    },
-    {
-      id: 7,
-      name: "Appartement double avec 3 pièces",
-      img: propertyTwo,
-      arrival_date: "12 Mars 2024",
-      night_number: 3,
-      guests: 5,
-      cost: 1_900_000,
-      category: "Refuser",
-    },
-  ];
+  const http = getAxiosInstance();
+
+  const { user } = useAuthContext();
 
   const MOBILE_MAX_RESERVATION_ITEM_PER_PAGE = 3;
 
   const ref = useRef();
 
-  const categories = ["Prochain", "En attente", "Refuser", "Passé"];
-  const [currentCategory, setCurrentCategory] = useState("Prochain");
+  const categories = [
+    {
+      text: "Prochain",
+      value: "CONFIRMED",
+    },
+    {
+      text: "En attente",
+      value: "PENDING",
+    },
+    {
+      text: "Refuser",
+      value: "CANCELLED",
+    },
+    {
+      text: "Passé",
+      value: "CONFIRMED",
+    },
+  ];
+  const [currentCategory, setCurrentCategory] = useState(0);
 
   const [cancelReason, setCancelReason] = useState("");
   const MAX_CANCEL_REASON_LENGTH = 255;
 
-  const [isCancellingReservation, setCancellingReservation] = useState(false);
-  const cancelReservation = () => setCancellingReservation(true);
-  const cancelReservationCancelling = () => setCancellingReservation(false);
+  const initReservationCancellation = (id) => setReservationToCancel(id);
+  const abortReservationCancellation = () => setReservationToCancel(null);
 
-  const [reservations, setReservations] = useState(dumpReservations);
-
-  function handleCancel(reservationId) {
-    //
+  async function handleCancel(e) {
+    try {
+      e.preventDefault();
+      await http.patch(`/reservations/${reservationToCancel}/status`, {
+        status: "CANCELLED",
+      });
+      toast.success("Réservation annulée");
+      setReservationToCancel(null);
+      await fetchData("CANCELLED");
+    } catch (error) {
+      toast.error("Une erreur est survenue");
+    }
   }
+
+  const [reservationToCancel, setReservationToCancel] = useState(null);
+  const [reservations, setReservations] = useState([]);
+
+  const [isLoading, setLoading] = useState(false);
 
   function handleChange(e) {
     if (e.target.value.length <= MAX_CANCEL_REASON_LENGTH)
       setCancelReason(e.target.value);
   }
+
   useEffect(() => {
-    const filteredReservations = dumpReservations.filter(
-      (reservation) => reservation.category === currentCategory
-    );
-    setReservations(filteredReservations);
-  }, [currentCategory, dumpReservations]);
+    fetchData(categories[currentCategory].value);
+  }, [categories[currentCategory].value]);
+
+  async function fetchData(status) {
+    try {
+      setLoading(true);
+      const { data } = await http.get(
+        `/reservations?userId=${user.user_id}&status=${status}`
+      );
+      if (!data) return;
+      setReservations(data.data);
+    } catch (error) {
+      console.log(error);
+      toast.error(
+        "Une erreur est survenue lors de la récupération des réservations"
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <>
@@ -129,47 +107,68 @@ const Reservation = () => {
         <section className="mt-8">
           <nav>
             <ul className="flex items-center justify-between w-full md:w-[50%] relative">
-              {categories.map((category) => (
+              {categories.map((category, i) => (
                 <li
-                  onClick={() => setCurrentCategory(category)}
+                  onClick={() => setCurrentCategory(i)}
                   className={`text-gray-700 text-[13px] md:text-md font-montserrat-bold py-2 border-b-[4px] px-4 cursor-pointer transition-all ease-in duration-300 whitespace-nowrap ${
-                    currentCategory === category
+                    currentCategory === i
                       ? "border-primary bg-primary/15"
                       : "border-b-white"
                   }`}
-                  key={category}
+                  key={category.text}
                 >
-                  {category}
+                  {category.text}
                 </li>
               ))}
             </ul>
           </nav>
-          <section className="border-t border-t-gray-200">
-            {reservations.map((reservation) => {
-              return (
-                <div
-                  key={reservation.id}
-                  className="my-5 p-4 md:hover:bg-gray-100 transition"
-                >
-                  <ReservationRow
-                    cancelReservation={cancelReservation}
-                    reservation={reservation}
+          <section className="border-t border-t-gray-200 min-h-screen">
+            {!isLoading ? (
+              reservations.length > 0 ? (
+                reservations.map((reservation) => {
+                  return (
+                    <div
+                      key={reservation.reservation_id}
+                      className="my-5 p-4 md:hover:bg-gray-100 transition"
+                    >
+                      <ReservationRow
+                        initReservationCancellation={
+                          initReservationCancellation
+                        }
+                        reservation={reservation}
+                      />
+                    </div>
+                  );
+                })
+              ) : (
+                <h2 className="md:text-3xl text-xl text-gray-400 text-center mt-10 font-montserrat-bold">
+                  Aucune réservation classée «{" "}
+                  {categories[currentCategory].text} » <span> </span>
+                </h2>
+              )
+            ) : (
+              <div className={`flex items-center mt-15 justify-center`}>
+                <div>
+                  <LoaderCircle
+                    size={40}
+                    className={`animate-spin text-primary`}
                   />
                 </div>
-              );
-            })}
+              </div>
+            )}
           </section>
           <Paginator
             defaultPage={1}
-            onPageChange={()=>{}}
+            onPageChange={() => {}}
             nextPageTitle="Voir plus"
             totalPages={Math.ceil(
-              dumpReservations.length / MOBILE_MAX_RESERVATION_ITEM_PER_PAGE
+              reservations.length / MOBILE_MAX_RESERVATION_ITEM_PER_PAGE
             )}
           />
         </section>
       </div>
-      {isCancellingReservation && (
+
+      {reservationToCancel && (
         <>
           <form
             ref={ref}
@@ -194,23 +193,21 @@ const Reservation = () => {
               <div className="flex items-center justify-center md:justify-end gap-x-5 mt-5">
                 <button
                   type="reset"
-                  onClick={cancelReservationCancelling}
+                  onClick={abortReservationCancellation}
                   className="font-montserrat-medium py-1 px-3 rounded-md text-white bg-[#C94C4C] hover:bg-red-800"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
+                  onClick={handleCancel}
                   className="font-montserrat-medium py-1 px-3 rounded-md text-white bg-primary hover:bg-amber-500"
                 >
                   Envoyer
                 </button>
               </div>
             </div>
-            <button
-              onClick={cancelReservationCancelling}
-              className="absolute m-2 top-0 right-0 text-red-500"
-            >
+            <button className="absolute m-2 top-0 right-0 text-red-500">
               {" "}
               <IoMdCloseCircle className="w-5 h-5" />{" "}
             </button>
