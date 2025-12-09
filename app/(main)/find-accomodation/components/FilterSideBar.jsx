@@ -9,7 +9,7 @@ const FilterSideBar = ({ initialState, onFilterUpdate }) => {
   const [filterStatus, setFilterStatus] = useState(
     initialState || {
       byLabel: "Tout",
-      byPrice: "60 000 F",
+      byPrice: "60000",
       byRating: "4.5 et plus",
       byCommodities: "Télévision",
       byBedrooms: "1",
@@ -26,9 +26,13 @@ const FilterSideBar = ({ initialState, onFilterUpdate }) => {
   console.log("FilterStatus:", filterStatus);
   console.log("Initial state:", initialState);
 
-  const pricesOptions = Array.from({ length: 6 })
-    .map((_, i) => (i + 1) * 60000)
-    .map((price) => price);
+  const pricesOptions = Array.from({ length: 6 }, (_, i) => {
+    const price = (i + 1) * 60000;
+    return {
+      label: `${price.toLocaleString('fr-FR')} F`, 
+      value: price 
+    };
+  });
 
   const filterMenus = [
     "Tout",
