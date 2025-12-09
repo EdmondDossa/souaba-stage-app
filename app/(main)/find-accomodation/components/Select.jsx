@@ -1,9 +1,10 @@
 import { ChevronDown } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 
-const SelectComponent = ({ placeholder, options, onChange }) => {
+const SelectComponent = ({ placeholder, options, onChange, value }) => {
   const [showDropDown, setShowDropDown] = useState(false);
-  const [currentValue, setCurrentValue] = useState("");
+  const [currentValue, setCurrentValue] = useState(value || "");
+  console.log("Select current value:", currentValue);
   const ref = useRef(null);
 
   function handleChange(value) {

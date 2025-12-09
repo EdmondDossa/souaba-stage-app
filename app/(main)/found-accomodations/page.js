@@ -4,10 +4,61 @@ import { X } from "lucide-react";
 import Image from "next/image";
 import FilterSideBar from "../find-accomodation/components/FilterSideBar";
 import { PropertyCard } from "@/components/ui/common";
+import { useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
 import getAxiosInstance from "@/lib/request";
-
+import { useRouter } from 'next/navigation'
+import { handleClientScriptLoad } from "next/script";
 const FoundProducts = () => {
-  const filtersThemes = ["100, Rue Smart", "12 Mars 2021", "Courte Période"];
+  const searchParams = useSearchParams();
+  const [filteredProperties, setFilteredProperties] = useState([]);
+  
+  // Mettre à jour filters à chaque changement de searchParams
+  const [filters, setFilters] = useState(
+    searchParams ? Object.fromEntries(searchParams) : {}
+  );
+
+  const http = getAxiosInstance();
+  const router = useRouter();
+
+  // Synchroniser filters avec searchParams
+  useEffect(() => {
+    if (searchParams) {
+      const newFilters = Object.fromEntries(searchParams);
+      setFilters(newFilters);
+    }
+  }, [searchParams]);
+
+  const filtersThemes = Object.values(filters);
+  const byLabelObject={
+    "Tout voir":"all",
+    "Populaire":"popular",
+    "Proche":"nearby",
+    "Prix-du plus bas au plus élevé":"price_asc",
+    "Prix-du plus élevé au plus bas":"price_desc"
+  } ;
+ const ratingObject={
+    "4.5 et plus":{
+      min:4.5,
+      max:5
+    },
+    "4.0-4.5":{
+      min:4.0,
+      max:4.5
+    },
+    "3.5-4.0":{
+      min:3.5,
+      max:4.0
+    },
+    "3.0-3.5":{
+      min:3.0,
+      max:3.5
+    },
+    "2.5-3.0":{
+      min:2.5,
+      max:3.0
+    } 
+ }
 
   const Properties = [
     {
@@ -97,6 +148,71 @@ const FoundProducts = () => {
     },
   ];
 
+  useEffect(() => {
+    const getFilteredProperties = async () => {
+      try {
+        console.log("Executing query with filters:", filters);
+        
+        if (!filters.type) {
+          console.warn("No type specified");
+          return;
+        }
+
+        const typeEndpoints = {
+          Hôtels: "/hotels",
+          Appartements: "/APARTEMENT",
+          Villas: "/VILLAS",
+          Studios: "/STUDIOS",
+          Résidences: "/RESIDENCES",
+        };
+
+        const endpoint = typeEndpoints[filters.type];
+
+        if (!endpoint) {
+          console.warn("Type de propriété non reconnu:", filters.type);
+          return;
+        }
+
+        const params = new URLSearchParams({
+          sortBy: byLabelObject[filters.byLabel] || "popular",
+          priceMax: filters.byPrice || 100000,
+          ratingMin: ratingObject[filters.byRating]?.min || 4,
+          ratingMax: ratingObject[filters.byRating]?.max || 5,
+          amenities: filters.byCommodities || ["WiFi", "Piscine", "Parking"],
+          bedrooms: filters.byBedrooms || 2,
+        });
+
+        const response = await http.get(`${endpoint}?${params.toString()}`);
+        console.log(`${filters.type} data:`, response.data);
+
+        setFilteredProperties(response.data);
+      } catch (error) {
+        console.error("Error fetching properties:", error);
+      }
+    };
+
+    
+    if (filters.type) {
+      getFilteredProperties();
+    }
+  }, [filters]); 
+
+    function handleFilterUpdate(filters) {
+    console.log("filter:",filters);
+    const query = new URLSearchParams(filters);
+    const params = new URLSearchParams({
+          sortBy: byLabelObject[filters.byLabel] || "popular",
+          priceMax: filters.byPrice || 100000,
+          ratingMin: ratingObject[filters.byRating]?.min || 4,
+          ratingMax: ratingObject[filters.byRating]?.max || 5,
+          amenities: filters.byCommodities || ["WiFi", "Piscine", "Parking"],
+          bedrooms: filters.byBedrooms || 2,
+        });
+    console.log(query);
+    router.replace(`/found-accomodations?type=${filters.type}&${query}`);
+    
+  }
+
   return (
     <div className="flex items-start mb-10 overflow-y-auto">
       <div className="w-1/2 overflow-auto pl-20">
@@ -105,10 +221,10 @@ const FoundProducts = () => {
             10 résultats trouvés
           </h1>
           <div className="flex items-end gap-x-5">
-            <ul className="flex items-center text-[12px] gap-x-3 mt-5">
+            <ul className="flex text-[12px] gap-x-3 mt-5">
               {filtersThemes.map((theme) => (
                 <li
-                  className="flex items-center justify-center p-2 bg-gray-300 hover:bg-gray-200 transition rounded-3xl group cursor-pointer"
+                  className="flex row flex-wrap justify-center p-2 bg-gray-300 hover:bg-gray-200 transition rounded-2xl group cursor-pointer"
                   key={theme}
                 >
                   {theme}
@@ -119,7 +235,7 @@ const FoundProducts = () => {
               ))}
             </ul>
             <div>
-              <FilterSideBar onFilterUpdate={() => {}} />
+              <FilterSideBar onFilterUpdate={handleFilterUpdate} initialState={filters} />
             </div>
           </div>
         </div>
@@ -127,7 +243,7 @@ const FoundProducts = () => {
           {Properties.map((property, index) => (
             <PropertyCard
               key={index}
-              imageUrl={property.imageUrl} 
+              imageUrl={property.imageUrl}
               price={property.price}
               title={property.title}
               location={property.location}

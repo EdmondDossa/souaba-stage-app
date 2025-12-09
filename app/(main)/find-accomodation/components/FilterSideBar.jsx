@@ -1,29 +1,41 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DropdownMenu } from "radix-ui";
 import SelectComponent from "./Select";
 import { SlidersHorizontal } from "lucide-react";
 import renderStars from "@/utils/render-star";
+import { Button } from "@/components/ui/common";
 
 const FilterSideBar = ({ initialState, onFilterUpdate }) => {
   const [filterStatus, setFilterStatus] = useState(
     initialState || {
       byLabel: "Tout",
-      byPrice: 60_000,
+      byPrice: "60 000 F",
       byRating: "4.5 et plus",
-      byCommodities: "WIFI",
+      byCommodities: "Télévision",
       byBedrooms: "1",
     }
   );
 
+ 
+  useEffect(() => {
+    if (initialState) {
+      setFilterStatus(initialState);
+    }
+  }, [initialState]);
+
+  console.log("FilterStatus:", filterStatus);
+  console.log("Initial state:", initialState);
+
   const pricesOptions = Array.from({ length: 6 })
-    .map((_, i) => (i + 1) * 60_000)
-    .map((price) => price.toLocaleString("FR-fr") + " F");
+    .map((_, i) => (i + 1) * 60000)
+    .map((price) => price);
 
   const filterMenus = [
     "Tout",
     "Populaire",
     "Proche",
     "Prix-du plus bas au plus élevé",
+    "Prix-du plus élevé au plus bas",
   ];
 
   const ratingOptions = [
@@ -45,13 +57,14 @@ const FilterSideBar = ({ initialState, onFilterUpdate }) => {
     "Autre",
   ];
 
-  const bedroomsOptions = ["1", "1+", "2+", "3+", "4+", "5+"];
+  const bedroomsOptions = ["1", "2", "3", "4", "5+"];
 
   function handleFilterUpdate(filterType, value) {
     const updatedData = { ...filterStatus, [filterType]: value };
     setFilterStatus(updatedData);
     onFilterUpdate(updatedData);
   }
+
 
   return (
     <DropdownMenu.Root sticky="always" modal={false}>
@@ -61,14 +74,13 @@ const FilterSideBar = ({ initialState, onFilterUpdate }) => {
         </button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>
-        <DropdownMenu.Content className="w-[430px] px-7 py-4 h-[550px]  rounded-md bg-white  shadow-[0px_10px_38px_-10px_rgba(22,_23,_24,_0.35),_0px_10px_20px_-15px_rgba(22,_23,_24,_0.2)] will-change-[opacity,transform]">
+        <DropdownMenu.Content className="w-[430px] px-7 py-4 h-[550px] rounded-md bg-white shadow-[0px_10px_38px_-10px_rgba(22,_23,_24,_0.35),_0px_10px_20px_-15px_rgba(22,_23,_24,_0.2)] will-change-[opacity,transform]">
           <div>
             <div>
               <h1 className="font-montserrat-bold text-gray-600 text-sm">
                 Trier par
               </h1>
-              {/* Section Labels pour le filtrage */}
-              <div className="flex justify-between items-center mt-4 gap-x-1">
+              <div className="flex flex-wrap justify-between items-center mt-4 gap-x-0.5 gap-y-2">
                 {filterMenus.map((item) => (
                   <div key={item}>
                     <button
@@ -76,8 +88,8 @@ const FilterSideBar = ({ initialState, onFilterUpdate }) => {
                       className={`block text-[12px] text-gray-500 rounded-3xl font-bold px-2 py-1 whitespace-nowrap transition ${
                         filterStatus.byLabel === item
                           ? "text-white bg-blue-600"
-                          : "bg-gray-100  hover:bg-blue-100"
-                      } `}
+                          : "bg-gray-100 hover:bg-blue-100"
+                      }`}
                     >
                       {item}
                     </button>
@@ -93,8 +105,9 @@ const FilterSideBar = ({ initialState, onFilterUpdate }) => {
               </h1>
               <SelectComponent
                 onChange={(price) => handleFilterUpdate("byPrice", price)}
-                placeholder={"60 000 F"}
+                placeholder={"60 000 FCFA"}
                 options={pricesOptions}
+                value={filterStatus.byPrice}
               />
             </div>
           </div>
@@ -108,8 +121,8 @@ const FilterSideBar = ({ initialState, onFilterUpdate }) => {
               {ratingOptions.map((rating, i) => (
                 <li
                   key={rating}
-                  onClick={()=> handleFilterUpdate("byRating",rating)}
-                  className="flex items-center justify-between gap-x-4"
+                  onClick={() => handleFilterUpdate("byRating", rating)}
+                  className="flex items-center justify-between gap-x-4 cursor-pointer"
                 >
                   <label
                     htmlFor={i}
@@ -117,14 +130,15 @@ const FilterSideBar = ({ initialState, onFilterUpdate }) => {
                   >
                     {renderStars(parseFloat(rating))}{" "}
                     <span className="ms-2 font-bold text-sm text-gray-700">
-                      {" "}
-                      {rating}{" "}
+                      {rating}
                     </span>
                   </label>
                   <input
                     id={i}
-                    name="commodities"
+                    name="rating"
                     type="radio"
+                    checked={filterStatus.byRating === rating}
+                    onChange={() => {}}
                     className="w-8 h-4 cursor-pointer"
                   />
                 </li>
@@ -138,13 +152,14 @@ const FilterSideBar = ({ initialState, onFilterUpdate }) => {
               Commodité
             </h1>
             <SelectComponent
-              onChange={(price) => handleFilterUpdate("byPrice", price)}
+              onChange={(commodity) => handleFilterUpdate("byCommodities", commodity)}
               placeholder={commoditiesOptions[0]}
               options={commoditiesOptions}
+              value={filterStatus.byCommodities}
             />
           </div>
 
-          {/* Section Labels pour le filtrage */}
+          {/* Chambres à coucher */}
           <h1 className="font-montserrat-bold text-gray-600 mt-5 text-sm">
             Chambres à coucher
           </h1>
@@ -156,13 +171,15 @@ const FilterSideBar = ({ initialState, onFilterUpdate }) => {
                   className={`block text-[12px] text-gray-500 rounded-3xl font-bold px-3 py-1 whitespace-nowrap transition ${
                     filterStatus.byBedrooms === item
                       ? "text-white bg-blue-600"
-                      : "bg-gray-100  hover:bg-blue-100"
-                  } `}
+                      : "bg-gray-100 hover:bg-blue-100"
+                  }`}
                 >
                   {item}
                 </button>
               </div>
             ))}
+          </div>
+          <div>
           </div>
         </DropdownMenu.Content>
       </DropdownMenu.Portal>
