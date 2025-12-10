@@ -4,142 +4,256 @@ import { X } from "lucide-react";
 import Image from "next/image";
 import FilterSideBar from "../find-accomodation/components/FilterSideBar";
 import { PropertyCard } from "@/components/ui/common";
+import { useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
 import getAxiosInstance from "@/lib/request";
-
+import { useRouter } from 'next/navigation'
+import { handleClientScriptLoad } from "next/script";
 const FoundProducts = () => {
-  const filtersThemes = ["100, Rue Smart", "12 Mars 2021", "Courte Période"];
+  const searchParams = useSearchParams();
+  const [filteredProperties, setFilteredProperties] = useState([]);
+  
+  // Mise a jour du filters a chaque changement de searchParams
+  const [filters, setFilters] = useState(
+    searchParams ? Object.fromEntries(searchParams) : {}
+  );
 
-  const Properties = [
-    {
-      imageUrl: "/images/new-property1.jpg",
-      price: "620 000 FCFA",
-      title: "Appartement bien meublé",
-      location: "100 Smart Street, LA, États-Unis",
-      isFavorite: false,
-      ellipsis: 2,
-      ownerInfo: {
-        photo: "/images/owner-photo.png",
-        fullname: "John Doberman",
-        minPrice: "600 000",
-        maxPrice: "1 200 000",
-      },
-    },
-    {
-      imageUrl: "/images/new-property2.jpg",
-      price: "720 000 FCFA",
-      title: "Appartement Familial Confortable",
-      location: "100 Smart Street, LA, États-Unis",
-      isFavorite: true,
-      ellipsis: 3,
+  const http = getAxiosInstance();
+  const router = useRouter();
 
-      ownerInfo: {
-        photo: "/images/owner-photo.png",
-        fullname: "John Doberman",
-        minPrice: "600 000",
-        maxPrice: "1 200 000",
-      },
+  // Synchroniser filters avec searchParams
+  useEffect(() => {
+    if (searchParams) {
+      const newFilters = Object.fromEntries(searchParams);
+      setFilters(newFilters);
+    }
+  }, [searchParams]);
+
+  const filtersThemes = Object.values(filters);
+  const byLabelObject={
+    "Tout":"popular",
+    "Tout voir":"popular",
+    "Populaire":"popular",
+    "Proche":"nearby",
+    "Prix-du plus bas au plus élevé":"price_asc",
+    "Prix-du plus élevé au plus bas":"price_desc"
+  };
+ const ratingObject={
+    "4.5 et plus":{
+      min:4.5,
+      max:5
     },
-    {
-      imageUrl: "/images/new-property3.jpg",
-      price: "820 000 FCFA",
-      title: "Maison de plage d'été",
-      location: "100 Smart Street, LA, États-Unis",
-      isFavorite: false,
-      ellipsis: 1,
-      ownerInfo: {
-        photo: "/images/owner-photo.png",
-        fullname: "John Doberman",
-        minPrice: "600 000",
-        maxPrice: "1 200 000",
-      },
+    "4.0-4.5":{
+      min:4.0,
+      max:4.5
     },
-    {
-      imageUrl: "/images/new-property4.jpg",
-      price: "920 000 FCFA",
-      title: "Chambre double",
-      location: "100 Smart Street, LA, États-Unis",
-      isFavorite: false,
-      ellipsis: 1,
-      ownerInfo: {
-        photo: "/images/owner-photo.png",
-        fullname: "John Doberman",
-        minPrice: "600 000",
-        maxPrice: "1 200 000",
-      },
+    "3.5-4.0":{
+      min:3.5,
+      max:4.0
     },
-    {
-      imageUrl: "/images/new-property4.jpg",
-      price: "920 000 FCFA",
-      title: "Chambre double",
-      location: "100 Smart Street, LA, États-Unis",
-      isFavorite: false,
-      ellipsis: 2,
-      ownerInfo: {
-        photo: "/images/owner-photo.png",
-        fullname: "John Doberman",
-        minPrice: "600 000",
-        maxPrice: "1 200 000",
-      },
+    "3.0-3.5":{
+      min:3.0,
+      max:3.5
     },
-    {
-      imageUrl: "/images/new-property4.jpg",
-      price: "920 000 FCFA",
-      title: "Chambre double",
-      location: "100 Smart Street, LA, États-Unis",
-      isFavorite: false,
-      ellipsis: 4,
-      ownerInfo: {
-        photo: "/images/owner-photo.png",
-        fullname: "John Doberman",
-        minPrice: "600 000",
-        maxPrice: "1 200 000",
-      },
-    },
-  ];
+    "2.5-3.0":{
+      min:2.5,
+      max:3.0
+    } 
+ }
+
+  // Fonction pour transformer les données d'accommodation
+  const transformAccommodation = (acc) => ({
+    id: acc.accommodation_id,
+    type: "accommodation",
+    imageUrl: acc.AccommodationMedia.find(m => m.is_primary)?.media.file_path || acc.AccommodationMedia[0]?.media.file_path || "/images/placeholder.jpg",
+    price: `${parseInt(acc.price_per_night).toLocaleString('fr-FR')} FCFA`,
+    title: acc.name,
+    location: `${acc.address}, ${acc.city}, ${acc.country}`,
+    rating: acc.avgRating,
+    bedrooms: acc.number_of_rooms,
+    bathrooms: acc.number_of_bathrooms,
+    parking: acc.number_of_parking,
+    isFavorite: acc.isFavorite
+  });
+
+  // Fonction pour transformer les chambres d'hôtel
+  const transformHotelRoom = (hotel, roomCategory) => ({
+    id: `${hotel.hotel_id}-${roomCategory.room_category_id}`,
+    type: "hotel",
+    imageUrl: roomCategory.HotelRoomCategoryMedia.find(m => m.is_primary)?.media.file_path 
+              || roomCategory.HotelRoomCategoryMedia[0]?.media.file_path 
+              || hotel.HotelMedia.find(m => m.is_primary)?.media.file_path 
+              || hotel.HotelMedia[0]?.media.file_path 
+              || "/images/placeholder.jpg",
+    price: "Prix sur demande",
+    title: `${hotel.name} - ${roomCategory.name}`,
+    location: `${hotel.address}, ${hotel.city}, ${hotel.country}`,
+    rating: hotel.avgRating,
+    bedrooms: roomCategory.capacity,
+    bathrooms: roomCategory.number_of_bathrooms,
+    parking: 1, 
+    isFavorite: hotel.isFavorite
+  });
+
+ 
+  const normalizeProperties = (data, type) => {
+    if (!data || !data.data) return [];
+
+    if (type === "Hôtels") {
+      // Pour les hôtels une carte est cree par catégorie de chambre
+      return data.data.flatMap(hotel => 
+        hotel.HotelRoomCategories.map(roomCategory => 
+          transformHotelRoom(hotel, roomCategory)
+        )
+      );
+    } else {
+   
+      return data.data.map(transformAccommodation);
+    }
+  };
+
+  useEffect(() => {
+    const getFilteredProperties = async () => {
+      try {
+        console.log("Executing query with filters:", filters);
+        
+        if (!filters.type) {
+          console.warn("No type specified");
+          return;
+        }
+
+        const typeEndpoints = {
+          Hôtels: "/hotels",
+          Appartements: "/accommodations",
+          Villas: "/accommodations",
+          Studios: "/accommodations",
+          Résidences: "/accommodations",
+        };
+
+        const typeMapping = {
+          Appartements: "APARTMENT",
+          Villas: "VILLA",
+          Studios: "STUDIO",
+          Résidences: "RESIDENCE",
+        };
+
+        const endpoint = typeEndpoints[filters.type];
+
+        if (!endpoint) {
+          console.warn("Type de propriété non reconnu:", filters.type);
+          return;
+        }
+
+        // Construction des paramètres selon le type
+        let params;
+        if (filters.type === "Hôtels") {
+          // Format pour les hôtels
+          params = new URLSearchParams({
+            sortBy: byLabelObject[filters.byLabel] || "popular",
+            ...(filters.byPrice && { priceMax: filters.byPrice }),
+            ...(filters.byRating && { ratingMin: ratingObject[filters.byRating]?.min }),
+            ...(filters.byRating && { ratingMax: ratingObject[filters.byRating]?.max }),
+            ...(filters.byCommodities && { amenities: filters.byCommodities }),
+          });
+        } else {
+          // Format pour les accommodations
+          params = new URLSearchParams({
+            type: typeMapping[filters.type],
+            sortBy: byLabelObject[filters.byLabel] || "popular",
+            ...(filters.byPrice && { priceMax: filters.byPrice }),
+            ...(filters.byRating && { ratingMin: ratingObject[filters.byRating]?.min }),
+            ...(filters.byRating && { ratingMax: ratingObject[filters.byRating]?.max }),
+            ...(filters.byCommodities && { amenities: filters.byCommodities }),
+            ...(filters.byBedrooms && { bedrooms: filters.byBedrooms }),
+          });
+        }
+
+        const response = await http.get(`${endpoint}?${params.toString()}`);
+        console.log(`${filters.type} data:`, response.data);
+
+        // Normaliser les données selon le type
+        const normalizedData = normalizeProperties(response.data, filters.type);
+        setFilteredProperties(normalizedData);
+      } catch (error) {
+        console.error("Error fetching properties:", error);
+      }
+    };
+
+    
+    if (filters.type) {
+      getFilteredProperties();
+    }
+  }, [filters]); 
+
+    function handleFilterUpdate(filters) {
+    console.log("filter:",filters);
+    const query = new URLSearchParams(filters);
+    const params = new URLSearchParams({
+          sortBy: byLabelObject[filters.byLabel] || "popular",
+          priceMax: filters.byPrice || 100000,
+          ratingMin: ratingObject[filters.byRating]?.min || 4,
+          ratingMax: ratingObject[filters.byRating]?.max || 5,
+          amenities: filters.byCommodities || ["WiFi", "Piscine", "Parking"],
+          bedrooms: filters.byBedrooms || 2,
+        });
+    console.log(query);
+    router.replace(`/found-accomodations?type=${filters.type}&${query}`);
+    
+  }
 
   return (
     <div className="flex items-start mb-10 overflow-y-auto">
       <div className="w-1/2 overflow-auto pl-20">
         <div className="sticky">
           <h1 className="font-montserrat-bold text-gray-700 text-2xl mt-10">
-            10 résultats trouvés
+            {filteredProperties.length} résultat{filteredProperties.length > 1 ? 's' : ''} trouvé{filteredProperties.length > 1 ? 's' : ''}
           </h1>
-          <div className="flex items-end gap-x-5">
-            <ul className="flex items-center text-[12px] gap-x-3 mt-5">
+          <div className="flex mr-9 mb-15 gap-x-2">
+            <ul className="flex flex-wrap text-[12px] gap-2 mt-3">
               {filtersThemes.map((theme) => (
                 <li
-                  className="flex items-center justify-center p-2 bg-gray-300 hover:bg-gray-200 transition rounded-3xl group cursor-pointer"
+                  className="flex items-center gap-x-2 px-3 py-2 bg-gray-300 hover:bg-gray-200 transition rounded-3xl group cursor-pointer whitespace-nowrap"
                   key={theme}
                 >
-                  {theme}
-                  <span>
-                    <X className="w-4 h-5 ms-4 group-hover:text-red-600" />
-                  </span>
+                  <span>{theme}</span>
+                  <X className="w-4 h-4 group-hover:text-red-600 flex-shrink-0" />
                 </li>
               ))}
             </ul>
             <div>
-              <FilterSideBar onFilterUpdate={() => {}} />
+              <FilterSideBar onFilterUpdate={handleFilterUpdate} initialState={filters} />
             </div>
           </div>
         </div>
         <div className="mt-10 h-screen gap-y-10 flex flex-col p-4 overflow-y-auto me-15">
-          {Properties.map((property, index) => (
-            <PropertyCard
-              key={index}
-              imageUrl={property.imageUrl} 
-              price={property.price}
-              title={property.title}
-              location={property.location}
-              isFavorite={property.isFavorite}
-              showEllipsis={true}
-              ellipsis={property.ellipsis}
-              showAmenities={true}
-              coloredAmeneties={true}
-              showPrice={true}
-              className="max-w-full flex-shrink-0 shadow-2xl mb-5 rounded-b-2xl  [&_.bg-img]:rounded-b-none"
-            />
-          ))}
+          {filteredProperties.length > 0 ? (
+            filteredProperties.map((property, index) => (
+              <PropertyCard
+                key={property.id || index}
+                id={property.id}
+                type={property.type}
+                imageUrl={property.imageUrl}
+                price={property.price}
+                title={property.title}
+                location={property.location}
+                rating={property.rating}
+                bedrooms={property.bedrooms}
+                bathrooms={property.bathrooms}
+                parking={property.parking}
+                isFavorite={property.isFavorite}
+                showEllipsis={false}
+                showAmenities={true}
+                coloredAmeneties={true}
+                showPrice={true}
+                showRate={true}
+                className="max-w-full flex-shrink-0 shadow-2xl mb-5 rounded-b-2xl [&_.bg-img]:rounded-b-none"
+              />
+            ))
+          ) : (
+            <div className="flex items-center justify-center h-64">
+              <p className="text-gray-500 text-lg">Aucun résultat trouvé</p>
+            </div>
+          )}
         </div>
       </div>
       <aside className="w-1/2">
