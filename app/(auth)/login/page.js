@@ -27,17 +27,21 @@ const LoginPage = () => {
     const { success, message, status, code } = await login({ email, password });
     if (!success) {
       if (status === 403) {
-        //case account is locked
         if (code === "ACCOUNT_LOCKED") {
           setFormError(
             "Trop de tentatives de connexions. Votre compte a été vérouillé. Vous avez reçu un mail pour réinitialiser votre mot de passe  ou réessayez dans un moment."
           );
-        }
-        //case account not activate
-        else
-          setFormError(
-            "Votre compte n'est pas encore activé. Pour vous connecter, activez votre compte en premier."
+        } else {
+          const activationToken =
+            message?.activationToken || localStorage.getItem("activationToken");
+          if (activationToken) {
+            localStorage.setItem("activationToken", activationToken);
+          }
+          router.push(
+            `/register-confirmation-otp?email=${encodeURIComponent(email)}`
           );
+          return;
+        }
       } else if (status === 401)
         setFormError("Email ou mot de passe incorrecte.");
       else setFormError(message);

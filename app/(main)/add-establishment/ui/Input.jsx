@@ -29,33 +29,31 @@ function Input({
           <p className="empty:hidden text-red-500 text-sm font-light"></p>
         </>
       ) : type === "number" ? (
-        <div className="flex items-center">
-          <div className="w-full">
+        <>
+          <div className="relative">
             <input
               id={name}
               name={name}
               type={type}
               value={value ?? ""}
               onChange={onChange}
-              className={`${commonClass} ${
-                unitValue
-                  ? "!w-[calc(100%-5px)] focus:!border-1 !border-3 !border-r-0 !rounded-r-0 "
-                  : ""
-              }`}
+              className={`${commonClass} ${unitValue ? "pr-16" : ""}`}
               {...props}
             />
-            <p className="empty:hidden text-red-500 text-sm font-light">
-              {" "}
-              {error}{" "}
-            </p>
+            {unitValue && (
+              <div className="absolute top-2 right-3 px-3 py-1 rounded-md text-sm font-montserrat-bold text-gray-700">
+                {unitValue}{" "}
+                <sup className="text-[10px] align-super">
+                  {unitValueExposant}
+                </sup>
+              </div>
+            )}
           </div>
-          {unitValue && (
-            <div className="bg-gray-200 py-3 h-[49px] !ring-0 font-montserrat-bold w-[55px] place-content-center text-center rounded-r-[10px] -translate-x-3">
-              {" "}
-              {unitValue} <sup> {unitValueExposant} </sup>{" "}
-            </div>
-          )}
-        </div>
+          <p className="empty:hidden text-red-500 text-sm font-light">
+            {" "}
+            {error}{" "}
+          </p>
+        </>
       ) : type === "map" ? (
         <InputWithMap
           id={name}

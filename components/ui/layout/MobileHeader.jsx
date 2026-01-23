@@ -146,7 +146,6 @@ const MobileHeader = () => {
     };
   }, []);
 
-
   useEffect(() => {
     function closeMenu(e) {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -259,7 +258,7 @@ const MobileHeader = () => {
   };
 
   return (
-    <header className="fixed w-full bg-white shadow-md top-0 z-20">
+    <header className="fixed w-full bg-white shadow-md top-0 z-50">
       <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Left side - Menu icon (mobile) */}
@@ -302,7 +301,7 @@ const MobileHeader = () => {
                 <div className="p-4">
                   <nav className="flex flex-col space-y-2 mb-4">
                     <Link
-                      href="/find-accomodation"
+                      href="/find-hosting"
                       className="text-black  hover:text-gray-900 px-3 py-2 text-sm font-medium transition-colors"
                       onClick={() => setIsMenuOpen(false)}
                     >
@@ -487,7 +486,10 @@ const MobileHeader = () => {
                             }}
                           >
                             <Calendar
-                              selectedDate={arrivalDate || new Date()}
+                              selectedDate={arrivalDate || null}
+                              minDate={new Date()}
+                              rangeStart={arrivalDate || null}
+                              rangeEnd={departureDate || null}
                               onDateSelect={(date) =>
                                 handleDateSelect(date, "arrival")
                               }
@@ -529,7 +531,10 @@ const MobileHeader = () => {
                               }}
                             >
                               <Calendar
-                                selectedDate={departureDate || new Date()}
+                                selectedDate={departureDate || null}
+                                minDate={arrivalDate || new Date()}
+                                rangeStart={arrivalDate || null}
+                                rangeEnd={departureDate || null}
                                 onDateSelect={(date) =>
                                   handleDateSelect(date, "departure")
                                 }
@@ -627,7 +632,6 @@ const MobileHeader = () => {
               </div>
             )}
           </div>
-
         </div>
       </div>
     </header>

@@ -1,8 +1,9 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import SvgIcon from "./SvgIcon";
+import { getAmenityIcon, getAmenityLabel } from "@/data/amenitiesMap";
 
 
 const Star = ({ size = 16, className = "" }) => (
@@ -46,8 +47,6 @@ export default function OverviewModal({ isOpen, selectedRoom, onClose, hotelRoom
    
   }, [isOpen, currentImageIndex, images]);
 
-  if (!isOpen || !selectedRoom) return null;
-
   const prevImage = () => {
     if (!images.length) return;
     setCurrentImageIndex((i) => (i - 1 + images.length) % images.length);
@@ -61,6 +60,19 @@ export default function OverviewModal({ isOpen, selectedRoom, onClose, hotelRoom
   const closeOverview = () => {
     onClose?.();
   };
+
+  const roomAmenities = useMemo(() => {
+    return (selectedRoom?.amenities || []).map((amenity) => {
+      const raw = typeof amenity === "string" ? amenity : amenity?.name || amenity?.icon || amenity;
+      return {
+        label: getAmenityLabel(raw),
+        icon: getAmenityIcon(raw),
+        raw,
+      };
+    });
+  }, [selectedRoom]);
+
+  if (!isOpen || !selectedRoom) return null;
 
   return (
     <div
@@ -173,10 +185,14 @@ export default function OverviewModal({ isOpen, selectedRoom, onClose, hotelRoom
             {/* Équipements/Amenities */}
             <div className="space-y-4">
               <div className="flex items-center flex-wrap gap-x-6 gap-y-2 text-sm text-gray-600">
-                {selectedRoom.amenities?.map((amenity, index) => (
+                {roomAmenities.map((amenity, index) => (
                   <div key={index} className="flex items-center space-x-2">
-                    <SvgIcon name={amenity.toLowerCase()} size={16} />
-                    <span>{amenity}</span>
+                    {amenity.icon?.endsWith(".svg") ? (
+                      <Image src={amenity.icon} alt={amenity.label} width={16} height={16} />
+                    ) : (
+                      <SvgIcon name={String(amenity.raw).toLowerCase()} size={16} />
+                    )}
+                    <span>{amenity.label}</span>
                   </div>
                 ))}
               </div>
@@ -190,7 +206,7 @@ export default function OverviewModal({ isOpen, selectedRoom, onClose, hotelRoom
                 <span className="font-medium">Capacité: {selectedRoom.capacity} personne(s)</span>
               </div>
               <div className="flex items-center space-x-2 text-black">
-                <SvgIcon name="bath" size={16} className="text-gray-700" />
+                <SvgIcon name="bathtub" size={16} className="text-gray-700" />
                 <span className="font-medium">{selectedRoom.number_of_bathrooms} salle(s) de bain</span>
               </div>
             </div>
@@ -226,14 +242,14 @@ export default function OverviewModal({ isOpen, selectedRoom, onClose, hotelRoom
             </div>
 
             {/* Équipements détaillés */}
-            {selectedRoom.amenities && selectedRoom.amenities.length > 0 && (
+            {roomAmenities.length > 0 && (
               <div>
                 <h4 className="font-semibold text-black mb-3">Équipements inclus :</h4>
                 <div className="grid grid-cols-2 gap-2 text-sm text-gray-700">
-                  {selectedRoom.amenities.map((amenity, index) => (
+                  {roomAmenities.map((amenity, index) => (
                     <div key={index} className="flex items-center space-x-2">
                       <span>✓</span>
-                      <span>{amenity}</span>
+                      <span>{amenity.label}</span>
                     </div>
                   ))}
                 </div>

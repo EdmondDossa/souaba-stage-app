@@ -47,7 +47,7 @@ const RegisterConfirmationOtpContent = () => {
 
   async function resendOtpCode(e) {
     e.preventDefault();
-    if(timeRemaining) return;
+    if (timeRemaining) return;
     setLoading(true);
     try {
       const { data } = await http.post("/auth/resend-otp", { email });
@@ -55,7 +55,8 @@ const RegisterConfirmationOtpContent = () => {
       setCodeResent(true);
       makeDecount();
     } catch (error) {
-      if(error.status === 403) setFormError("Ce compte est déjà activé. Vous pouvez vous connecter.")
+      if (error.status === 403)
+        setFormError("Ce compte est déjà activé. Vous pouvez vous connecter.");
       else setFormError("Le code n'a pas pu être envoyé. Veuillez réessayer.");
       setTimeRemaining("");
     } finally {
@@ -131,6 +132,14 @@ const RegisterConfirmationOtpContent = () => {
         >
           Renvoyez le code
         </button>
+      </div>
+      <div className="text-center text-sm my-2">
+        <a
+          href="/"
+          className="text-primary font-montserrat-bold underline hover:no-underline"
+        >
+          Revenir à l&apos;accueil
+        </a>
       </div>
     </AuthForm>
   );

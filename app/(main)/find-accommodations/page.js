@@ -2,16 +2,20 @@
 import foundAccomodityMap from "@/public/images/search-home-map.png";
 import { X } from "lucide-react";
 import Image from "next/image";
-import FilterSideBar from "../find-accomodation/components/FilterSideBar";
+import FilterSideBar from "../find-hosting/components/FilterSideBar";
 import { PropertyCard } from "@/components/ui/common";
 import { useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import getAxiosInstance from "@/lib/request";
-import { useRouter } from 'next/navigation'
-import { handleClientScriptLoad } from "next/script";
+import { useRouter } from "next/navigation";
+import Paginator from "@/components/ui/common/Paginator";
+import PropertyCardSkeleton from "@/components/ui/common/PropertyCardSkeleton";
 const FoundProducts = () => {
   const searchParams = useSearchParams();
   const [filteredProperties, setFilteredProperties] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   
   // Mise a jour du filters a chaque changement de searchParams
   const [filters, setFilters] = useState(
@@ -26,6 +30,7 @@ const FoundProducts = () => {
     if (searchParams) {
       const newFilters = Object.fromEntries(searchParams);
       setFilters(newFilters);
+      setCurrentPage(1);
     }
   }, [searchParams]);
 
@@ -61,11 +66,33 @@ const FoundProducts = () => {
     } 
  }
 
+  const extractListAndTotalPages = (payload) => {
+    const list =
+      (Array.isArray(payload?.data?.data) && payload.data.data) ||
+      (Array.isArray(payload?.data) && payload.data) ||
+      (Array.isArray(payload?.items) && payload.items) ||
+      (Array.isArray(payload) && payload) ||
+      [];
+
+    const total =
+      payload?.data?.totalPages ||
+      payload?.totalPages ||
+      payload?.meta?.totalPages ||
+      payload?.pagination?.totalPages ||
+      1;
+
+    return { list, totalPages: Math.max(1, total || 1) };
+  };
+
   // Fonction pour transformer les données d'accommodation
   const transformAccommodation = (acc) => ({
     id: acc.accommodation_id,
     type: "accommodation",
-    imageUrl: acc.AccommodationMedia.find(m => m.is_primary)?.media.file_path || acc.AccommodationMedia[0]?.media.file_path || "/images/placeholder.jpg",
+    imageUrl:
+      (acc?.AccommodationMedia || []).find((m) => m.is_primary)?.media
+        ?.file_path ||
+      acc?.AccommodationMedia?.[0]?.media?.file_path ||
+      "/images/placeholder.jpg",
     price: `${parseInt(acc.price_per_night).toLocaleString('fr-FR')} FCFA`,
     title: acc.name,
     location: `${acc.address}, ${acc.city}, ${acc.country}`,
@@ -80,12 +107,16 @@ const FoundProducts = () => {
   const transformHotelRoom = (hotel, roomCategory) => ({
     id: `${hotel.hotel_id}-${roomCategory.room_category_id}`,
     type: "hotel",
-    imageUrl: roomCategory.HotelRoomCategoryMedia.find(m => m.is_primary)?.media.file_path 
-              || roomCategory.HotelRoomCategoryMedia[0]?.media.file_path 
-              || hotel.HotelMedia.find(m => m.is_primary)?.media.file_path 
-              || hotel.HotelMedia[0]?.media.file_path 
-              || "/images/placeholder.jpg",
-    price: "Prix sur demande",
+    imageUrl:
+      (roomCategory?.HotelRoomCategoryMedia || []).find((m) => m.is_primary)
+        ?.media?.file_path ||
+      roomCategory?.HotelRoomCategoryMedia?.[0]?.media?.file_path ||
+      (hotel?.HotelMedia || []).find((m) => m.is_primary)?.media?.file_path ||
+      hotel?.HotelMedia?.[0]?.media?.file_path ||
+      "/images/placeholder.jpg",
+    price: Number.isFinite(Number(roomCategory.price_per_night))
+      ? `${Number(roomCategory.price_per_night).toLocaleString("fr-FR")} FCFA`
+      : "",
     title: `${hotel.name} - ${roomCategory.name}`,
     location: `${hotel.address}, ${hotel.city}, ${hotel.country}`,
     rating: hotel.avgRating,
@@ -96,29 +127,32 @@ const FoundProducts = () => {
   });
 
  
-  const normalizeProperties = (data, type) => {
-    if (!data || !data.data) return [];
+  const normalizeProperties = (items, type) => {
+    if (!Array.isArray(items)) return [];
 
     if (type === "Hôtels") {
       // Pour les hôtels une carte est cree par catégorie de chambre
-      return data.data.flatMap(hotel => 
-        hotel.HotelRoomCategories.map(roomCategory => 
+      return items.flatMap((hotel) =>
+        (hotel.HotelRoomCategories || []).map((roomCategory) =>
           transformHotelRoom(hotel, roomCategory)
         )
       );
     } else {
-   
-      return data.data.map(transformAccommodation);
+      return items.map(transformAccommodation);
     }
   };
 
   useEffect(() => {
     const getFilteredProperties = async () => {
       try {
-        console.log("Executing query with filters:", filters);
+        setIsLoading(true);
+        console.log("Executing query with filters:", filters, "page:", currentPage);
         
         if (!filters.type) {
           console.warn("No type specified");
+          setFilteredProperties([]);
+          setTotalPages(1);
+          setIsLoading(false);
           return;
         }
 
@@ -168,14 +202,22 @@ const FoundProducts = () => {
           });
         }
 
+        params.set("page", currentPage);
+
         const response = await http.get(`${endpoint}?${params.toString()}`);
         console.log(`${filters.type} data:`, response.data);
 
+        const { list, totalPages: apiTotalPages } =
+          extractListAndTotalPages(response.data);
+
         // Normaliser les données selon le type
-        const normalizedData = normalizeProperties(response.data, filters.type);
+        const normalizedData = normalizeProperties(list, filters.type);
         setFilteredProperties(normalizedData);
+        setTotalPages(apiTotalPages);
       } catch (error) {
         console.error("Error fetching properties:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -183,21 +225,13 @@ const FoundProducts = () => {
     if (filters.type) {
       getFilteredProperties();
     }
-  }, [filters]); 
+  }, [filters, currentPage]); 
 
     function handleFilterUpdate(filters) {
     console.log("filter:",filters);
+    setCurrentPage(1);
     const query = new URLSearchParams(filters);
-    const params = new URLSearchParams({
-          sortBy: byLabelObject[filters.byLabel] || "popular",
-          priceMax: filters.byPrice || 100000,
-          ratingMin: ratingObject[filters.byRating]?.min || 4,
-          ratingMax: ratingObject[filters.byRating]?.max || 5,
-          amenities: filters.byCommodities || ["WiFi", "Piscine", "Parking"],
-          bedrooms: filters.byBedrooms || 2,
-        });
-    console.log(query);
-    router.replace(`/found-accomodations?type=${filters.type}&${query}`);
+    router.replace(`/find-accommodations?type=${filters.type}&${query}`);
     
   }
 
@@ -206,7 +240,11 @@ const FoundProducts = () => {
       <div className="w-1/2 overflow-auto pl-20">
         <div className="sticky">
           <h1 className="font-montserrat-bold text-gray-700 text-2xl mt-10">
-            {filteredProperties.length} résultat{filteredProperties.length > 1 ? 's' : ''} trouvé{filteredProperties.length > 1 ? 's' : ''}
+            {isLoading
+              ? "Chargement..."
+              : `${filteredProperties.length} résultat${
+                  filteredProperties.length > 1 ? "s" : ""
+                } trouvé${filteredProperties.length > 1 ? "s" : ""}`}
           </h1>
           <div className="flex mr-9 mb-15 gap-x-2">
             <ul className="flex flex-wrap text-[12px] gap-2 mt-3">
@@ -226,7 +264,15 @@ const FoundProducts = () => {
           </div>
         </div>
         <div className="mt-10 h-screen gap-y-10 flex flex-col p-4 overflow-y-auto me-15">
-          {filteredProperties.length > 0 ? (
+          {isLoading ? (
+            Array.from({ length: 4 }).map((_, idx) => (
+              <PropertyCardSkeleton
+                key={idx}
+                layout="list"
+                className="max-w-full flex-shrink-0 shadow-2xl mb-5 rounded-b-2xl [&_.bg-img]:rounded-b-none"
+              />
+            ))
+          ) : filteredProperties.length > 0 ? (
             filteredProperties.map((property, index) => (
               <PropertyCard
                 key={property.id || index}
@@ -241,6 +287,7 @@ const FoundProducts = () => {
                 bathrooms={property.bathrooms}
                 parking={property.parking}
                 isFavorite={property.isFavorite}
+                favoriteKind={property.type === "hotel" ? "hotel" : "accommodation"}
                 showEllipsis={false}
                 showAmenities={true}
                 coloredAmeneties={true}
@@ -253,6 +300,15 @@ const FoundProducts = () => {
             <div className="flex items-center justify-center h-64">
               <p className="text-gray-500 text-lg">Aucun résultat trouvé</p>
             </div>
+          )}
+
+          {!isLoading && totalPages > 1 && (
+            <Paginator
+              defaultPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+              nextPageTitle="Voir plus de résultats"
+            />
           )}
         </div>
       </div>

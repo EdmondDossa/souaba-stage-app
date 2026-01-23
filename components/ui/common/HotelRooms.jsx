@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { Star } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import OverviewModal from "./OverviewModal";
 import SvgIcon from "./SvgIcon";
 import MobileRoomType from "./MobileRoomType";
@@ -9,6 +9,8 @@ export default function HotelRooms({ hotelRooms }) {
   // États pour gérer l'overview
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [isOverviewOpen, setIsOverviewOpen] = useState(false);
+  const [selection, setSelection] = useState({});
+  const hasRooms = (hotelRooms || []).length > 0;
 
   // Fonction pour ouvrir l'overview
   const openOverview = (room) => {
@@ -22,15 +24,28 @@ export default function HotelRooms({ hotelRooms }) {
     setIsOverviewOpen(false);
   };
 
-  console.log(hotelRooms);
-
   // Utiliser les données de l'API ou un tableau vide par défaut
   const rooms = hotelRooms || [];
+
+  const handleSelectChange = (room, count) => {
+    setSelection((prev) => ({
+      ...prev,
+      [room.room_category_id]: count,
+    }));
+  };
+
+  const totalAmount = useMemo(() => {
+    return rooms.reduce((sum, room) => {
+      const count = selection[room.room_category_id] || 0;
+      const price = Number(room.price_per_night) || 0;
+      return sum + count * price;
+    }, 0);
+  }, [rooms, selection]);
 
   return (
     <div>
       {/* Version web */}
-      <div className="hidden md:block">
+      <div className="hidden md:block relative">
         <div className="space-y-6">
           <div className="w-full">
             <div className="overflow-x-auto border border-white">
@@ -69,6 +84,13 @@ export default function HotelRooms({ hotelRooms }) {
                       )?.media?.file_path ||
                       room.HotelRoomCategoryMedia?.[0]?.media?.file_path ||
                       "/images/default-room.jpg";
+                    const maxSelectable = Math.min(
+                      Number(room.number_of_rooms) || 0,
+                      5
+                    );
+                    const selectedCount = selection[room.room_category_id] || 0;
+                    const rowTotal =
+                      (Number(room.price_per_night) || 0) * selectedCount;
 
                     return (
                       <tr
@@ -147,24 +169,34 @@ export default function HotelRooms({ hotelRooms }) {
                           <div className="flex items-center justify-between space-x-4">
                             {/* Select pour choisir le nombre de chambres */}
                             <select
-                              defaultValue={room.selectedCount ?? 0}
-                              onChange={(e) => {
-                                const val = Number(e.target.value);
-                                if (typeof room.onSelect === "function")
-                                  room.onSelect(val, room.room_category_id);
-                              }}
+                              value={selectedCount}
+                              onChange={(e) =>
+                                handleSelectChange(
+                                  room,
+                                  Number(e.target.value)
+                                )
+                              }
                               className="px-3 py-2 border border-gray-300 rounded text-sm"
                               aria-label={`Sélectionner le nombre de chambres pour ${room.name}`}
                             >
                               <option value={0}>0 (0FCFA)</option>
-                              {[
-                                ...Array(Math.min(room.number_of_rooms, 5)),
-                              ].map((_, idx) => (
+                              {[...Array(maxSelectable)].map((_, idx) => (
                                 <option key={idx + 1} value={idx + 1}>
-                                  {idx + 1}
+                                  {idx + 1} (
+                                  {(
+                                    (idx + 1) *
+                                    (Number(room.price_per_night) || 0)
+                                  ).toLocaleString("fr-FR")}{" "}
+                                  FCFA)
                                 </option>
                               ))}
                             </select>
+                            <div className="text-xs text-gray-600 mt-1">
+                              Sous-total:{" "}
+                              <span className="font-semibold">
+                                {rowTotal.toLocaleString("fr-FR")} FCFA
+                              </span>
+                            </div>
 
                             {/* Voir plus de détails (icône œil + texte) */}
                             <button
@@ -183,20 +215,6 @@ export default function HotelRooms({ hotelRooms }) {
                           </div>
                         </td>
 
-                        {i === 0 && (
-                          <td>
-                            {" "}
-                            <div>
-                              <div className="text-sm font-semibold text-gray-900"></div>
-                              <div className="text-lg whitespace-nowrap font-montserrat-bold text-gray-700 mb-2">
-                                ******** FCFA
-                              </div>
-                              <button className="bg-primary text-white px-5 py-2 rounded-lg text-sm font-semibold shadow hover:bg-amber-400 transition-colors">
-                                Je réserve
-                              </button>
-                            </div>
-                          </td>
-                        )}
                       </tr>
                     );
                   })}
@@ -211,10 +229,42 @@ export default function HotelRooms({ hotelRooms }) {
                       </td>
                     </tr>
                   )}
+                  {rooms.length > 0 && (
+                    <tr className="bg-gray-50 font-montserrat-bold">
+                      <td colSpan={4} className="px-6 py-4 text-right">
+                        Total sélectionné
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        {totalAmount.toLocaleString("fr-FR")} FCFA
+                      </td>
+                      <td className="px-6 py-4 text-right" colSpan={2}>
+                        <button
+                          className="bg-primary text-white px-5 py-2 rounded-lg text-sm font-semibold shadow hover:bg-amber-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          disabled={totalAmount === 0}
+                        >
+                          Je réserve
+                        </button>
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
           </div>
+          {hasRooms && (
+            <div className="fixed bottom-6 right-6 bg-white shadow-2xl border border-gray-200 rounded-xl px-5 py-4 space-y-2 z-30">
+              <div className="text-sm text-gray-600">Total sélectionné</div>
+              <div className="text-xl font-montserrat-bold text-gray-800">
+                {totalAmount.toLocaleString("fr-FR")} FCFA
+              </div>
+              <button
+                className="w-full bg-primary text-white px-5 py-2 rounded-lg text-sm font-semibold shadow hover:bg-amber-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={totalAmount === 0}
+              >
+                Je réserve
+              </button>
+            </div>
+          )}
           {/* Overview Modal */}
 
           <OverviewModal

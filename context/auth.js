@@ -1,53 +1,63 @@
 "use client";
 
 import getAxiosInstance from "@/lib/request";
+import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  let http = getAxiosInstance();
   const [isLogged, setLogged] = useState(false);
   const [user, setUser] = useState({});
   const [isLoading, setLoading] = useState(true);
+  const router = useRouter();
 
   async function fetchUser(withLoader = true) {
-    //to make sure to get last update in localstorage
-    http = getAxiosInstance();
+    const http = getAxiosInstance(); // rebuild to capture latest tokens
     try {
-      //if it the first fetching a loader should be shown
-      //but if it is fetching after updating no need to load
       if (withLoader) setLoading(true);
       const res = await http.get("/users/me");
       setLogged(true);
       setUser({ ...res.data, ...(res?.data?.profile || {}) });
+      return { success: true };
     } catch (error) {
       setLogged(false);
+      return { success: false };
     } finally {
       setLoading(false);
     }
   }
 
   async function login(credentials) {
+    const http = getAxiosInstance();
     try {
       const { data } = await http.post("/auth/login", credentials);
-      localStorage.setItem("access_token", data.access_token);
-      localStorage.setItem("refresh_token", data.refresh_token);
+      const access = data?.accessToken || data?.access || null;
+      const refresh = data?.refreshToken || data?.refresh || null;
+
+      if (access) localStorage.setItem("accessToken", access);
+      if (refresh) localStorage.setItem("refreshToken", refresh);
+
       setLogged(true);
+      await fetchUser(false);
+      router.push("/");
       return { success: true };
     } catch (error) {
+      const status = error?.response?.status;
+      const code = error?.response?.data?.code;
       return {
         success: false,
-        status: error.status,
+        status: status,
         message:
           error?.response?.data?.message ||
           "Une erreur est survenue. Veuillez réesayez plus tard.",
-        code: error?.response?.data?.code,
+        code,
       };
     }
   }
 
   async function register(user) {
+    const http = getAxiosInstance();
     try {
       const res = await http.post("/auth/signup/", user);
       localStorage.setItem("activationToken", res.data?.activationToken);
@@ -64,16 +74,20 @@ export function AuthProvider({ children }) {
   }
 
   async function logout() {
+    const http = getAxiosInstance();
     try {
       await http.post("/auth/logout");
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");
       setLogged(false);
+      router.push("/login");
     } catch (error) {}
   }
   useEffect(() => {
     fetchUser();
-  }, [isLogged]);
+  }, []);
 
   const authContextData = {
     register,

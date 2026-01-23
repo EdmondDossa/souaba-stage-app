@@ -15,15 +15,130 @@ import {
 } from "../../../../components/ui/common";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import PropertyDetailsSkeleton from "@/components/ui/common/PropertyDetailsSkeleton";
+import { getAmenityIcon, getAmenityLabel } from "@/data/amenitiesMap";
 
 const AppartementDetails = () => {
   const params = useParams();
-  const hasFetchedRef = useRef(false);
   const searchParams = useSearchParams();
   const propertyId = searchParams.get("id");
   const http = getAxiosInstance();
   const [pageData, setPageData] = useState();
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+
+  const normalizeMediaArray = (mediaArray = []) => {
+    const list = Array.isArray(mediaArray) ? mediaArray : [];
+
+    if (!list.length) {
+      return [
+        {
+          media: { file_path: "/images/acceuil-first-image.webp" },
+          is_primary: true,
+        },
+      ];
+    }
+
+    return list.map((item) => {
+      if (item?.media?.file_path) return item;
+
+      const filePath =
+        item?.file_path || (typeof item === "string" ? item : undefined);
+
+      return {
+        ...item,
+        media: {
+          ...(item?.media || {}),
+          file_path: filePath || "/images/acceuil-first-image.webp",
+        },
+        is_primary: item?.is_primary ?? false,
+      };
+    });
+  };
+
+  // Normalise les données provenant d'une réservation (accommodation ou hôtel + chambre)
+  const buildPageDataFromReservation = (reservation) => {
+    if (!reservation) return null;
+
+    const accommodation =
+      reservation.accommodation ||
+      reservation.Accommodation ||
+      reservation.accommodation_details;
+
+    const roomDetail =
+      reservation.roomDetails?.[0] ||
+      reservation.room_details?.[0] ||
+      reservation.room_detail?.[0];
+
+    const hotelRoomCategory =
+      roomDetail?.hotelRoomCategory ||
+      roomDetail?.HotelRoomCategory ||
+      roomDetail?.hotel_room_category;
+
+    const hotel =
+      reservation.hotel ||
+      reservation.Hotel ||
+      accommodation?.Hotel ||
+      hotelRoomCategory?.Hotel ||
+      roomDetail?.Hotel ||
+      roomDetail?.hotel;
+
+    const mediaSource =
+      accommodation?.AccommodationMedia ||
+      accommodation?.accommodation_media ||
+      hotelRoomCategory?.HotelRoomCategoryMedia ||
+      hotelRoomCategory?.hotel_room_category_media ||
+      hotel?.HotelMedia ||
+      hotel?.hotel_media ||
+      [];
+
+    const name =
+      accommodation?.name || hotelRoomCategory?.name || hotel?.name || "";
+
+    const description =
+      accommodation?.description ||
+      hotelRoomCategory?.description ||
+      hotel?.description ||
+      "";
+
+    const pricePerNight =
+      accommodation?.price_per_night ||
+      hotelRoomCategory?.price_per_night ||
+      roomDetail?.price_at_booking ||
+      0;
+
+    return {
+      name: name || "Hébergement",
+      description,
+      AccommodationMedia: normalizeMediaArray(mediaSource),
+      amenities:
+        accommodation?.amenities ||
+        hotelRoomCategory?.amenities ||
+        hotel?.amenities ||
+        [],
+      securities:
+        accommodation?.securities || accommodation?.securityFeatures || [],
+      reviews: reservation?.reviews || [],
+      price_per_night: pricePerNight || 0,
+      number_of_rooms:
+        accommodation?.number_of_rooms ||
+        hotelRoomCategory?.number_of_rooms ||
+        0,
+      number_of_bathrooms:
+        accommodation?.number_of_bathrooms ||
+        hotelRoomCategory?.number_of_bathrooms ||
+        0,
+      number_of_parking: accommodation?.number_of_parking || 0,
+      address: accommodation?.address || hotel?.address || "",
+      city: accommodation?.city || hotel?.city || "",
+      country: accommodation?.country || hotel?.country || "",
+      district: accommodation?.district || hotel?.district || "",
+      avgRating:
+        accommodation?.avgRating ||
+        hotel?.avgRating ||
+        hotelRoomCategory?.avgRating,
+    };
+  };
 
   // État pour les favoris
   const [isFavorite, setIsFavorite] = useState(false);
@@ -126,23 +241,81 @@ const AppartementDetails = () => {
   useEffect(() => {
     const details = async () => {
       try {
-        if (hasFetchedRef.current) return;
-        hasFetchedRef.current = true;
+        setIsLoading(true);
+        // 1. On tente de récupérer une réservation complète (cas hôtel ou accommodation)
+        try {
+          const reservationResponse = await http.get(
+            `/reservations/${params.id}`
+          );
+          const reservationData = reservationResponse?.data;
+          const normalizedReservation = buildPageDataFromReservation(
+            reservationData
+          );
 
+          if (normalizedReservation) {
+            setPageData(normalizedReservation);
+            setIsLoading(false);
+            return;
+          }
+        } catch (error) {
+          if (error?.response?.status !== 404) {
+            console.error("Error fetching reservation details:", error);
+          }
+        }
+
+        // 2. Fallback: récupération directe de l'accommodation (comportement existant)
         const request = await http.get(
           `/accommodations?accommodation_id=${params.id}&limit=1`
         );
-        if (request.data.data?.[0]) setPageData(request.data.data[0]);
+        const payload = request?.data || {};
+        const data =
+          payload?.data?.[0] ||
+          payload?.data ||
+          payload?.accommodation ||
+          null;
+
+        if (!data) {
+          setPageData(null);
+          return;
+        }
+
+        setPageData({
+          ...data,
+          AccommodationMedia: normalizeMediaArray(
+            data?.AccommodationMedia || data?.accommodation_media || data?.images
+          ),
+          amenities: data?.amenities || [],
+          securities: data?.securities || data?.securityFeatures || [],
+          reviews: data?.reviews || [],
+          price_per_night: data?.price_per_night || 0,
+          number_of_rooms: data?.number_of_rooms || 0,
+          number_of_bathrooms: data?.number_of_bathrooms || 0,
+          number_of_parking: data?.number_of_parking || 0,
+        });
       } catch (error) {
         console.error("Error fetching accommodation details:", error);
         toast.error("Une erreur est survenue. Veuillez rechargez la page!");
+      } finally {
+        setIsLoading(false);
       }
     };
     details();
-    window.scrollTo({ top: 0 });
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0 });
+    }
   }, [params.id]);
 
-  if (!pageData) return null;
+  if (isLoading) {
+    return <PropertyDetailsSkeleton showSearch={false} />;
+  }
+
+  if (!pageData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-600">
+        Aucune information sur cet hébergement pour le moment.
+      </div>
+    );
+  }
 
   async function saveReservation({
     checkIn,
@@ -176,6 +349,7 @@ const AppartementDetails = () => {
         numberOfGuests: adults + babies + children,
         totalPrice: days_offset * pageData.price_per_night,
         accommodationId: params.id,
+        paymentMethod: "WALLET",
       };
       toast.loading("Réservation en cours ...");
       const res = await http.post("/reservations", data);
@@ -189,7 +363,11 @@ const AppartementDetails = () => {
     }
   }
 
-  const appartMedias = pageData.AccommodationMedia;
+  const appartMedias = pageData.AccommodationMedia || [];
+  const locationText = [pageData?.address, pageData?.city, pageData?.country]
+    .filter(Boolean)
+    .join(", ");
+  const currency = pageData?.currency || property.currency;
   return (
     <>
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -211,12 +389,12 @@ const AppartementDetails = () => {
                 <div className="flex items-center text-gray-600   mt-2 font-montserrat">
                   <MapPin size={16} className="mr-1" />
                   <span className="text-sm">
-                    {pageData.address}, {pageData.country}
+                    {locationText || property.location}
                   </span>
                 </div>
                 <div className="text-xl  mt-2  font-bold text-gray-900 font-montserrat-bold">
                   {pageData ? pageData?.price_per_night : property.price}{" "}
-                  {property.currency}/ {property.period}
+                  {currency}/ {property.period}
                 </div>
               </div>
               <div className="flex items-center space-x-3">
@@ -290,24 +468,37 @@ const AppartementDetails = () => {
               </h2>
               <div className="grid grid-cols-2 gap-4">
                 {(pageData?.amenities || property.amenities).map(
-                  (amenity, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center space-x-3 p-2"
-                    >
-                      <SvgIcon
-                        name={(typeof amenity === "string"
-                          ? amenity
-                          : amenity.icon
-                        ).toLowerCase()}
-                        size={24}
-                        className="filter "
-                      />
-                      <span className="text-gray-700 font-medium">
-                        {typeof amenity === "string" ? amenity : amenity.name}
-                      </span>
-                    </div>
-                  )
+                  (amenity, index) => {
+                    const raw =
+                      typeof amenity === "string"
+                        ? amenity
+                        : amenity?.name || amenity?.icon || amenity;
+                    const label = getAmenityLabel(raw);
+                    const icon = getAmenityIcon(raw);
+                    return (
+                      <div
+                        key={index}
+                        className="flex items-center space-x-3 p-2"
+                      >
+                        {icon?.endsWith(".svg") ? (
+                          <img
+                            src={icon}
+                            alt={label}
+                            className="w-6 h-6 object-contain"
+                          />
+                        ) : (
+                          <SvgIcon
+                            name={String(raw).toLowerCase()}
+                            size={24}
+                            className="filter "
+                          />
+                        )}
+                        <span className="text-gray-700 font-medium">
+                          {label}
+                        </span>
+                      </div>
+                    );
+                  }
                 )}
               </div>
               <button className="mt-6 text-black border-2 px-7 py-4 rounded-lg border-primary font-semibold  transition-all">

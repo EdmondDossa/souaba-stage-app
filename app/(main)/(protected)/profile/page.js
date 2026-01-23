@@ -1,7 +1,6 @@
 "use client";
 import useAuthContext from "@/context/auth";
 import defaultProfilImage from "@/public/images/profile/default-avatar-icon.jpg";
-import Image from "next/image";
 import { IoCamera } from "react-icons/io5";
 import { BsPatchCheckFill } from "react-icons/bs";
 import { FaPenAlt } from "react-icons/fa";
@@ -18,7 +17,20 @@ const Profiles = () => {
   const http = getAxiosInstance();
 
   const { user, fetchUser } = useAuthContext();
-  console.log(user);
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
+
+  const profilePhotoSrc = (() => {
+    const photo = user?.profile?.photo || user?.photo;
+    if (typeof photo === "string") {
+      return photo.startsWith("http") ? photo : `${apiBase}/${photo}`;
+    }
+    if (photo?.url) {
+      return photo.url.startsWith("http")
+        ? photo.url
+        : `${apiBase}/${photo.url}`;
+    }
+    return defaultProfilImage?.src || defaultProfilImage;
+  })();
 
   const [isEditing, setEditing] = useState(false);
 
@@ -32,13 +44,17 @@ const Profiles = () => {
     try {
       const { fileError, media, message } = handlePhotoUpload(e.target.files);
       if (fileError) return toast.error(message);
+      if (!media?.length) return;
       //upload the media first
       const file = new FormData();
       file.append("photo", media[0].file);
       file.append("mediaType", "IMAGE");
       // const { data } = await http.post("/uploads/multiple/", file);
-      await http.patch("/users/profile", file);
+      await http.patch("/users/profile", file, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       await fetchUser(false);
+      e.target.value = "";
       toast.success("Votre photo de profil a été mise à jour");
     } catch (error) {
       console.log(error);
@@ -47,10 +63,10 @@ const Profiles = () => {
   }
 
   return (
-    <div className="lg:max-w-5xl lg:h-[520px] lg:min-w-4xl lg:border border-gray-100 mx-auto mt-10">
-      <section className="flex flex-col items-center content-center lg:flex-row lg:justify-between gap-x-15 h-full">
+    <div className="lg:max-w-5xl lg:min-h-[520px] lg:min-w-4xl lg:border border-gray-100 mx-auto mt-10 pb-10">
+      <section className="flex flex-col items-stretch lg:flex-row gap-x-15 h-full">
         {/* Barre de profile */}
-        <aside className="lg:bg-[#EFF0F2] w-full lg:w-4/12 py-10 flex flex-col items-center justify-between">
+        <aside className="lg:bg-[#EFF0F2] h-full w-full lg:w-4/12 py-10 flex flex-col items-center justify-between lg:rounded-l-2xl">
           {/* Photo user */}
           <h1 className="font-montserrat-bold text-[20px] my-4 text-gray-800">
             Mon Profil
@@ -59,11 +75,7 @@ const Profiles = () => {
             <div className="relative w-36 h-36 shadow-xl rounded-full bg-gray-100">
               <img
                 className="h-full w-full rounded-full"
-                src={
-                  user.profile.photo
-                    ? `${process.env.NEXT_PUBLIC_API_URL}/${user.profile.photo}`
-                    : defaultProfilImage
-                }
+                src={profilePhotoSrc}
                 alt=""
               />
               <button
@@ -169,7 +181,7 @@ const Profiles = () => {
             </>
           )}
         </aside>
-        <section className="lg:py-10 lg:px-5">
+        <section className="flex-1 h-full lg:min-h-full lg:px-5">
           {isEditing ? (
             <EditProfile onEditCancel={onEditCancel} />
           ) : (

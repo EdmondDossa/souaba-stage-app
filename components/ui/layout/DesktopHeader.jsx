@@ -19,16 +19,17 @@ const DesktopHeader = () => {
     setIsOpen(!isOpen);
   };
 
-  useEffect(()=>{
-    function closeMenu(e){
-       if (menuRef.current && !menuRef.current.contains(e.target)) setIsOpen(false);
+  useEffect(() => {
+    function closeMenu(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target))
+        setIsOpen(false);
     }
     window.addEventListener("click", closeMenu);
-    () => window.removeEventListener("click",closeMenu);
-  },[]);
+    () => window.removeEventListener("click", closeMenu);
+  }, []);
 
   return (
-    <header className="bg-white shadow-md sticky top-0 z-20">
+    <header className="bg-white shadow-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -46,10 +47,12 @@ const DesktopHeader = () => {
           {/* Navigation centrale */}
           <nav className="hidden md:flex items-center space-x-8">
             <Link
-              href="/find-accomodation"
-              className={`text-gray-800 hover:text-gray-900  py-2 text-sm font-medium transition-colors ${
-                pathname === "/find-accomodation" ? "active-border" : ""
-              } `}
+              href="/find-hosting"
+              className={`text-gray-800 hover:text-gray-900 py-2 text-sm font-medium transition-colors ${
+                pathname === "/find-hosting"
+                  ? "active-border"
+                  : "active-border-hover"
+              }`}
             >
               Trouver un hébergement
             </Link>
@@ -57,7 +60,10 @@ const DesktopHeader = () => {
 
           {/* Boutons de droite */}
           <div className="flex items-center space-x-3">
-            <ConditionalComponentRender className="space-x-3" forLoggedUser={false}>
+            <ConditionalComponentRender
+              className="space-x-3"
+              forLoggedUser={false}
+            >
               {/* Bouton S'inscrire */}
               <Link
                 href="/register"
@@ -85,7 +91,7 @@ const DesktopHeader = () => {
             <ConditionalComponentRender ref={menuRef} forLoggedUser={true}>
               <div className="relative">
                 <div
-                  onClick={()=>setIsOpen(true)}
+                  onClick={() => setIsOpen(true)}
                   className="flex items-center rounded-full border-2 border-[#CBCBCB] space-x-1 p-1.5"
                 >
                   <div className="w-8 h-8   flex items-center justify-center">
@@ -102,9 +108,9 @@ const DesktopHeader = () => {
                       className={`absolute z-20  ${
                         isMobile ? "w-full" : "w-[150px]"
                       }`}
-                      onClick={()=>setIsOpen(true)}
+                      onClick={() => setIsOpen(true)}
                     >
-                      <div  className="relative top-full left-0 mt-1 w-full bg-white rounded-xl shadow-lg border border-gray-200 z-50 overflow-hidden">
+                      <div className="relative top-full left-0 mt-1 w-full bg-white rounded-xl shadow-lg border border-gray-200 z-50 overflow-hidden">
                         {/* Menu */}
                         {isMobile && (
                           <nav className="flex flex-col justify-start space-y-1">
@@ -140,7 +146,7 @@ const DesktopHeader = () => {
                         )}
                         {/* Profil Action */}
 
-                        <div  className="py-2">
+                        <div className="py-2">
                           {/* First Section */}
                           <div className="px-4 py-2 flex flex-col space-y-1">
                             <Link
@@ -163,6 +169,13 @@ const DesktopHeader = () => {
                               onClick={toggleMenu}
                             >
                               Réservations
+                            </Link>
+                            <Link
+                              href="/favorites"
+                              className="block  text-gray-700 hover:bg-gray-50 rounded-lg px-2 text-sm font-medium transition-colors"
+                              onClick={toggleMenu}
+                            >
+                              Favoris
                             </Link>
                           </div>
 

@@ -9,26 +9,42 @@ import getAxiosInstance from "@/lib/request";
 import toast from "react-hot-toast";
 import useAuthContext from "@/context/auth";
 
-const PersonalInformations = () => {
+const PersonalInformations = ({
+  redirectUrl,
+  submitButtonText = "Suivant",
+}) => {
   const router = useRouter();
   const http = getAxiosInstance();
   const [isLoading,setLoading] = useState(false);
-  const { fetchUser } = useAuthContext();
+  const { fetchUser, user } = useAuthContext();
 
   const [userinfo, setUserInfo] = useState({
     address: "",
     phone:"",
     city: "",
-    country: "",
+    country: "Côte d'Ivoire",
   });
+
+  useEffect(() => {
+    const profile = user?.profile || user || {};
+    setUserInfo({
+      address: profile.address || "",
+      phone: profile.contact || profile.phone || "",
+      city: profile.city || "",
+      country: profile.country || "Côte d'Ivoire",
+    });
+  }, [user]);
 
   async function handleSubmit(e) {
     e.preventDefault();
     if(!isFormValid()) return;
     try {
       setLoading(true);
-      await http.patch("/users/profile/",userinfo);
+      await http.patch("/users/profile/", userinfo);
       await fetchUser();
+      if (redirectUrl) {
+        router.push(redirectUrl);
+      }
     } catch (error) {
         toast.error("Une erreur est survenue. Veuillez réessayezplus tard!");
     }finally{
@@ -121,7 +137,7 @@ const PersonalInformations = () => {
             isLoading={isLoading}
             className="font-montserrat-medium font-bold rounded-lg bg-primary py-3 hover:bg-primary/80 cursor-pointer"
           >
-            Suivant{" "}
+            {submitButtonText}{" "}
           </Button>
         </div>
       </InformationsForm>

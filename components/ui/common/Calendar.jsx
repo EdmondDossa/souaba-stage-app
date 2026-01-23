@@ -1,30 +1,116 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useState } from "react";
-
+import { useEffect, useMemo, useState } from "react";
 
 const WEEK_DAYS = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
-const GUEST_OPTIONS = Array.from({ length: 11 }, (_, i) => i);
+
+const parseDateValue = (value) => {
+  if (!value) return null;
+  if (value instanceof Date && !Number.isNaN(value.getTime())) return value;
+  if (typeof value !== "string") return null;
+
+  const slashParts = value.split("/");
+  if (slashParts.length === 3) {
+    const [day, month, year] = slashParts.map((part) => Number.parseInt(part, 10));
+    if ([day, month, year].every((part) => Number.isFinite(part))) {
+      return new Date(year, month - 1, day);
+    }
+  }
+
+  const dashParts = value.split("-");
+  if (dashParts.length === 3) {
+    const [year, month, day] = dashParts.map((part) => Number.parseInt(part, 10));
+    if ([day, month, year].every((part) => Number.isFinite(part))) {
+      return new Date(year, month - 1, day);
+    }
+  }
+
+  return null;
+};
+
+const startOfDay = (value) =>
+  new Date(value.getFullYear(), value.getMonth(), value.getDate());
+
+const getDayTimestamp = (value) => {
+  if (!value) return null;
+  return startOfDay(value).getTime();
+};
 
 // Composant Calendrier
 const Calendar = ({
   selectedDate,
   onDateSelect,
+  minDate,
+  allowPastDates = false,
+  rangeStart,
+  rangeEnd,
 }) => {
+  const today = useMemo(() => startOfDay(new Date()), []);
+  const selected = parseDateValue(selectedDate);
+  const rangeStartDate = parseDateValue(rangeStart);
+  const rangeEndDate = parseDateValue(rangeEnd);
+  const rangeStartTimestamp = getDayTimestamp(rangeStartDate);
+  const rangeEndTimestamp = getDayTimestamp(rangeEndDate);
+  const hasRange =
+    rangeStartTimestamp !== null && rangeEndTimestamp !== null;
+  const rangeMin =
+    hasRange && rangeStartTimestamp <= rangeEndTimestamp
+      ? rangeStartTimestamp
+      : rangeEndTimestamp;
+  const rangeMax =
+    hasRange && rangeStartTimestamp <= rangeEndTimestamp
+      ? rangeEndTimestamp
+      : rangeStartTimestamp;
 
-  if(!(selectedDate instanceof Date)){
-    const d = selectedDate.split("/").reverse().join("/");
-    selectedDate = new Date(d);
-  }
+  const normalizedMinDate = allowPastDates
+    ? null
+    : startOfDay(parseDateValue(minDate) || today);
+  const initialDisplayDate = selected || normalizedMinDate || today;
 
-  const [dateOnDisplay,setDateOnDisplay] = useState(selectedDate);
+  const [dateOnDisplay, setDateOnDisplay] = useState(initialDisplayDate);
+  const selectedTimestamp = selected ? startOfDay(selected).getTime() : null;
+  const minTimestamp = normalizedMinDate ? normalizedMinDate.getTime() : null;
 
-  function onMonthChange(direction){
-    const month = direction === "next" ?  (dateOnDisplay.getMonth() + 1) % 11 : Math.max(0,dateOnDisplay.getMonth() - 1) //max month is 11 as it starts to 0 and ends at 11
-    const nextDate = new Date(
-      dateOnDisplay.getFullYear(),
-      month,
-      dateOnDisplay.getDate()
-    );
+  useEffect(() => {
+    const targetDate = selected || normalizedMinDate || today;
+    if (!targetDate) return;
+    setDateOnDisplay((current) => {
+      if (
+        current.getFullYear() === targetDate.getFullYear() &&
+        current.getMonth() === targetDate.getMonth()
+      ) {
+        return current;
+      }
+      return targetDate;
+    });
+  }, [selectedTimestamp, minTimestamp, today]);
+
+  const canGoPrev = normalizedMinDate
+    ? dateOnDisplay.getFullYear() > normalizedMinDate.getFullYear() ||
+      (dateOnDisplay.getFullYear() === normalizedMinDate.getFullYear() &&
+        dateOnDisplay.getMonth() > normalizedMinDate.getMonth())
+    : true;
+
+  function onMonthChange(direction) {
+    if (direction === "prev" && !canGoPrev) return;
+
+    const nextMonth =
+      direction === "next"
+        ? dateOnDisplay.getMonth() + 1
+        : dateOnDisplay.getMonth() - 1;
+    const nextDate = new Date(dateOnDisplay.getFullYear(), nextMonth, 1);
+
+    if (normalizedMinDate) {
+      const minMonthAnchor = new Date(
+        normalizedMinDate.getFullYear(),
+        normalizedMinDate.getMonth(),
+        1
+      );
+      if (nextDate < minMonthAnchor) {
+        setDateOnDisplay(minMonthAnchor);
+        return;
+      }
+    }
+
     setDateOnDisplay(nextDate);
   }
 
@@ -32,8 +118,11 @@ const Calendar = ({
     <div className="absolute z-50 bg-white border border-gray-200  shadow-2xl px-4 pt-2 pb-3 w-60 h-60 left-0 top-full mt-2">
       <div className="flex justify-between items-center mb-2">
         <button
+          disabled={!canGoPrev}
           onClick={() => onMonthChange("prev")}
-          className="p-1 hover:bg-gray-100 rounded text-black"
+          className={`p-1 rounded text-black ${
+            canGoPrev ? "hover:bg-gray-100" : "opacity-40 cursor-not-allowed"
+          }`}
         >
           <span className="text-xs"> <ChevronLeft /> </span>
         </button>
@@ -60,18 +149,47 @@ const Calendar = ({
           </div>
         ))}
         {generateCalendarDays(dateOnDisplay).map((date, idx) => {
-          const isCurrentMonth = date.getMonth() === selectedDate.getMonth();
-          const isToday = isCurrentMonth && date.toDateString() === selectedDate.toDateString();
-          const isSelected = isToday && isCurrentMonth;
+          const isCurrentMonth = date.getMonth() === dateOnDisplay.getMonth();
+          const currentTimestamp = getDayTimestamp(date);
+          const isSelected =
+            selectedTimestamp !== null &&
+            currentTimestamp === selectedTimestamp;
+          const isToday = currentTimestamp === today.getTime();
+          const isDisabled =
+            minTimestamp !== null && currentTimestamp < minTimestamp;
+          const isInRange =
+            hasRange &&
+            currentTimestamp !== null &&
+            currentTimestamp >= rangeMin &&
+            currentTimestamp <= rangeMax;
+          const isRangeStart =
+            hasRange && currentTimestamp === rangeStartTimestamp;
+          const isRangeEnd =
+            hasRange && currentTimestamp === rangeEndTimestamp;
           return (
             <button
               key={idx}
-              onClick={() => onDateSelect(date)}
+              onClick={() => {
+                if (!isDisabled) onDateSelect(date);
+              }}
+              disabled={isDisabled}
               className={`py-1 text-xs font-bold font-montserrat-medium rounded-full text-center ${
                 !isCurrentMonth ? "text-gray-500" : "text-gray-900"
-              } ${isSelected ? "border-2 border-gray-400 bg-gray-200" : "hover:bg-gray-100"} ${
+              } ${
+                isRangeStart || isRangeEnd
+                  ? "bg-primary text-white"
+                  : isSelected
+                    ? "border-2 border-gray-400 bg-gray-200"
+                    : ""
+              } ${
+                isInRange && !isRangeStart && !isRangeEnd
+                  ? "bg-primary/20"
+                  : ""
+              } ${
+                !isDisabled && !isSelected ? "hover:bg-gray-100" : ""
+              } ${
                 isToday && !isSelected ? "bg-blue-100" : ""
-              }`}
+              } ${isDisabled ? "opacity-40 cursor-not-allowed" : ""}`}
             >
               {date.getDate()}
             </button>

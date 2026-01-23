@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { FaChevronLeft } from "react-icons/fa";
 import { Button } from "@/components/ui/common";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Wrapper from "./ui/Wrapper";
 import toast from "react-hot-toast";
 import getAxiosInstance from "@/lib/request";
@@ -18,59 +19,53 @@ import {
   Resume,
   SuccessfulSubmit,
   HotelsRoom,
-} from "@/app/(main)/(protected)/add-establishment/steps-components";
+} from "./steps-components";
 import useAuthContext from "@/context/auth";
 import ErrorModal from "@/components/ui/common/ErrorModal";
-import SetProfileInfoForAccomodation from "../../set-profile-info/page";
-
-const rawSteps = [
-  {
-    name: "Hébergement",
-    component: Hebergement,
-  },
-  {
-    name: "Informations",
-    component: PropertyInformations,
-  },
-  {
-    name: "Chambres",
-    component: HotelsRoom,
-  },
-  {
-    name: "Equipements",
-    component: Equipements,
-  },
-  {
-    name: "Commodités",
-    component: Commodities,
-  },
-  {
-    name: "Sécurités",
-    component: Security,
-  },
-  {
-    name: "Résumé",
-    component: Resume,
-  },
-];
-
-const identitySection = {
-  name: "Pièce d'identité",
-  component: IdentityCard,
-};
 
 const AddEstablishment = () => {
   const http = getAxiosInstance();
   const router = useRouter();
-  const { user } = useAuthContext();
-  
-  const stepsDefinitions = useMemo(() => [
-    ...rawSteps,
-    ...(user.profile?.identity_document ? [] : [identitySection]),
-  ], [user.profile?.identity_document]);
+  const { user, isLogged, isLoading, fetchUser } = useAuthContext();
 
-  const searchParams = useSearchParams();
-  const forTestingPurpose = searchParams.get("env") === "test";
+  const profile = user?.profile || {};
+  const identityDocument = profile.identity_document || user?.identity_document;
+  const profileAddress = profile.address ?? user?.address ?? "";
+  const profileCity = profile.city ?? user?.city ?? "";
+  const profileCountry = profile.country ?? user?.country ?? "Côte d'Ivoire";
+  const profilePhone =
+    profile.contact ?? profile.phone ?? user?.contact ?? user?.phone ?? "";
+  const hasProfileBasics =
+    Boolean(profileAddress) &&
+    Boolean(profileCity) &&
+    Boolean(profilePhone) &&
+    Boolean(profileCountry);
+  const requireIdentityStep = !identityDocument;
+
+  useEffect(() => {
+    // Rafraîchir les infos utilisateur (profil + pièce d'identité) pour adapter les étapes
+    fetchUser(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const identitySection = {
+    name: "Pièce d'identité",
+    component: IdentityCard,
+  };
+  const rawSteps = [
+    { name: "Hébergement", component: Hebergement },
+    { name: "Informations", component: PropertyInformations },
+    { name: "Chambres", component: HotelsRoom },
+    { name: "Commodités", component: Commodities },
+    { name: "Equipements", component: Equipements },
+    { name: "Sécurités", component: Security },
+    { name: "Résumé", component: Resume },
+  ];
+
+  const stepsDefinitions = useMemo(
+    () => [...rawSteps, ...(requireIdentityStep ? [identitySection] : [])],
+    [requireIdentityStep]
+  );
 
   const [steps, setSteps] = useState(stepsDefinitions);
   const stepsLabels = steps.map((step) => step.name);
@@ -95,16 +90,35 @@ const AddEstablishment = () => {
 
   const hebergementType = stepFormValues.find(
     (step) => step.stepName === "Hébergement"
-  ).data;
+  )?.data;
 
   useEffect(() => {
-    if (!hebergementType) return;
-    if (hebergementType === "Hôtel") setSteps(stepsDefinitions);
-    else {
-      //when it is `Hôtel` as hebergement then retrieve the roomtype component step
-      setSteps(stepsDefinitions.filter((step) => step.name !== "Chambres"));
-    }
-  }, [hebergementType, stepsDefinitions]);
+    const desiredSteps =
+      hebergementType === "Hôtel" || !hebergementType
+        ? stepsDefinitions
+        : stepsDefinitions.filter((step) => step.name !== "Chambres");
+
+    setSteps((prev) => {
+      const isSame =
+        prev.length === desiredSteps.length &&
+        prev.every((step, idx) => step.name === desiredSteps[idx].name);
+
+      if (isSame) return prev;
+
+      setStepFormValues((prevValues) =>
+        desiredSteps.map(
+          (step) =>
+            prevValues.find((v) => v.stepName === step.name) || {
+              stepName: step.name,
+              data: null,
+              allowNextStep: false,
+            }
+        )
+      );
+
+      return desiredSteps;
+    });
+  }, [stepsDefinitions, hebergementType]);
 
   function handleFormDataUpdate(data) {
     let formDataCopy = Array.from(stepFormValues);
@@ -148,10 +162,42 @@ const AddEstablishment = () => {
 
     //on the last step we have to publish
     if (currentStep === stepsLabels.length - 1) {
+      if (!isLogged) {
+        toast.error("Connectez-vous pour finaliser votre demande.");
+        router.push("/login?redirect=/add-establishment");
+        return;
+      }
+
+      if (!hasProfileBasics) {
+        toast.error(
+          "Complétez votre profil (adresse, ville, téléphone, pays) avant de publier."
+        );
+        router.push("/set-profile-info");
+        return;
+      }
+
+      const identityStepData = stepFormValues.find(
+        (item) => item.stepName === "Pièce d'identité"
+      )?.data;
+
+      if (
+        requireIdentityStep &&
+        !identityStepData?.["identity-card-recto"]?.file
+      ) {
+        toast.error(
+          "Ajoutez la photo de votre pièce d'identité pour finaliser."
+        );
+        const identityIndex = stepsLabels.findIndex(
+          (label) => label === "Pièce d'identité"
+        );
+        if (identityIndex >= 0) setCurrentStep(identityIndex);
+        return;
+      }
+
       toast.loading("Publication");
 
       console.log(stepFormValues);
-      
+
       //type information
       try {
         let { formContent, photos } = stepFormValues.find(
@@ -166,8 +212,9 @@ const AddEstablishment = () => {
           (item) => item.stepName === "Sécurités"
         )?.data;
 
-        const roomData =
-          stepFormValues.find((item) => item.stepName === "Chambres")?.data;
+        const roomData = stepFormValues.find(
+          (item) => item.stepName === "Chambres"
+        )?.data;
 
         const roomInfo = roomData?.formContent ?? {};
         const roomPhotos = roomData?.photos ?? [];
@@ -200,10 +247,10 @@ const AddEstablishment = () => {
           address: formContent.address,
           city: formContent.city,
           country: formContent.country,
-          district:formContent?.disctrict ?? "NA",
+          district: formContent?.disctrict ?? "NA",
           google_maps_location: formContent.map,
-          email: user.email,
-          phone: user.profile.contact ?? user.profile.phone,
+          email: user?.email,
+          phone: profilePhone,
           booking_and_cancellation_policy:
             "Free cancellation up to 24 hours before check-in",
           amenities,
@@ -236,13 +283,13 @@ const AddEstablishment = () => {
 
           formInfo["room_categories"] = [room];
           requestUrl = "/partners/become-hotel";
-        }else{
+        } else {
           //type de chambre
           const roomTypeMatchers = {
-            "Résidence":"RESIDENCE",
-            "Appartement":"APARTMENT",
-            "Villa":"VILLA",
-            "Studio":"STUDIO"
+            Résidence: "RESIDENCE",
+            Appartement: "APARTMENT",
+            Villa: "VILLA",
+            Studio: "STUDIO",
           };
 
           formInfo.type = roomTypeMatchers[hebergementType];
@@ -275,16 +322,13 @@ const AddEstablishment = () => {
             "Aucune bougie ni flamme nue à l'intérieur.",
             "Le check-in s’effectue à partir de 15h00, check-out avant 11h00.",
             "Ne laissez pas la climatisation ou les lumières allumées en quittant.",
-            "Utilisez les poubelles de tri pour les déchets recyclables."
+            "Utilisez les poubelles de tri pour les déchets recyclables.",
           ];
-          
         }
 
         //update user profile with identity_card if not already set
-        if (!user.profile?.identity_document) {
-          const card = stepFormValues.find(
-            (item) => item.stepName === "Pièce d'identité"
-          ).data;
+        if (requireIdentityStep) {
+          const card = identityStepData;
           const fileData = new FormData();
 
           fileData.append(
@@ -296,8 +340,8 @@ const AddEstablishment = () => {
           // const identity_document = response.data[0].media_id;
           const res = await http.patch("/users/profile", fileData);
         }
-          console.log(formInfo);
-          
+        console.log(formInfo);
+
         await http.post(requestUrl, formInfo);
         setSubmitted(true);
       } catch (error) {
@@ -333,55 +377,62 @@ const AddEstablishment = () => {
     window.scrollTo({ top: 0 });
   }, [currentStep]);
 
-  if (!user.profile?.city) return <SetProfileInfoForAccomodation />
-
-  return isSubmitted ? (
-    <SuccessfulSubmit />
-  ) : (
-    <section>
-      <FormSteps steps={steps} currentStep={currentStep} />
-      <section className="w-full md:w-[90%] mx-auto mt-2">
-        <Wrapper
-          fullWidth={["Hébergement", "Commodités", "Sécurités"].includes(
-            stepsLabels[currentStep]
-          )}
-          withBorder={["Equipements", "Résumé"].includes(
-            stepsLabels[currentStep]
-          )}
-        >
-          {/* Current steps components */}
-          <div className="w-full p-4 mb-4">
-            {renderStepComponentWithData(steps[currentStep]?.component)}
-          </div>
-          <div className={`flex justify-between w-[95%] mx-auto`}>
-            <Button
-              onClick={() => setCurrentStep(currentStep - 1)}
-              variant="secondary"
-              size="lg"
-              className={`font-montserrat-medium border border-gray-300 cursor-pointer hover:bg-white hover:text-black bg-white group rounded-lg ${
-                currentStep === 0 ? "invisible" : "visible"
-              }`}
+  return (
+    <div>
+      {isSubmitted ? (
+        <SuccessfulSubmit />
+      ) : (
+        <section>
+          <FormSteps steps={steps} currentStep={currentStep} />
+          <section className="w-full md:w-[90%] mx-auto mt-2">
+            <Wrapper
+              fullWidth={["Hébergement", "Commodités", "Sécurités"].includes(
+                stepsLabels[currentStep]
+              )}
+              withBorder={["Equipements", "Résumé"].includes(
+                stepsLabels[currentStep]
+              )}
             >
-              <FaChevronLeft className="group-hover:-translate-x-1.5 transition-all ease-in" />{" "}
-              Retour
-            </Button>
-            <Button
-              onClick={goToNextStep}
-              size="lg"
-              className="font-montserrat-medium font-bold rounded-lg bg-primary py-3 hover:bg-primary/80 cursor-pointer"
-            >
-              {/* check if it is the last step */}
-              {currentStep === stepsLabels.length - 1 ? "Publier" : "Suivant"}
-            </Button>
-          </div>
-        </Wrapper>
-      </section>
-      {submissionError && (
-        <div className="fixed inset-0 bg-gray-900/50 bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <ErrorModal onClose={onModalErrorClose} message={submissionError} />
-        </div>
+              {/* Current steps components */}
+              <div className="w-full p-4 mb-4">
+                {renderStepComponentWithData(steps[currentStep]?.component)}
+              </div>
+              <div className={`flex justify-between w-[95%] mx-auto`}>
+                <Button
+                  onClick={() => setCurrentStep(currentStep - 1)}
+                  variant="secondary"
+                  size="lg"
+                  className={`font-montserrat-medium border border-gray-300 cursor-pointer hover:bg-white hover:text-black bg-white group rounded-lg ${
+                    currentStep === 0 ? "invisible" : "visible"
+                  }`}
+                >
+                  <FaChevronLeft className="group-hover:-translate-x-1.5 transition-all ease-in" />{" "}
+                  Retour
+                </Button>
+                <Button
+                  onClick={goToNextStep}
+                  size="lg"
+                  className="font-montserrat-medium font-bold rounded-lg bg-primary py-3 hover:bg-primary/80 cursor-pointer"
+                >
+                  {/* check if it is the last step */}
+                  {currentStep === stepsLabels.length - 1
+                    ? "Publier"
+                    : "Suivant"}
+                </Button>
+              </div>
+            </Wrapper>
+          </section>
+          {submissionError && (
+            <div className="fixed inset-0 bg-gray-900/50 bg-opacity-50 flex items-center justify-center z-50 p-4">
+              <ErrorModal
+                onClose={onModalErrorClose}
+                message={submissionError}
+              />
+            </div>
+          )}
+        </section>
       )}
-    </section>
+    </div>
   );
 };
 

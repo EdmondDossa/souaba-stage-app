@@ -6,10 +6,23 @@ const MobileRoomType = ({ rooms }) => {
   const [currentRoomIndex, setCurrentRoomIndex] = useState(0);
 
   const onRoomChange = (action) => {
+    if (!hasRooms) return;
     if (action === "next")
-      setCurrentRoomIndex(Math.min(rooms.length-1, currentRoomIndex + 1));
+      setCurrentRoomIndex(Math.min(rooms.length - 1, currentRoomIndex + 1));
     else setCurrentRoomIndex(Math.max(0, currentRoomIndex - 1));
   };
+
+  const hasRooms = Array.isArray(rooms) && rooms.length > 0;
+  const currentRoom = hasRooms ? rooms[currentRoomIndex] : null;
+
+  const roomImage = currentRoom
+    ? currentRoom.HotelRoomCategoryMedia?.find((media) => media?.is_primary)?.media?.file_path ||
+      currentRoom.HotelRoomCategoryMedia?.[0]?.media?.file_path ||
+      currentRoom.HotelRoomCategoryMedia?.[0] ||
+      "/images/new-property1.jpg"
+    : "/images/new-property1.jpg";
+
+  if (!hasRooms) return null;
 
   return (
     <div>
@@ -23,50 +36,47 @@ const MobileRoomType = ({ rooms }) => {
               width={150}
               height={150}
               className="w-28 h-20 rounded-md"
-              alt=""
-              src={
-                rooms[currentRoomIndex].HotelRoomCategoryMedia[0] ??
-                "/images/new-property1.jpg"
-              }
+              alt={currentRoom?.name || "Room image"}
+              src={roomImage || "/images/new-property1.jpg"}
             />
           </div>
           <div>
             <strong className="capitalize font-montserrat-bold text-gray-700">
               {" "}
-              {rooms[currentRoomIndex].type}{" "}
+              {currentRoom.type}{" "}
             </strong>
             <div className="mt-3">
               <span> 2 lits </span>
             </div>
             <span>
               {" "}
-              {rooms[currentRoomIndex].number_of_bathrooms} salle de bain{" "}
+              {currentRoom.number_of_bathrooms} salle de bain{" "}
             </span>
           </div>
         </div>
         <p className="text-gray-400 p-2 h-12 overflow-y-auto">
-          {rooms[currentRoomIndex].description}
+          {currentRoom.description}
         </p>
         <div className="mb-2">
           {" "}
           <strong className="font-montserrat-bold">Capacité:</strong>{" "}
-          {rooms[currentRoomIndex].capacity}{" "}
+          {currentRoom.capacity}{" "}
         </div>
         <div>
           {" "}
           <strong className="font-montserrat-bold">Prix par nuit:</strong>{" "}
-          {rooms[currentRoomIndex].price_per_night} FCFA
+          {currentRoom.price_per_night} FCFA
         </div>
         <div className="flex items-center justify-center space-x-4 mt-2">
           {/* Select pour choisir le nombre de chambres */}
           <select
-            defaultValue={rooms[currentRoomIndex].selectedCount ?? 0}
+            defaultValue={currentRoom.selectedCount ?? 0}
             onChange={(e) => {}}
             className="px-3 py-2 border border-gray-300 rounded text-sm"
           >
             <option value={0}>0 (0FCFA)</option>
             {[
-              ...Array(Math.min(rooms[currentRoomIndex].number_of_rooms, 5)),
+              ...Array(Math.min(currentRoom.number_of_rooms, 5)),
             ].map((_, idx) => (
               <option key={idx + 1} value={idx + 1}>
                 {idx + 1}

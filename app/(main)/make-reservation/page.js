@@ -8,7 +8,7 @@ import Submitted from "./steps/Submitted";
 const ReservationForm = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [formValues, setFormValues] = useState({
-    paymentMethod: "portefeuille",
+    paymentMethod: "WALLET",
   });
 
   const [isSubmitted, setSubmitted] = useState(false);
@@ -16,12 +16,12 @@ const ReservationForm = () => {
   const stepsDefinitions = [
     {
       name: "Méthode de paiement",
-      stepIcon:"/images/calque-paiement-1.png",
+      stepIcon: "/images/calque-paiement-1.png",
       component: PaymentMethod,
     },
     {
       name: "Résumé de la réservation",
-      stepIcon:"/images/calendar-paiement-2.png",
+      stepIcon: "/images/calendar-paiement-2.png",
       component: ReservationResume,
     },
   ];
@@ -37,14 +37,14 @@ const ReservationForm = () => {
     );
   }
 
-  const goToNextStep = () =>{
-    if(currentStep === stepsDefinitions.length-1) {
+  const goToNextStep = () => {
+    if (currentStep === stepsDefinitions.length - 1) {
       setSubmitted(true);
       setCurrentStep(0);
-    }
-    else setCurrentStep((prev) => Math.min(stepsDefinitions.length, prev + 1));
-  }
-   
+    } else
+      setCurrentStep((prev) => Math.min(stepsDefinitions.length, prev + 1));
+  };
+
   const goToPrevStep = () => setCurrentStep((prev) => Math.max(0, prev - 1));
 
   useEffect(() => {
@@ -55,11 +55,8 @@ const ReservationForm = () => {
     <Submitted />
   ) : (
     <section>
-      <FormSteps
-        steps={stepsDefinitions}
-        currentStep={currentStep}
-      />
-      <div className="max-w-md  mx-auto my-10 ">
+      <FormSteps steps={stepsDefinitions} currentStep={currentStep} />
+      <div className="my-10 ">
         {render(stepsDefinitions[currentStep].component)}
       </div>
     </section>

@@ -3,9 +3,18 @@ import { Heart, Share2, Star } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
 import SvgIcon from "./SvgIcon";
+import { getAmenityIcon, getAmenityLabel } from "@/data/amenitiesMap";
 
 export default function PropertyBookingCard({ onBook, amenities }) {
   const [isFavorite, setIsFavorite] = useState(false);
+  const normalizedAmenities = (amenities || []).slice(0, 4).map((amenity) => {
+    const raw = typeof amenity === "string" ? amenity : amenity?.name || amenity?.icon || amenity;
+    return {
+      label: getAmenityLabel(raw),
+      icon: getAmenityIcon(raw),
+      raw,
+    };
+  });
 
   return (
     <>
@@ -19,13 +28,17 @@ export default function PropertyBookingCard({ onBook, amenities }) {
           <hr className="mx-4 text-gray-300 h-2 mt-3" />
           <div className="flex flex-col items-center justify-center py-2">
             <div className="flex flex-col">
-              {amenities.map((amenity, index) => (
+              {normalizedAmenities.map((amenity, index) => (
                 <div key={index} className="flex items-center space-x-3">
                   <div className="w-10 h-10 rounded-lg flex items-center justify-center">
-                    <SvgIcon name={amenity} size={20} />
+                    {amenity.icon?.endsWith(".svg") ? (
+                      <Image src={amenity.icon} alt={amenity.label} width={20} height={20} />
+                    ) : (
+                      <SvgIcon name={String(amenity.raw).toLowerCase()} size={20} />
+                    )}
                   </div>
                   <span className="text-gray-700 text-sm font-montserrat-medium">
-                    {amenity}
+                    {amenity.label}
                   </span>
                 </div>
               ))}

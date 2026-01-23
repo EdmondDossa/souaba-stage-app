@@ -11,11 +11,13 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 const PaymentMethod = ({ goToNextStep, setFormValues, formValues }) => {
   const paymentMethods = [
     {
-      type: "portefeuille",
+      type: "WALLET",
+      label: "Portefeuille",
       icon: WalletIcon,
     },
     {
-      type: "espèces",
+      type: "CASH",
+      label: "Espèces",
       icon: CashIcon,
     },
   ];
@@ -25,12 +27,12 @@ const PaymentMethod = ({ goToNextStep, setFormValues, formValues }) => {
   const pathname = usePathname();
   const router = useRouter();
 
-  const handleValueChange = (value) =>{
+  const handleValueChange = (value) => {
     setFormValues((prev) => ({ ...prev, paymentMethod: value }));
-    params.set("payment",value);
+    params.set("payment", value);
     //on met à jour la méthode de paiement dans l'url
     router.replace(`${pathname}?${params.toString()}`);
-  } ;
+  };
 
   return (
     <section className="flex flex-col justify-between  items-center w-full h-[550px] md:border md:border-gray-200 px-10 text-sm relative">
@@ -51,7 +53,7 @@ const PaymentMethod = ({ goToNextStep, setFormValues, formValues }) => {
             >
               <strong className="font-bold text-gray-900 font-montserrat-medium capitalize mb-2 block">
                 {" "}
-                {method.type}{" "}
+                {method.label}{" "}
               </strong>
               <div className="flex justify-between items-center px-4 py-2 w-full space-x-4 border border-gray-200 rounded-xl  mb-7">
                 <span className="flex items-center gap-x-4 font-bold text-gray-600 capitalize">
@@ -62,7 +64,7 @@ const PaymentMethod = ({ goToNextStep, setFormValues, formValues }) => {
                     src={method.icon}
                     alt=""
                   />{" "}
-                  {method.type}
+                  {method.label}
                 </span>
                 <div>
                   <RadioGroup.Item

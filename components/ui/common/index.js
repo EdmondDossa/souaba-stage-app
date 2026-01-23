@@ -19,6 +19,8 @@ import PropertyReviews from "./PropertyReviews";
 import PropertyReviewsAppart from "./PropertyReviewsAppart";
 import SvgIcon from "./SvgIcon";
 import Newsletter from "./Newsletter";
+import PropertyCardSkeleton from "./PropertyCardSkeleton";
+import PropertyDetailsSkeleton from "./PropertyDetailsSkeleton";
 
 export {
   Button, 
@@ -41,5 +43,7 @@ export {
   SvgIcon,
   Newsletter,
   PropertyGalleryAppart,
-  PropertyReviewsAppart
+  PropertyReviewsAppart,
+  PropertyCardSkeleton,
+  PropertyDetailsSkeleton
 };

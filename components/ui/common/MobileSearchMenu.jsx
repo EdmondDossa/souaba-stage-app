@@ -262,7 +262,10 @@ const MobileSearchMenu = ({ className }) => {
                 }}
               >
                 <Calendar
-                  selectedDate={arrivalDate || new Date()}
+                  selectedDate={arrivalDate || null}
+                  minDate={new Date()}
+                  rangeStart={arrivalDate || null}
+                  rangeEnd={departureDate || null}
                   onDateSelect={(date) => handleDateSelect(date, "arrival")}
                 />
               </div>
@@ -300,7 +303,10 @@ const MobileSearchMenu = ({ className }) => {
                 }}
               >
                 <Calendar
-                  selectedDate={departureDate || new Date()}
+                  selectedDate={departureDate || null}
+                  minDate={arrivalDate || new Date()}
+                  rangeStart={arrivalDate || null}
+                  rangeEnd={departureDate || null}
                   onDateSelect={(date) => handleDateSelect(date, "departure")}
                 />
               </div>

@@ -1,5 +1,13 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import {
+  Suspense,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useCallback,
+} from "react";
+import { useSearchParams } from "next/navigation";
 import { IoMdCloseCircle } from "react-icons/io";
 import { ReservationRow } from "./ui";
 import Image from "next/image";
@@ -8,60 +16,107 @@ import getAxiosInstance from "@/lib/request";
 import useAuthContext from "@/context/auth";
 import toast from "react-hot-toast";
 import { LoaderCircle } from "lucide-react";
+import { isPast, isFuture } from "date-fns";
 
-const Reservation = () => {
-  const http = getAxiosInstance();
-
+function ReservationsContent() {
+  const http = useMemo(() => getAxiosInstance(), []);
   const { user } = useAuthContext();
+  const searchParams = useSearchParams();
 
   const MOBILE_MAX_RESERVATION_ITEM_PER_PAGE = 3;
 
   const ref = useRef();
 
-  const categories = [
-    {
-      text: "Prochain",
-      value: "CONFIRMED",
-    },
-    {
-      text: "En attente",
-      value: "PENDING",
-    },
-    {
-      text: "Refuser",
-      value: "CANCELLED",
-    },
-    {
-      text: "Passé",
-      value: "CONFIRMED",
-    },
-  ];
+  const categories = useMemo(
+    () => [
+      {
+        text: "Prochain",
+        value: "CONFIRMED",
+        filter: (r) => isFuture(new Date(r.check_in_date)),
+      },
+      {
+        text: "En attente",
+        value: "PENDING",
+      },
+      {
+        text: "Refusé",
+        value: "CANCELLED",
+      },
+      {
+        text: "Passé",
+        value: "CONFIRMED",
+        filter: (r) => isPast(new Date(r.check_in_date)),
+      },
+    ],
+    []
+  );
   const [currentCategory, setCurrentCategory] = useState(0);
 
   const [cancelReason, setCancelReason] = useState("");
   const MAX_CANCEL_REASON_LENGTH = 255;
 
+  const [reservationToCancel, setReservationToCancel] = useState(null);
+  const [reservations, setReservations] = useState([]);
+  const [isLoading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
   const initReservationCancellation = (id) => setReservationToCancel(id);
   const abortReservationCancellation = () => setReservationToCancel(null);
+
+  const fetchData = useCallback(
+    async (page = 1) => {
+      if (!user?.user_id) return;
+
+      const selectedCategory = categories[currentCategory];
+      const params = new URLSearchParams();
+
+      params.set("userId", user.user_id);
+      params.set("status", selectedCategory.value);
+      params.set("page", page);
+
+      // Add other search params from URL
+      searchParams.forEach((value, key) => {
+        if (key !== "page") {
+          params.set(key, value);
+        }
+      });
+
+      try {
+        setLoading(true);
+        const { data } = await http.get(`/reservations?${params.toString()}`);
+        setReservations(data?.data || []);
+        setTotalPages(data?.meta?.totalPages || 1);
+        setCurrentPage(page);
+      } catch (error) {
+        console.log(error);
+        toast.error(
+          "Une erreur est survenue lors de la récupération des réservations"
+        );
+        setReservations([]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [user?.user_id, currentCategory, categories, searchParams, http]
+  );
 
   async function handleCancel(e) {
     try {
       e.preventDefault();
+      setLoading(true);
       await http.patch(`/reservations/${reservationToCancel}/status`, {
         status: "CANCELLED",
       });
       toast.success("Réservation annulée");
       setReservationToCancel(null);
-      await fetchData("CANCELLED");
+      await fetchData(currentPage);
     } catch (error) {
       toast.error("Une erreur est survenue");
+    } finally {
+      setLoading(false);
     }
   }
-
-  const [reservationToCancel, setReservationToCancel] = useState(null);
-  const [reservations, setReservations] = useState([]);
-
-  const [isLoading, setLoading] = useState(false);
 
   function handleChange(e) {
     if (e.target.value.length <= MAX_CANCEL_REASON_LENGTH)
@@ -69,26 +124,20 @@ const Reservation = () => {
   }
 
   useEffect(() => {
-    fetchData(categories[currentCategory].value);
-  }, [categories[currentCategory].value]);
+    fetchData(1); // Fetch page 1 when category changes
+  }, [currentCategory, fetchData]);
 
-  async function fetchData(status) {
-    try {
-      setLoading(true);
-      const { data } = await http.get(
-        `/reservations?userId=${user.user_id}&status=${status}`
-      );
-      if (!data) return;
-      setReservations(data.data);
-    } catch (error) {
-      console.log(error);
-      toast.error(
-        "Une erreur est survenue lors de la récupération des réservations"
-      );
-    } finally {
-      setLoading(false);
+  const displayedReservations = useMemo(() => {
+    const selectedCategory = categories[currentCategory];
+    if (selectedCategory.filter) {
+      return reservations.filter(selectedCategory.filter);
     }
-  }
+    return reservations;
+  }, [reservations, currentCategory, categories]);
+
+  const handlePageChange = (page) => {
+    fetchData(page);
+  };
 
   return (
     <>
@@ -124,8 +173,8 @@ const Reservation = () => {
           </nav>
           <section className="border-t border-t-gray-200 min-h-screen">
             {!isLoading ? (
-              reservations.length > 0 ? (
-                reservations.map((reservation) => {
+              displayedReservations.length > 0 ? (
+                displayedReservations.map((reservation) => {
                   return (
                     <div
                       key={reservation.reservation_id}
@@ -158,12 +207,10 @@ const Reservation = () => {
             )}
           </section>
           <Paginator
-            defaultPage={1}
-            onPageChange={() => {}}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
             nextPageTitle="Voir plus"
-            totalPages={Math.ceil(
-              reservations.length / MOBILE_MAX_RESERVATION_ITEM_PER_PAGE
-            )}
           />
         </section>
       </div>
@@ -217,6 +264,12 @@ const Reservation = () => {
       )}
     </>
   );
-};
+}
 
-export default Reservation;
+export default function Reservation() {
+  return (
+    <Suspense fallback={<div className="text-center mt-10"><LoaderCircle size={40} className="animate-spin text-primary mx-auto" /></div>}>
+      <ReservationsContent />
+    </Suspense>
+  );
+}

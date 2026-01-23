@@ -1,7 +1,7 @@
 "use client";
 import { Button, InputRow } from "@/components/ui/common";
 import useAuthContext from "@/context/auth";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { X } from "lucide-react";
 import getAxiosInstance from "@/lib/request";
 import {
@@ -10,7 +10,7 @@ import {
   isValidPhoneNumber,
 } from "@/utils/validator";
 import toast from "react-hot-toast";
-import PhotosUpload from "../../add-establishment/steps-components/PhotosUpload";
+import PhotosUpload from "../../../add-establishment/steps-components/PhotosUpload";
 
 const EditProfile = ({ onEditCancel }) => {
   const http = getAxiosInstance();
@@ -19,6 +19,22 @@ const EditProfile = ({ onEditCancel }) => {
   const [formValues, setFormValues] = useState(user);
   const [formError, setFormError] = useState({});
   const [isLoading, setLoading] = useState(false);
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
+
+  const initialFront = useMemo(
+    () => user?.profile?.identity_card_front,
+    [user]
+  );
+  const initialBack = useMemo(() => user?.profile?.identity_card_back, [user]);
+
+  const [identityFront, setIdentityFront] = useState(null);
+  const [identityBack, setIdentityBack] = useState(null);
+  const [frontPreview, setFrontPreview] = useState(
+    initialFront ? `${apiBase}/${initialFront}` : ""
+  );
+  const [backPreview, setBackPreview] = useState(
+    initialBack ? `${apiBase}/${initialBack}` : ""
+  );
 
   const [hasEdit, setHasEdit] = useState(false);
 
@@ -39,6 +55,7 @@ const EditProfile = ({ onEditCancel }) => {
     {
       label: "Téléphone",
       name: "phone",
+      type: "tel",
     },
   ];
 
@@ -51,7 +68,22 @@ const EditProfile = ({ onEditCancel }) => {
     }
     try {
       setLoading(true);
-      await http.patch("/users/profile", formValues);
+      const formData = new FormData();
+      formData.append("firstName", formValues.firstName || "");
+      formData.append("lastName", formValues.lastName || "");
+      formData.append("email", formValues.email || "");
+      formData.append("phone", formValues.phone || "");
+      formData.append("gender", formValues.gender || "");
+      if (identityFront) {
+        formData.append("identity_card_front", identityFront);
+      }
+      if (identityBack) {
+        formData.append("identity_card_back", identityBack);
+      }
+
+      await http.patch("/users/profile", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       await fetchUser(false);
       toast.success("Informations modifiées!");
       setHasEdit(false);
@@ -82,17 +114,36 @@ const EditProfile = ({ onEditCancel }) => {
 
   function handleChange(e) {
     if (!hasEdit) setHasEdit(true);
+    // react-phone-input-2 renvoie directement la valeur pour les champs tel
+    if (typeof e === "string") {
+      setFormValues({ ...formValues, phone: e });
+      return;
+    }
     const { name, value } = e.target;
     setFormValues({ ...formValues, [name]: value });
   }
 
+  const handleIdentityUpload = (e, side) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!hasEdit) setHasEdit(true);
+    const previewUrl = URL.createObjectURL(file);
+    if (side === "front") {
+      setIdentityFront(file);
+      setFrontPreview(previewUrl);
+    } else {
+      setIdentityBack(file);
+      setBackPreview(previewUrl);
+    }
+  };
+
   return (
-    <div className="flex-grow -mt-10 lg:mt-0 ">
+    <div className="flex-grow mt-0 lg:mt-0 space-y-4">
       <h2 className="font-montserrat-bold hidden lg:block ">
         Informations Personnelles
       </h2>
-      <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
           {formFields.map((field) => (
             <InputRow
               key={field.name}
@@ -113,13 +164,14 @@ const EditProfile = ({ onEditCancel }) => {
             <select
               onChange={handleChange}
               className="w-full border py-3 px-4 rounded-xl border-gray-200"
-              value={formValues["gender"]}
+              value={formValues["gender"] || ""}
               name="gender"
               id="gender"
-              defaultValue={formValues["gender"] || "M"}
             >
-              <option value="M">Masculin</option>
-              <option value="F">Féminin</option>
+              <option value="">Sélectionner</option>
+              <option value="MALE">Homme</option>
+              <option value="FEMALE">Femme</option>
+              <option value="OTHER">Autre</option>
             </select>
           </div>
         </div>
@@ -131,12 +183,62 @@ const EditProfile = ({ onEditCancel }) => {
             label="Pièce d'identité"
           />
         </div>
-        <div className="flex justify-center lg:justify-end gap-x-8 mt-8 mb-8 lg:mb-0 font-montserrat-bold">
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="border rounded-lg p-4">
+            <p className="text-sm font-montserrat-bold mb-2">
+              Recto de la pièce
+            </p>
+            <label className="block border border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:bg-gray-50">
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => handleIdentityUpload(e, "front")}
+              />
+              {frontPreview ? (
+                <img
+                  src={frontPreview}
+                  alt="Recto carte"
+                  className="mx-auto h-32 object-cover rounded-md"
+                />
+              ) : (
+                <span className="text-gray-500 text-sm">
+                  Télécharger le recto
+                </span>
+              )}
+            </label>
+          </div>
+          <div className="border rounded-lg p-4">
+            <p className="text-sm font-montserrat-bold mb-2">
+              Verso de la pièce
+            </p>
+            <label className="block border border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:bg-gray-50">
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => handleIdentityUpload(e, "back")}
+              />
+              {backPreview ? (
+                <img
+                  src={backPreview}
+                  alt="Verso carte"
+                  className="mx-auto h-32 object-cover rounded-md"
+                />
+              ) : (
+                <span className="text-gray-500 text-sm">
+                  Télécharger le verso
+                </span>
+              )}
+            </label>
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row justify-center lg:justify-end gap-4 mt-4 mb-2 font-montserrat-bold">
           <Button
             onClick={onEditCancel}
             variant="secondary"
             type="reset"
-            className="flex text-sm bg-white border hover:bg-red-500/20 border-gray-200 rounded-lg items-center text-red-500 font-montserrat-medium"
+            className="flex text-sm bg-white border hover:bg-red-500/20 border-gray-200 rounded-lg items-center text-red-500 font-montserrat-medium w-full sm:w-auto"
           >
             <X className="text-red-500" /> Annuler{" "}
           </Button>
@@ -145,7 +247,7 @@ const EditProfile = ({ onEditCancel }) => {
             disabled={!hasEdit}
             isLoading={isLoading}
             type="submit"
-            className="inline-block min-w-20 text-sm py-3 rounded-lg text-white bg-primary hover:bg-amber-400"
+            className="inline-block min-w-20 text-sm py-3 rounded-lg text-white bg-primary hover:bg-amber-400 w-full sm:w-auto"
           >
             Enrégistrer
           </Button>

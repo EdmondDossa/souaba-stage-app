@@ -1,16 +1,27 @@
 "use client";
 
 import useAuthContext from "@/context/auth";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 const ProtectedRoutes = ({ children }) => {
   const router = useRouter();
-  const { isLogged } = useAuthContext();
+  const { isLogged, isLoading } = useAuthContext();
+  const pathname = usePathname();
 
-  useEffect(()=>{
-    if(!isLogged) router.push("/");
-  },[isLogged]);
+  const allowGuestRoutes = ["/add-establishment"];
+  const isGuestAllowed = allowGuestRoutes.some((path) =>
+    pathname?.startsWith(path)
+  );
+
+  useEffect(() => {
+    if (!isLoading && !isLogged && !isGuestAllowed) {
+      router.push("/");
+    }
+  }, [isLogged, isLoading, isGuestAllowed, router]);
+
+  if (isLoading && !isGuestAllowed) return null;
+  if (!isLogged && !isGuestAllowed) return null;
 
   return children;
 };

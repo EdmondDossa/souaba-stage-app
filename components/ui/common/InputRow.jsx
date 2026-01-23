@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Eye } from "lucide-react";
 import { FaEyeSlash } from "react-icons/fa";
 import PhoneInput from "react-phone-input-2";
@@ -21,6 +21,16 @@ const InputRow = ({
 }) => {
   const [isPasswordVisible, setPasswordVisible] = useState(false);
   const tooglePasswordVisibility = () => setPasswordVisible(!isPasswordVisible);
+
+  const passwordValue = useMemo(
+    () => (type === "password" ? value ?? "" : value),
+    [type, value]
+  );
+  const MIN_PASSWORD_LENGTH = 8;
+  const passwordProgress = useMemo(() => {
+    if (type !== "password" || !passwordValue) return 0;
+    return Math.min(passwordValue.length / MIN_PASSWORD_LENGTH, 1);
+  }, [passwordValue, type]);
 
   const customClass = `
     w-full px-5 py-3 rounded-xl outline-none focus:outline-none 
@@ -64,7 +74,7 @@ const InputRow = ({
           type={isPasswordVisible ? "text" : type}
           name={name}
           id={name}
-          value={value}
+          value={passwordValue || value}
           required={required}
           onBlur={onBlur}
           onChange={onChange}
@@ -84,6 +94,21 @@ const InputRow = ({
               <FaEyeSlash className="w-6 h-6" />
             )}
           </span>
+          {passwordValue?.length > 0 && (
+            <div className="mt-3 space-y-1">
+              <div className="w-full h-1.5 rounded-full bg-gray-200 overflow-hidden">
+                <div
+                  className="h-full bg-red-500 transition-all duration-200"
+                  style={{ width: `${passwordProgress * 100}%` }}
+                />
+              </div>
+              {passwordValue.length < MIN_PASSWORD_LENGTH && (
+                <p className="text-danger text-[12px] font-semibold">
+                  Mot de passe trop court (min. {MIN_PASSWORD_LENGTH} caractères)
+                </p>
+              )}
+            </div>
+          )}
         </>
       )}
       {errorMessage && (

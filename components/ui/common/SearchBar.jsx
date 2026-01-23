@@ -1,80 +1,71 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { Search, MapPin, Building, ChevronDown } from "lucide-react";
 import React from "react";
 import { dateToLetters } from "@/utils/dateToLetters";
 import Calendar from "./Calendar";
 import getAxiosInstance from "@/lib/request";
-import { set } from "date-fns";
 // Constantes
 const http = getAxiosInstance();
 const SUGGESTIONS = [
   {
-    id: 1,
+    id: "fallback-abidjan",
     name: "Abidjan",
     description: "Côte d'Ivoire",
     type: "city",
     icon: MapPin,
   },
   {
-    id: 2,
-    name: "Abids",
-    description: "Hyderabad, Telangana, India",
-    type: "city",
-    icon: MapPin,
-  },
-  {
-    id: 3,
-    name: "Abidos Hotel Apartment Dubai Land",
-    description: "Dubai, Dubai Emirate, United Arab Emirates",
-    type: "hotel",
-    icon: Building,
-  },
-  {
-    id: 4,
-    name: "Hotel Abi d'Oru",
-    description: "Olbia, Sardinia, Italy",
-    type: "hotel",
-    icon: Building,
-  },
-  {
-    id: 5,
-    name: "Abidos Hotel Apartment Al Barsha",
-    description: "Dubai, Dubai Emirate, United Arab Emirates",
-    type: "hotel",
-    icon: Building,
-  },
-  { id: 6, name: "Dakar", description: "Sénégal", type: "city", icon: MapPin },
-  {
-    id: 7,
-    name: "Saint-Louis",
+    id: "fallback-dakar",
+    name: "Dakar",
     description: "Sénégal",
     type: "city",
     icon: MapPin,
   },
   {
-    id: 8,
-    name: "Ziguinchor",
+    id: "fallback-saint-louis",
+    name: "Saint-Louis",
     description: "Sénégal",
     type: "city",
     icon: MapPin,
   },
 ];
 
-function SearchBar({
-  isCentered = true,
-  setSearchActive,
-  setSearchResult,
-}) {
-  const [destination, setDestination] = useState("");
-  const [arrivalDate, setArrivalDate] = useState("");
-  const [departureDate, setDepartureDate] = useState("");
-  const [adults, setAdults] = useState(0);
+function SearchBar({ isCentered = true, setError, initialValues }) {
+  const formatInitialDate = (value) => {
+    if (!value) return "";
+    if (value.includes("/")) return value;
+    const parts = value.split("-");
+    if (parts.length !== 3) return value;
+    const [year, month, day] = parts;
+    return `${day}/${month}/${year}`;
+  };
+
+  const formatInitialCapacity = (value) => {
+    const parsed = Number.parseInt(value, 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+  };
+
+  const [destination, setDestination] = useState(
+    initialValues?.city?.trim() || ""
+  );
+  const [arrivalDate, setArrivalDate] = useState(
+    formatInitialDate(initialValues?.check_in)
+  );
+  const [departureDate, setDepartureDate] = useState(
+    formatInitialDate(initialValues?.check_out)
+  );
+  const [adults, setAdults] = useState(
+    formatInitialCapacity(initialValues?.capacity)
+  );
   const [children, setChildren] = useState(0);
   const [babies, setBabies] = useState(0);
   const [showGuestsDropdown, setShowGuestsDropdown] = useState(false);
   const [activeGuestType, setActiveGuestType] = useState(null); // 'adults', 'children', 'babies'
+  const [suggestions, setSuggestions] = useState(SUGGESTIONS);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
 
   //Dropdown destination
   const [showDestinationDropdown, setShowDestinationDropdown] = useState(false);
@@ -89,6 +80,20 @@ function SearchBar({
   const arrivalDateRef = useRef(null);
   const departureDateRef = useRef(null);
   const guestsRef = useRef(null);
+  const router = useRouter();
+  const initializedRef = useRef(false);
+
+  useEffect(() => {
+    if (!initialValues || initializedRef.current) return;
+
+    setDestination(initialValues?.city?.trim() || "");
+    setArrivalDate(formatInitialDate(initialValues?.check_in));
+    setDepartureDate(formatInitialDate(initialValues?.check_out));
+    setAdults(formatInitialCapacity(initialValues?.capacity));
+    setChildren(0);
+    setBabies(0);
+    initializedRef.current = true;
+  }, [initialValues]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -126,10 +131,10 @@ function SearchBar({
   }, []);
 
   const filteredDestinations = useMemo(() => {
-    if (!destination) return SUGGESTIONS;
+    if (!destination) return suggestions;
     const q = destination.toLowerCase();
-    return SUGGESTIONS.filter((s) => s.name.toLowerCase().includes(q));
-  }, [destination]);
+    return suggestions.filter((s) => s.name.toLowerCase().includes(q));
+  }, [destination, suggestions]);
 
   const toggleDropdown = (dropdown, state) => {
     switch (dropdown) {
@@ -165,6 +170,77 @@ function SearchBar({
     toggleDropdown("destination", false);
   };
 
+  const normalizeLocationsResponse = (payload) => {
+    if (!payload) return [];
+    if (Array.isArray(payload)) return payload;
+    if (payload.data && Array.isArray(payload.data)) return payload.data;
+    return [];
+  };
+
+  const fetchDestinationSuggestions = useCallback(async (query) => {
+    setSuggestionsLoading(true);
+    try {
+      const { data } = await http.get("/locations/search", {
+        params: { q: query, limit: 10 },
+      });
+
+      const locations = normalizeLocationsResponse(data);
+      const uniqueCities = [];
+      const seen = new Set();
+
+      locations.forEach((item, idx) => {
+        const city =
+          item.city?.trim() ||
+          item.name?.trim() ||
+          item.locality?.trim() ||
+          item.ville?.trim();
+        const country =
+          item.country?.trim() ||
+          item.countryName?.trim() ||
+          item.country_name?.trim();
+        const countryCode =
+          item.countryCode?.trim() || item.country_code?.trim() || "";
+
+        if (!city || !country) return;
+        const key =
+          item.id ||
+          item.geonameId ||
+          `${city}-${countryCode || country}-${idx}`.toLowerCase();
+
+        if (seen.has(key)) return;
+        seen.add(key);
+        uniqueCities.push({
+          id: key,
+          name: city,
+          description: country,
+          countryCode,
+          type: "city",
+          icon: MapPin,
+        });
+      });
+
+      setSuggestions(uniqueCities.length ? uniqueCities : SUGGESTIONS);
+    } catch (error) {
+      console.error("Erreur lors du chargement des destinations:", error);
+      setSuggestions(SUGGESTIONS);
+    } finally {
+      setSuggestionsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!destination || destination.length < 2) {
+      setSuggestions(SUGGESTIONS);
+      return;
+    }
+
+    const handle = setTimeout(
+      () => fetchDestinationSuggestions(destination),
+      250
+    );
+    return () => clearTimeout(handle);
+  }, [destination, fetchDestinationSuggestions]);
+
   const handleDestinationKeyDown = (e) => {
     if (!showDestinationDropdown) return;
     const actions = {
@@ -182,29 +258,42 @@ function SearchBar({
     }
   };
 
-  const handleSearch = async () => {
-    try {
-      if(![arrivalDate, departureDate, destination, adults, children, babies].some(Boolean)) return;
-      setSearchActive(true);
-      const check_in = arrivalDate
-        ? arrivalDate.split("/").reverse().join("-")
-        : "";
-      const check_out = departureDate
-        ? departureDate.split("/").reverse().join("-")
-        : "";
-      const params = new URLSearchParams({
-        check_in,
-        check_out,
-        city: destination || "",
-        capacity: String(adults + children + babies),
-      });
-      const request = await http.get(
-        `/accommodation-unavailable-period/search?${params.toString()}`
-      );
-      setSearchResult(request.data);
-    } catch (error) {
-      console.error(error);
+  const handleSearch = () => {
+    if (![arrivalDate, departureDate, destination, adults, children, babies].some(Boolean)) {
+      return;
     }
+
+    if (!arrivalDate || !departureDate) {
+      if (setError) {
+        setError("Veuillez sélectionner une date d'arrivée et de départ.");
+      }
+      return;
+    }
+
+    if (setError) {
+      setError(null);
+    }
+
+    const check_in = arrivalDate.split("/").reverse().join("-");
+    const check_out = departureDate.split("/").reverse().join("-");
+    const capacity = adults + children;
+    const params = new URLSearchParams();
+
+    params.set("check_in", check_in);
+    params.set("check_out", check_out);
+    params.set("type", "all");
+    params.set("page", "1");
+    params.set("limit", "10");
+
+    if (destination.trim()) {
+      params.set("city", destination.trim());
+    }
+
+    if (capacity > 0) {
+      params.set("capacity", String(capacity));
+    }
+
+    router.push(`/search?${params.toString()}`);
   };
 
   return (
@@ -272,6 +361,20 @@ function SearchBar({
             })}
           </ul>
         )}
+
+        {showDestinationDropdown &&
+          !filteredDestinations.length &&
+          !suggestionsLoading && (
+            <div className="absolute z-50 bg-white border border-gray-200 rounded-lg shadow-lg w-56 left-0 top-full mt-2 px-4 py-3 text-sm text-gray-600">
+              Aucun résultat pour cette destination
+            </div>
+          )}
+
+        {showDestinationDropdown && suggestionsLoading && (
+          <div className="absolute z-50 bg-white border border-gray-200 rounded-lg shadow-lg w-56 left-0 top-full mt-2 px-4 py-3 text-sm text-gray-600">
+            Chargement...
+          </div>
+        )}
       </div>
 
       <div className="border-l border-gray-200 h-12"></div>
@@ -295,7 +398,10 @@ function SearchBar({
 
         {showDateDropdown && currentDateField === "arrival" && (
           <Calendar
-            selectedDate={arrivalDate || new Date()}
+            selectedDate={arrivalDate || null}
+            minDate={new Date()}
+            rangeStart={arrivalDate || null}
+            rangeEnd={departureDate || null}
             onDateSelect={(date) => handleDateSelect(date, "arrival")}
           />
         )}
@@ -322,7 +428,10 @@ function SearchBar({
 
         {showDateDropdown && currentDateField === "departure" && (
           <Calendar
-            selectedDate={departureDate || new Date()}
+            selectedDate={departureDate || null}
+            minDate={arrivalDate || new Date()}
+            rangeStart={arrivalDate || null}
+            rangeEnd={departureDate || null}
             onDateSelect={(date) => handleDateSelect(date, "departure")}
           />
         )}

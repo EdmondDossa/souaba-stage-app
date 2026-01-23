@@ -8,14 +8,16 @@ export default function PropertyDescriptionShared({
   title,
   name,
 }) {
+  const safeDescription = description || "";
+  const safeLocation = location || "";
   const [isExpanded, setIsExpanded] = useState(false);
   const maxLength = 300;
   const [isFavorite, setIsFavorite] = useState(false);
 
-  const shouldTruncate = description.length > maxLength;
+  const shouldTruncate = safeDescription.length > maxLength;
   const displayText = isExpanded
-    ? description
-    : description.slice(0, maxLength);
+    ? safeDescription
+    : safeDescription.slice(0, maxLength);
 
   return (
     <div>
@@ -48,7 +50,7 @@ export default function PropertyDescriptionShared({
             {" "}
             <img src="/icons/loc 1.svg" alt="" />{" "}
           </span>
-          {location}
+          {safeLocation}
         </p>
       </div>
       <div>
@@ -57,8 +59,16 @@ export default function PropertyDescriptionShared({
         </h3>
         <p className="text-justify text-gray-600 text-sm  leading-5">
           {" "}
-          {description}{" "}
+          {displayText}{" "}
         </p>
+        {shouldTruncate && (
+          <button
+            className="text-primary font-montserrat-medium mt-2"
+            onClick={() => setIsExpanded((prev) => !prev)}
+          >
+            {isExpanded ? "Voir moins" : "Voir plus"}
+          </button>
+        )}
       </div>
     </div>
   );

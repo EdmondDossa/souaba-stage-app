@@ -24,10 +24,10 @@ const IdentityCard = ({
   }
 
   useEffect(() => {
-    //will allow publishing only if recto photo and verso photo have been uploaded
-    if (Object.keys(identityPhoto).length === 2) allowNextStep();
+    //will allow publishing only if recto photo has been uploaded
+    if (identityPhoto["identity-card-recto"]) allowNextStep();
     else allowNextStep(false);
-  }, [Object.keys(identityPhoto).length]);
+  }, [identityPhoto]);
 
   return (
     <article>
@@ -69,37 +69,7 @@ const IdentityCard = ({
             className="hidden"
           />
         </div>
-        <div className="w-[280px] md:w-sm">
-          <p className="font-montserrat-bold mb-4 text-gray-800 text-md">
-            Pièce d'identité (Verso)
-          </p>
-          <label
-            className="relative flex flex-col items-center justify-center border border-gray-200 hover:bg-gray-50 transition rounded-xl p-5 h-[180px] cursor-pointer"
-            htmlFor="identity-card-verso"
-          >
-            <LucideImagePlus className="w-10 h-12" />
-            <strong className="font-montserrat-bold text-gray-700">
-              Ajouter une photo
-            </strong>
-            {identityPhoto?.["identity-card-verso"] && (
-              <Image
-                className="w-full h-full rounded-lg absolute object-cover"
-                width={150}
-                alt=""
-                height={150}
-                src={identityPhoto?.["identity-card-verso"].url}
-              />
-            )}
-          </label>
-          <input
-            id="identity-card-verso"
-            name="identity-card-verso"
-            onChange={handleFileChange}
-            type="file"
-            accept="image/*"
-            className="hidden"
-          />
-        </div>
+
       </section>
     </article>
   );

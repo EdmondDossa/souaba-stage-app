@@ -1,9 +1,14 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { Heart, Bed, Bath, CarFront as Car } from "lucide-react";
 import PropertyEllipsis from "./PropertyEllipsis";
 import renderStars from "@/utils/render-star";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import getAxiosInstance from "@/lib/request";
+import useAuthContext from "@/context/auth";
 
 export default function PropertyCard({
   imageUrl,
@@ -26,13 +31,75 @@ export default function PropertyCard({
   imageContainerClassName = "",
   id,
   type,
+  cardFullWidth = true,
+  favoriteKind = "accommodation",
+  onFavoriteChange,
   ...rest
 }) {
+  const router = useRouter();
+  const { isLogged } = useAuthContext();
+  const [favorite, setFavorite] = useState(Boolean(isFavorite));
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
+
+  useEffect(() => {
+    setFavorite(Boolean(isFavorite));
+  }, [isFavorite]);
+
+  const resolvedFavoriteKind = favoriteKind === "hotel" ? "hotel" : "accommodation";
   const href =
     type === "hotel" ? `/hotels-details/${id}` : `/appartement-details/${id}`;
+
+  const handleFavoriteToggle = async (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (favoriteLoading || !id) return;
+
+    if (!isLogged) {
+      router.push("/login");
+      return;
+    }
+
+    const http = getAxiosInstance();
+    const nextFavorite = !favorite;
+
+    setFavoriteLoading(true);
+    try {
+      if (nextFavorite) {
+        const endpoint =
+          resolvedFavoriteKind === "hotel"
+            ? "/favorites/hotel"
+            : "/favorites/accommodation";
+        const payload =
+          resolvedFavoriteKind === "hotel"
+            ? { hotelId: id }
+            : { accommodationId: id };
+        await http.post(endpoint, payload);
+      } else {
+        const endpoint =
+          resolvedFavoriteKind === "hotel"
+            ? `/favorites/hotel/${id}`
+            : `/favorites/accommodation/${id}`;
+        await http.delete(endpoint);
+      }
+
+      setFavorite(nextFavorite);
+      if (onFavoriteChange) {
+        onFavoriteChange({
+          id,
+          favoriteKind: resolvedFavoriteKind,
+          isFavorite: nextFavorite,
+        });
+      }
+    } catch (error) {
+      console.error("Erreur favoris:", error);
+    } finally {
+      setFavoriteLoading(false);
+    }
+  };
   return (
     <div
-      className={`relative w-full max-w-[298px] min-w-[200px] overflow-hidden ${
+      className={`relative w-full ${!cardFullWidth ? "max-w-[298px]" : ""} min-w-[200px] overflow-hidden ${
         className || ""
       }`}
       {...rest}
@@ -63,14 +130,22 @@ export default function PropertyCard({
               </div>
             )}
             {/* Heart Icon */}
-            <button className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-md text-gray-400 hover:text-red-500 transition-colors">
-              <Heart
-                size={20}
-                fill={isFavorite ? "red" : "none"}
-                stroke={isFavorite ? "red" : "currentColor"}
-                strokeWidth={2}
-              />
-            </button>
+            {isLogged && (
+              <button
+                type="button"
+                aria-pressed={favorite}
+                disabled={favoriteLoading}
+                onClick={handleFavoriteToggle}
+                className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-md text-gray-400 hover:text-red-500 transition-colors"
+              >
+                <Heart
+                  size={20}
+                  fill={favorite ? "red" : "none"}
+                  stroke={favorite ? "red" : "currentColor"}
+                  strokeWidth={2}
+                />
+              </button>
+            )}
             {ownerInfo && (
               <div className="flex items-center absolute m-3 bottom-0 text-sm gap-x-2 mx-2">
                 <div className="shrink-0">

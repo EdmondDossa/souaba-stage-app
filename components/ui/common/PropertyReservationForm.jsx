@@ -1,6 +1,6 @@
 "use client";
 import { Calendar, Minus, Plus, Shield } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { SvgIcon } from "@/components/ui/common";
 
 export default function PropertyReservationForm({
@@ -19,6 +19,13 @@ export default function PropertyReservationForm({
 
   const [isVisible, setIsVisible] = useState(true);
   const componentRef = useRef(null);
+  const minCheckIn = useMemo(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -52,6 +59,14 @@ export default function PropertyReservationForm({
           ? prev[type] + 1
           : Math.max(type === "adults" ? 1 : 0, prev[type] - 1),
     }));
+  };
+
+  const handleCheckInChange = (value) => {
+    setReservationData((prev) => {
+      const nextCheckOut =
+        prev.checkOut && prev.checkOut < value ? "" : prev.checkOut;
+      return { ...prev, checkIn: value, checkOut: nextCheckOut };
+    });
   };
 
   return (
@@ -93,12 +108,8 @@ export default function PropertyReservationForm({
                 onFocus={(e) => (e.target.type = "date")}
                 onBlur={(e) => (e.target.type = "text")}
                 value={reservationData.checkIn}
-                onChange={(e) =>
-                  setReservationData((prev) => ({
-                    ...prev,
-                    checkIn: e.target.value,
-                  }))
-                }
+                min={minCheckIn}
+                onChange={(e) => handleCheckInChange(e.target.value)}
                 className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                 placeholder="Date d'arrivée"
               />
@@ -120,6 +131,7 @@ export default function PropertyReservationForm({
                 onFocus={(e) => (e.target.type = "date")}
                 onBlur={(e) => (e.target.type = "text")}
                 value={reservationData.checkOut}
+                min={reservationData.checkIn || minCheckIn}
                 onChange={(e) =>
                   setReservationData((prev) => ({
                     ...prev,

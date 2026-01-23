@@ -44,7 +44,9 @@
   }
 }
 
-.active-border,.property-card-title {
+.active-border,
+.active-border-hover,
+.property-card-title {
   position: relative !important;
 }
 
@@ -120,4 +122,3 @@ button{
   transform: translateX(-50%);
   transition: all ease-in-out 5s;
 } */
-
