@@ -9,35 +9,145 @@ import {
   PropertyReviews,
   SearchBar,
 } from "@/components/ui/common";
-import { useRouter } from "next/navigation";
-import { useEffect, useState, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import getAxiosInstance from "@/lib/request";
 import { useParams } from "next/navigation";
 import MobileSearchMenu from "@/components/ui/common/MobileSearchMenu";
 import PropertyDetailsSkeleton from "@/components/ui/common/PropertyDetailsSkeleton";
+import toast from "react-hot-toast";
+import { differenceInDays } from "date-fns";
+import useAuthContext from "@/context/auth";
 
 export default function HotelDetails() {
   const router = useRouter();
   const { id } = useParams();
+  const searchParams = useSearchParams();
+  const { isLogged } = useAuthContext();
 
   const [hotelsData, setHotelsData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [availabilityRooms, setAvailabilityRooms] = useState(null);
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
   const hasfetchedData = useRef(false);
   const roomsSectionRef = useRef(null);
 
-  const http = getAxiosInstance();
+  const http = useMemo(() => getAxiosInstance(), []);
 
-  const handleBooking = () => {
-    if (roomsSectionRef.current) {
-      roomsSectionRef.current.scrollIntoView({ behavior: "smooth" });
-    }
+  const parseDateParam = (value) => {
+    if (!value) return null;
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
   };
+
+  const handleBooking = async ({ selectedRooms, totalPerNight }) => {
+    const checkIn = parseDateParam(searchParams.get("check_in"));
+    const checkOut = parseDateParam(searchParams.get("check_out"));
+
+    if (!checkIn || !checkOut) {
+      toast.error("Veuillez sélectionner vos dates d'arrivée et de départ.");
+      if (roomsSectionRef.current) {
+        roomsSectionRef.current.scrollIntoView({ behavior: "smooth" });
+      }
+      return;
+    }
+
+    if (checkOut <= checkIn) {
+      toast.error("La date de départ doit être après la date d'arrivée.");
+      return;
+    }
+
+    const nights = Math.max(1, differenceInDays(checkOut, checkIn));
+    const capacityParam = Number.parseInt(
+      searchParams.get("capacity") || "1",
+      10
+    );
+    const derivedGuests = selectedRooms.reduce(
+      (sum, room) => sum + room.quantity * (room.capacity || 1),
+      0
+    );
+    const numberOfGuests =
+      Number.isFinite(capacityParam) && capacityParam > 0
+        ? capacityParam
+        : Math.max(1, derivedGuests);
+
+    const pendingReservation = {
+      type: "hotel",
+      hotelId: id,
+      checkInDate: checkIn.toISOString(),
+      checkOutDate: checkOut.toISOString(),
+      numberOfGuests,
+      totalPrice: totalPerNight * nights,
+      totalPerNight,
+      rooms: selectedRooms.map(({ roomCategoryId, quantity }) => ({
+        roomCategoryId,
+        quantity,
+      })),
+    };
+
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem(
+        "pendingReservation",
+        JSON.stringify(pendingReservation)
+      );
+    }
+    router.push(`/make-reservation?type=hotel`);
+  };
+
+  const handleAvailabilitySearch = useCallback(async ({
+    check_in,
+    check_out,
+    capacity,
+  }) => {
+    if (!check_in || !check_out) {
+      toast.error("Veuillez sélectionner vos dates d'arrivée et de départ.");
+      return;
+    }
+    const toIsoDate = (value) => {
+      if (!value) return value;
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return value;
+      return date.toISOString();
+    };
+    try {
+      setAvailabilityLoading(true);
+      const { data } = await http.get(`/hotels/${id}/availability`, {
+        params: {
+          check_in: toIsoDate(check_in),
+          check_out: toIsoDate(check_out),
+          capacity: capacity || 1,
+        },
+      });
+      const list =
+        (Array.isArray(data?.data) && data.data) ||
+        (Array.isArray(data) && data) ||
+        [];
+      setAvailabilityRooms(list);
+
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("check_in", check_in);
+      params.set("check_out", check_out);
+      params.set("capacity", String(capacity || 1));
+      router.replace(`/hotels-details/${id}?${params.toString()}`);
+    } catch (error) {
+      console.error("Erreur disponibilité hôtel:", error);
+      toast.error("Impossible de récupérer les disponibilités.");
+      setAvailabilityRooms([]);
+    } finally {
+      setAvailabilityLoading(false);
+    }
+  }, [http, id, router, searchParams]);
+
+  useEffect(() => {
+    hasfetchedData.current = false;
+  }, [id]);
 
   useEffect(() => {
     const fetchHotelData = async () => {
       try {
         setIsLoading(true);
-        if (hasfetchedData.current && hotelsData) return;
+        if (hasfetchedData.current) return;
         hasfetchedData.current = true;
         const response = await http.get(`/hotels?hotel_id=${id}&limit=1`);
         const payload = response?.data || {};
@@ -67,6 +177,7 @@ export default function HotelDetails() {
           amenities: hotel?.amenities || [],
           reviews: hotel?.reviews || [],
         });
+        setIsFavorite(Boolean(hotel?.isFavorite));
       } catch (error) {
         console.error("Error fetching hotel data:", error);
       } finally {
@@ -75,7 +186,25 @@ export default function HotelDetails() {
     };
     fetchHotelData();
     window.scrollTo({ top: 0 });
-  }, [id, hotelsData]);
+  }, [id, http]);
+
+  useEffect(() => {
+    if (availabilityRooms !== null) return;
+    const check_in = searchParams.get("check_in");
+    const check_out = searchParams.get("check_out");
+    const capacity = Number.parseInt(searchParams.get("capacity") || "1", 10);
+    if (check_in && check_out) {
+      handleAvailabilitySearch({ check_in, check_out, capacity });
+    }
+  }, [searchParams, availabilityRooms, handleAvailabilitySearch]);
+
+  useEffect(() => {
+    if (!isLogged) {
+      setIsFavorite(false);
+      return;
+    }
+    setIsFavorite(Boolean(hotelsData?.isFavorite));
+  }, [hotelsData?.isFavorite, isLogged]);
 
   const renderSkeleton = () => <PropertyDetailsSkeleton />;
 
@@ -85,7 +214,42 @@ export default function HotelDetails() {
 
   if (!hotelsData) return null;
 
-  const hotelsRooms = hotelsData.HotelRoomCategories;
+  const hotelsRooms = hotelsData.HotelRoomCategories || [];
+  const availabilityByRoomId = new Map(
+    (availabilityRooms || []).map((room) => [
+      room?.room_category_id ??
+        room?.roomCategoryId ??
+        room?.hotel_room_category_id ??
+        room?.id,
+      room,
+    ])
+  );
+  const availabilityState =
+    availabilityRooms === null
+      ? "idle"
+      : availabilityRooms.length
+        ? "available"
+        : "empty";
+  const roomsToShow =
+    availabilityRooms === null
+      ? hotelsRooms
+      : hotelsRooms.map((room) => {
+          const roomId =
+            room?.room_category_id ??
+            room?.roomCategoryId ??
+            room?.hotel_room_category_id ??
+            room?.id;
+          const availability = availabilityByRoomId.get(roomId);
+          const availableRooms =
+            availability?.availableRooms ??
+            availability?.available_rooms ??
+            (availability ? availability?.available : undefined);
+          return {
+            ...room,
+            availableRooms:
+              typeof availableRooms === "number" ? availableRooms : 0,
+          };
+        });
   const hotelsMedias = hotelsData.HotelMedia || [];
   const locationText = [
     hotelsData?.address,
@@ -113,6 +277,7 @@ export default function HotelDetails() {
                 title="Hotels"
                 name={hotelsData.name}
                 location={locationText}
+                isFavorite={isFavorite}
               />
 
               <div className="mt-8">
@@ -124,7 +289,11 @@ export default function HotelDetails() {
           {/* Carte de réservation */}
           <div className="lg:col-span-1">
             <PropertyBookingCard
-              onBook={handleBooking}
+              onBook={() => {
+                if (roomsSectionRef.current) {
+                  roomsSectionRef.current.scrollIntoView({ behavior: "smooth" });
+                }
+              }}
               amenities={hotelsData?.amenities || []}
             />
           </div>
@@ -137,16 +306,41 @@ export default function HotelDetails() {
             Disponibilité
           </h3>
           <div className="mt-5 hidden lg:block">
-            <SearchBar isCentered={false} />
+            <SearchBar
+              isCentered={false}
+              hideDestination
+              defaultCapacity={1}
+              initialValues={{
+                check_in: searchParams.get("check_in") || "",
+                check_out: searchParams.get("check_out") || "",
+                capacity: searchParams.get("capacity") || 1,
+              }}
+              onSearch={handleAvailabilitySearch}
+            />
           </div>
           <div className="mt-5 block lg:hidden">
-            <MobileSearchMenu className="max-w-[280px] border border-gray-700 rounded-xl" />
+            <MobileSearchMenu
+              className="max-w-[280px] border border-gray-700 rounded-xl"
+              hideDestination
+              defaultCapacity={1}
+              initialValues={{
+                check_in: searchParams.get("check_in") || "",
+                check_out: searchParams.get("check_out") || "",
+                capacity: searchParams.get("capacity") || 1,
+              }}
+              onSearch={handleAvailabilitySearch}
+            />
           </div>
         </div>
 
         {/* Chambres disponibles - Pleine largeur */}
         <div className="mt-8 p-6" ref={roomsSectionRef}>
-          <HotelRooms hotelRooms={hotelsRooms} />
+          <HotelRooms
+            hotelRooms={roomsToShow}
+            onBook={handleBooking}
+            availabilityState={availabilityState}
+            availabilityLoading={availabilityLoading}
+          />
         </div>
 
         <div className="mt-0 md:mt-52 lg:hidden"></div>

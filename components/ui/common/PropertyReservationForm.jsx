@@ -2,6 +2,8 @@
 import { Calendar, Minus, Plus, Shield } from "lucide-react";
 import { useMemo, useState, useEffect, useRef } from "react";
 import { SvgIcon } from "@/components/ui/common";
+import CalendarPicker from "./Calendar";
+import { dateToLetters } from "@/utils/dateToLetters";
 
 export default function PropertyReservationForm({
   price,
@@ -18,7 +20,10 @@ export default function PropertyReservationForm({
   });
 
   const [isVisible, setIsVisible] = useState(true);
+  const [showDateDropdown, setShowDateDropdown] = useState(false);
+  const [currentDateField, setCurrentDateField] = useState(null); // 'arrival' | 'departure'
   const componentRef = useRef(null);
+  const datePickerRef = useRef(null);
   const minCheckIn = useMemo(() => {
     const now = new Date();
     const year = now.getFullYear();
@@ -26,10 +31,16 @@ export default function PropertyReservationForm({
     const day = String(now.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
   }, []);
+  const startOfDay = (value) =>
+    new Date(value.getFullYear(), value.getMonth(), value.getDate());
 
   useEffect(() => {
     const handleScroll = () => {
       if (!componentRef.current) return;
+      if (window.innerWidth >= 1024) {
+        setIsVisible(true);
+        return;
+      }
 
       const scrollY = window.scrollY;
       const componentTop = componentRef.current.offsetTop;
@@ -44,12 +55,31 @@ export default function PropertyReservationForm({
     };
 
     window.addEventListener("scroll", handleScroll);
+    window.addEventListener("resize", handleScroll);
     handleScroll();
 
     return () => {
       window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
     };
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!datePickerRef.current) return;
+      if (!datePickerRef.current.contains(event.target)) {
+        setShowDateDropdown(false);
+        setCurrentDateField(null);
+      }
+    };
+
+    if (showDateDropdown) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showDateDropdown]);
 
   const updateGuestCount = (type, operation) => {
     setReservationData((prev) => ({
@@ -68,6 +98,42 @@ export default function PropertyReservationForm({
       return { ...prev, checkIn: value, checkOut: nextCheckOut };
     });
   };
+
+  const handleDateOpen = (field) => {
+    setShowDateDropdown(true);
+    setCurrentDateField(field);
+  };
+
+  const handleDateSelect = (date, field) => {
+    const selectedDate = startOfDay(
+      date instanceof Date ? date : new Date(date)
+    );
+    const today = startOfDay(new Date());
+    if (selectedDate < today) return;
+
+    const isoDate = `${selectedDate.getFullYear()}-${String(
+      selectedDate.getMonth() + 1
+    ).padStart(2, "0")}-${String(selectedDate.getDate()).padStart(2, "0")}`;
+
+    if (field === "arrival") {
+      handleCheckInChange(isoDate);
+      return;
+    }
+
+    if (field === "departure") {
+      const checkInDate = reservationData.checkIn
+        ? startOfDay(new Date(reservationData.checkIn))
+        : null;
+      if (checkInDate && selectedDate < checkInDate) return;
+      setReservationData((prev) => ({
+        ...prev,
+        checkOut: isoDate,
+      }));
+    }
+    setShowDateDropdown(false);
+    setCurrentDateField(null);
+  };
+
 
   return (
     <div
@@ -91,7 +157,10 @@ export default function PropertyReservationForm({
 
       <div className="space-y-5 ">
         {/* Dates */}
-        <div className="grid grid-rows-2 gap-4 items-center ">
+        <div
+          ref={datePickerRef}
+          className="grid grid-rows-2 gap-4 items-center "
+        >
           <div>
             <label className="block text-sm font-bold text-black mb-2">
               Arrivée
@@ -105,14 +174,23 @@ export default function PropertyReservationForm({
 
               <input
                 type="text"
-                onFocus={(e) => (e.target.type = "date")}
-                onBlur={(e) => (e.target.type = "text")}
-                value={reservationData.checkIn}
-                min={minCheckIn}
-                onChange={(e) => handleCheckInChange(e.target.value)}
-                className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                value={dateToLetters(reservationData.checkIn)}
+                onClick={() => handleDateOpen("arrival")}
+                readOnly
+                className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg outline-none focus:outline-none focus:ring-0 focus:ring-offset-0 focus:border-primary transition-all"
                 placeholder="Date d'arrivée"
               />
+              {showDateDropdown && currentDateField === "arrival" && (
+                <div className="absolute z-50 mt-2">
+                  <CalendarPicker
+                    selectedDate={reservationData.checkIn || null}
+                    minDate={new Date()}
+                    rangeStart={reservationData.checkIn || null}
+                    rangeEnd={reservationData.checkOut || null}
+                    onDateSelect={(date) => handleDateSelect(date, "arrival")}
+                  />
+                </div>
+              )}
             </div>
           </div>
 
@@ -128,19 +206,23 @@ export default function PropertyReservationForm({
               />
               <input
                 type="text"
-                onFocus={(e) => (e.target.type = "date")}
-                onBlur={(e) => (e.target.type = "text")}
-                value={reservationData.checkOut}
-                min={reservationData.checkIn || minCheckIn}
-                onChange={(e) =>
-                  setReservationData((prev) => ({
-                    ...prev,
-                    checkOut: e.target.value,
-                  }))
-                }
-                className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                value={dateToLetters(reservationData.checkOut)}
+                onClick={() => handleDateOpen("departure")}
+                readOnly
+                className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg outline-none focus:outline-none focus:ring-0 focus:ring-offset-0 focus:border-primary transition-all"
                 placeholder="Date de départ"
               />
+              {showDateDropdown && currentDateField === "departure" && (
+                <div className="absolute z-50 mt-2">
+                  <CalendarPicker
+                    selectedDate={reservationData.checkOut || null}
+                    minDate={reservationData.checkIn || new Date()}
+                    rangeStart={reservationData.checkIn || null}
+                    rangeEnd={reservationData.checkOut || null}
+                    onDateSelect={(date) => handleDateSelect(date, "departure")}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>

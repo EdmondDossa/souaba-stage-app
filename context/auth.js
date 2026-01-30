@@ -22,6 +22,7 @@ export function AuthProvider({ children }) {
       return { success: true };
     } catch (error) {
       setLogged(false);
+      setUser({});
       return { success: false };
     } finally {
       setLoading(false);
@@ -33,12 +34,23 @@ export function AuthProvider({ children }) {
     try {
       const { data } = await http.post("/auth/login", credentials);
       const access = data?.accessToken || data?.access || null;
-      const refresh = data?.refreshToken || data?.refresh || null;
+      const rememberMe = Boolean(credentials?.rememberMe);
 
-      if (access) localStorage.setItem("accessToken", access);
-      if (refresh) localStorage.setItem("refreshToken", refresh);
+      if (access) {
+        if (rememberMe) {
+          localStorage.setItem("accessToken", access);
+          sessionStorage.removeItem("accessToken");
+        } else {
+          sessionStorage.setItem("accessToken", access);
+          localStorage.removeItem("accessToken");
+        }
+      }
 
       setLogged(true);
+      if (data?.user) {
+        setUser({ ...data.user, ...(data?.user?.profile || {}) });
+      }
+
       await fetchUser(false);
       router.push("/");
       return { success: true };
@@ -77,13 +89,20 @@ export function AuthProvider({ children }) {
     const http = getAxiosInstance();
     try {
       await http.post("/auth/logout");
+    } catch (error) {
+      // Ignore logout errors and proceed with local cleanup.
+    } finally {
       localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
+      sessionStorage.removeItem("accessToken");
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");
       setLogged(false);
-      router.push("/login");
-    } catch (error) {}
+      setUser({});
+      router.push("/");
+      if (typeof window !== "undefined") {
+        window.location.reload();
+      }
+    }
   }
   useEffect(() => {
     fetchUser();

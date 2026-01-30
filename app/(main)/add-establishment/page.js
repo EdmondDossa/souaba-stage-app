@@ -48,24 +48,24 @@ const AddEstablishment = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const identitySection = {
-    name: "Pièce d'identité",
-    component: IdentityCard,
-  };
-  const rawSteps = [
-    { name: "Hébergement", component: Hebergement },
-    { name: "Informations", component: PropertyInformations },
-    { name: "Chambres", component: HotelsRoom },
-    { name: "Commodités", component: Commodities },
-    { name: "Equipements", component: Equipements },
-    { name: "Sécurités", component: Security },
-    { name: "Résumé", component: Resume },
-  ];
+  const stepsDefinitions = useMemo(() => {
+    const rawSteps = [
+      { name: "Hébergement", component: Hebergement },
+      { name: "Informations", component: PropertyInformations },
+      { name: "Chambres", component: HotelsRoom },
+      { name: "Commodités", component: Commodities },
+      { name: "Equipements", component: Equipements },
+      { name: "Sécurités", component: Security },
+      { name: "Résumé", component: Resume },
+    ];
 
-  const stepsDefinitions = useMemo(
-    () => [...rawSteps, ...(requireIdentityStep ? [identitySection] : [])],
-    [requireIdentityStep]
-  );
+    if (!requireIdentityStep) return rawSteps;
+
+    return [
+      ...rawSteps,
+      { name: "Pièce d'identité", component: IdentityCard },
+    ];
+  }, [requireIdentityStep]);
 
   const [steps, setSteps] = useState(stepsDefinitions);
   const stepsLabels = steps.map((step) => step.name);

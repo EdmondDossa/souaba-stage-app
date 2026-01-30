@@ -1,15 +1,22 @@
 import Image from "next/image";
 import { Star } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import OverviewModal from "./OverviewModal";
 import SvgIcon from "./SvgIcon";
 import MobileRoomType from "./MobileRoomType";
 
-export default function HotelRooms({ hotelRooms }) {
+export default function HotelRooms({
+  hotelRooms,
+  onBook,
+  availabilityState = "available",
+  availabilityLoading = false,
+}) {
   // États pour gérer l'overview
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [isOverviewOpen, setIsOverviewOpen] = useState(false);
   const [selection, setSelection] = useState({});
+  const [isTotalRowVisible, setIsTotalRowVisible] = useState(false);
+  const totalRowRef = useRef(null);
   const hasRooms = (hotelRooms || []).length > 0;
 
   // Fonction pour ouvrir l'overview
@@ -26,6 +33,11 @@ export default function HotelRooms({ hotelRooms }) {
 
   // Utiliser les données de l'API ou un tableau vide par défaut
   const rooms = hotelRooms || [];
+  const isSelectionEnabled = availabilityState === "available";
+
+  useEffect(() => {
+    setSelection({});
+  }, [hotelRooms]);
 
   const handleSelectChange = (room, count) => {
     setSelection((prev) => ({
@@ -42,12 +54,62 @@ export default function HotelRooms({ hotelRooms }) {
     }, 0);
   }, [rooms, selection]);
 
+  const handleReserve = () => {
+    if (!onBook) return;
+    if (!isSelectionEnabled) return;
+    const selectedRooms = rooms
+      .map((room) => {
+        const quantity = selection[room.room_category_id] || 0;
+        if (!quantity) return null;
+        return {
+          roomCategoryId: String(room.room_category_id),
+          quantity,
+          pricePerNight: Number(room.price_per_night) || 0,
+          capacity: Number(room.capacity) || 0,
+        };
+      })
+      .filter(Boolean);
+
+    if (!selectedRooms.length) return;
+    onBook({ selectedRooms, totalPerNight: totalAmount });
+  };
+
+  useEffect(() => {
+    if (!totalRowRef.current) {
+      setIsTotalRowVisible(false);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsTotalRowVisible(Boolean(entry?.isIntersecting)),
+      { threshold: 0.1 }
+    );
+
+    observer.observe(totalRowRef.current);
+    return () => observer.disconnect();
+  }, [hasRooms]);
+
   return (
     <div>
       {/* Version web */}
       <div className="hidden md:block relative">
         <div className="space-y-6">
           <div className="w-full">
+            {availabilityState === "idle" && !availabilityLoading && (
+              <div className="mb-4 rounded-lg bg-amber-50 border border-amber-100 px-4 py-3 text-sm text-amber-700">
+                Sélectionnez vos dates pour afficher les disponibilités.
+              </div>
+            )}
+            {availabilityState === "empty" && (
+              <div className="mb-4 rounded-lg bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-700">
+                Aucune chambre disponible pour ces dates.
+              </div>
+            )}
+            {availabilityLoading && (
+              <div className="mb-4 rounded-lg bg-gray-50 border border-gray-100 px-4 py-3 text-sm text-gray-600">
+                Chargement des disponibilités...
+              </div>
+            )}
             <div className="overflow-x-auto border border-white">
               <table className="min-w-full bg-white table-auto">
                 <thead className="bg-primary text-white">
@@ -84,8 +146,11 @@ export default function HotelRooms({ hotelRooms }) {
                       )?.media?.file_path ||
                       room.HotelRoomCategoryMedia?.[0]?.media?.file_path ||
                       "/images/default-room.jpg";
+                    const availableRooms = Number(
+                      room.availableRooms ?? room.number_of_rooms
+                    );
                     const maxSelectable = Math.min(
-                      Number(room.number_of_rooms) || 0,
+                      Number.isFinite(availableRooms) ? availableRooms : 0,
                       5
                     );
                     const selectedCount = selection[room.room_category_id] || 0;
@@ -121,7 +186,10 @@ export default function HotelRooms({ hotelRooms }) {
                             <div className="text-xs font-montserrat-medium mt-2 text-gray-800">
                               <span className="block">
                                 {" "}
-                                {room.number_of_rooms} chambre(s) disponible(s){" "}
+                                {Number.isFinite(availableRooms)
+                                  ? availableRooms
+                                  : 0}{" "}
+                                chambre(s) disponible(s){" "}
                               </span>
                               <span className="block">
                                 {" "}
@@ -176,6 +244,7 @@ export default function HotelRooms({ hotelRooms }) {
                                   Number(e.target.value)
                                 )
                               }
+                              disabled={!isSelectionEnabled || maxSelectable === 0}
                               className="px-3 py-2 border border-gray-300 rounded text-sm"
                               aria-label={`Sélectionner le nombre de chambres pour ${room.name}`}
                             >
@@ -230,7 +299,10 @@ export default function HotelRooms({ hotelRooms }) {
                     </tr>
                   )}
                   {rooms.length > 0 && (
-                    <tr className="bg-gray-50 font-montserrat-bold">
+                    <tr
+                      ref={totalRowRef}
+                      className="bg-gray-50 font-montserrat-bold"
+                    >
                       <td colSpan={4} className="px-6 py-4 text-right">
                         Total sélectionné
                       </td>
@@ -239,8 +311,9 @@ export default function HotelRooms({ hotelRooms }) {
                       </td>
                       <td className="px-6 py-4 text-right" colSpan={2}>
                         <button
+                          onClick={handleReserve}
                           className="bg-primary text-white px-5 py-2 rounded-lg text-sm font-semibold shadow hover:bg-amber-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                          disabled={totalAmount === 0}
+                          disabled={totalAmount === 0 || !isSelectionEnabled}
                         >
                           Je réserve
                         </button>
@@ -251,15 +324,16 @@ export default function HotelRooms({ hotelRooms }) {
               </table>
             </div>
           </div>
-          {hasRooms && (
+          {hasRooms && !isTotalRowVisible && (
             <div className="fixed bottom-6 right-6 bg-white shadow-2xl border border-gray-200 rounded-xl px-5 py-4 space-y-2 z-30">
               <div className="text-sm text-gray-600">Total sélectionné</div>
               <div className="text-xl font-montserrat-bold text-gray-800">
                 {totalAmount.toLocaleString("fr-FR")} FCFA
               </div>
               <button
+                onClick={handleReserve}
                 className="w-full bg-primary text-white px-5 py-2 rounded-lg text-sm font-semibold shadow hover:bg-amber-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={totalAmount === 0}
+                disabled={totalAmount === 0 || !isSelectionEnabled}
               >
                 Je réserve
               </button>
@@ -277,7 +351,13 @@ export default function HotelRooms({ hotelRooms }) {
       </div>
       {/* Version mobile */}
       <div className="block md:hidden">
-        <MobileRoomType rooms={hotelRooms} />
+        <MobileRoomType
+          rooms={hotelRooms}
+          selection={selection}
+          onSelectChange={handleSelectChange}
+          onReserve={handleReserve}
+          isSelectionEnabled={isSelectionEnabled}
+        />
       </div>
     </div>
   );

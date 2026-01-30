@@ -35,9 +35,9 @@ const PaymentMethod = ({ goToNextStep, setFormValues, formValues }) => {
   };
 
   return (
-    <section className="flex flex-col justify-between  items-center w-full h-[550px] md:border md:border-gray-200 px-10 text-sm relative">
+    <section className="flex flex-col justify-between items-center w-full md:border md:border-gray-200 px-4 sm:px-6 md:px-10 text-sm relative">
       <div>
-        <h1 className="font-bold text-xl sm:text-2xl text-center text-gray-600 -mt-5 md:mt-10 font-montserrat-bold mb-8">
+        <h1 className="font-bold text-xl sm:text-2xl text-center text-gray-600 mt-2 md:mt-10 font-montserrat-bold mb-6 sm:mb-8">
           Méthodes de paiement
         </h1>
 
@@ -88,10 +88,10 @@ const PaymentMethod = ({ goToNextStep, setFormValues, formValues }) => {
           n'est pas garantie
         </div>
       </div>
-      <div className="mt-20 align-bottom self-end w-full place-content-end">
+      <div className="mt-10 sm:mt-16 align-bottom self-end w-full place-content-end">
         <Button
           onClick={goToNextStep}
-          className="w-full bg-primary hover:bg-amber-400! py-3 font-montserrat-bold rounded-lg mb-5"
+          className="w-full max-w-[560px] mx-auto bg-primary hover:bg-amber-400! py-3 font-montserrat-bold rounded-lg mb-5"
         >
           Continuer
         </Button>

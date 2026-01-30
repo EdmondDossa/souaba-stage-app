@@ -1,18 +1,32 @@
 "use client";
 import { Heart, Share2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import useAuthContext from "@/context/auth";
 
 export default function PropertyDescriptionShared({
   description,
   location,
   title,
   name,
+  isFavorite: isFavoriteProp,
+  onFavoriteToggle,
 }) {
   const safeDescription = description || "";
   const safeLocation = location || "";
   const [isExpanded, setIsExpanded] = useState(false);
   const maxLength = 300;
   const [isFavorite, setIsFavorite] = useState(false);
+  const { isLogged } = useAuthContext();
+
+  useEffect(() => {
+    if (!isLogged) {
+      setIsFavorite(false);
+      return;
+    }
+    if (typeof isFavoriteProp !== "undefined") {
+      setIsFavorite(Boolean(isFavoriteProp));
+    }
+  }, [isFavoriteProp, isLogged]);
 
   const shouldTruncate = safeDescription.length > maxLength;
   const displayText = isExpanded
@@ -29,19 +43,27 @@ export default function PropertyDescriptionShared({
             </h3>
           </div>
           <div className="flex gap-x-3 text-primary">
-            <button
-              onClick={() => setIsFavorite(!isFavorite)}
-              className=" pb-4 pr-2 hover:bg-gray-100 rounded-full transition-colors"
-            >
-              <Heart
-                size={24}
-                className={
-                  isFavorite
-                    ? "fill-red-500 stroke-red-500"
-                    : "stroke-yellow-500 text-gray-400"
-                }
-              />
-            </button>
+            {isLogged && (
+              <button
+                onClick={() => {
+                  const next = !isFavorite;
+                  setIsFavorite(next);
+                  if (onFavoriteToggle) {
+                    onFavoriteToggle(next);
+                  }
+                }}
+                className=" pb-4 pr-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <Heart
+                  size={24}
+                  className={
+                    isFavorite
+                      ? "fill-red-500 stroke-red-500"
+                      : "stroke-yellow-500 text-gray-400"
+                  }
+                />
+              </button>
+            )}
             <Share2 />
           </div>
         </div>

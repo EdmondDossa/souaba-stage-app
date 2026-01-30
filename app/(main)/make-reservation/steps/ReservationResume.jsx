@@ -16,36 +16,197 @@ import getAxiosInstance from "@/lib/request";
 import toast from "react-hot-toast";
 import { format, differenceInDays } from "date-fns";
 import Modal from "@/components/ui/common/Modal";
+import useAuthContext from "@/context/auth";
+import { submitReservation } from "./reservationApi";
 
-const ReservationResume = ({ goToNextStep, goToPrevStep }) => {
+const ReservationResume = ({
+  goToNextStep,
+  goToPrevStep,
+  formValues,
+  completeFlow,
+}) => {
   const http = getAxiosInstance();
   const [openModal, setOpenModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [accomodationDetails, setAccommodationsDetails] = useState();
+  const [listingDetails, setListingDetails] = useState();
   const [currentReservation, setCurrentReservation] = useState();
+  const [pendingReservation, setPendingReservation] = useState(null);
 
+  const { user, fetchUser } = useAuthContext();
   const searchParams = useSearchParams();
 
-  const accomodationId = searchParams.get("h");
-  const reservationId = searchParams.get("r");
+  const identityFrontPath =
+    user?.profile?.identity_card_front || user?.identity_card_front;
+  const identityBackPath =
+    user?.profile?.identity_card_back || user?.identity_card_back;
+  const hasIdentity = Boolean(identityFrontPath && identityBackPath);
+
+  const normalizeMediaArray = (mediaArray = []) => {
+    const list = Array.isArray(mediaArray) ? mediaArray : [];
+    if (!list.length) {
+      return [
+        {
+          media: { file_path: "/images/acceuil-first-image.webp" },
+          is_primary: true,
+        },
+      ];
+    }
+    return list.map((item) => {
+      if (item?.media?.file_path) return item;
+      const filePath =
+        item?.file_path || (typeof item === "string" ? item : undefined);
+      return {
+        ...item,
+        media: {
+          ...(item?.media || {}),
+          file_path: filePath || "/images/acceuil-first-image.webp",
+        },
+        is_primary: item?.is_primary ?? false,
+      };
+    });
+  };
+
+  const buildListingDetailsFromReservation = (reservation) => {
+    if (!reservation) return null;
+
+    const roomDetail =
+      reservation.roomDetails?.[0] ||
+      reservation.room_details?.[0] ||
+      reservation.room_detail?.[0];
+
+    const accommodation =
+      reservation.accommodation ||
+      reservation.Accommodation ||
+      reservation.accommodation_details;
+
+    const hotelRoomCategory =
+      reservation.hotelRoomCategory ||
+      reservation.HotelRoomCategory ||
+      reservation.hotel_room_category ||
+      reservation.hotelRoom ||
+      reservation.hotel_room ||
+      roomDetail?.hotelRoomCategory ||
+      roomDetail?.HotelRoomCategory ||
+      roomDetail?.hotel_room_category;
+
+    const hotel =
+      reservation.hotel ||
+      reservation.Hotel ||
+      hotelRoomCategory?.Hotel ||
+      hotelRoomCategory?.hotel ||
+      roomDetail?.hotel ||
+      roomDetail?.Hotel ||
+      reservation.hotel_details;
+
+    const mediaSource =
+      accommodation?.AccommodationMedia ||
+      accommodation?.accommodation_media ||
+      hotelRoomCategory?.HotelRoomCategoryMedia ||
+      hotelRoomCategory?.hotel_room_category_media ||
+      hotel?.HotelMedia ||
+      hotel?.hotel_media ||
+      [];
+
+    return {
+      name:
+        accommodation?.name ||
+        hotelRoomCategory?.name ||
+        hotel?.name ||
+        "Hébergement",
+      description:
+        accommodation?.description ||
+        hotelRoomCategory?.description ||
+        hotel?.description ||
+        "",
+      AccommodationMedia: normalizeMediaArray(mediaSource),
+      amenities:
+        accommodation?.amenities ||
+        hotelRoomCategory?.amenities ||
+        hotel?.amenities ||
+        [],
+      price_per_night:
+        accommodation?.price_per_night ||
+        hotelRoomCategory?.price_per_night ||
+        reservation?.price_per_night ||
+        0,
+      number_of_rooms:
+        accommodation?.number_of_rooms ||
+        hotelRoomCategory?.number_of_rooms ||
+        0,
+      number_of_bathrooms:
+        accommodation?.number_of_bathrooms ||
+        hotelRoomCategory?.number_of_bathrooms ||
+        0,
+      number_of_parking: accommodation?.number_of_parking || 0,
+      address: accommodation?.address || hotel?.address || "",
+      city: accommodation?.city || hotel?.city || "",
+      country: accommodation?.country || hotel?.country || "",
+      district: accommodation?.district || hotel?.district || "",
+      rating:
+        accommodation?.avgRating ||
+        hotel?.avgRating ||
+        hotelRoomCategory?.avgRating ||
+        5,
+    };
+  };
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const pending = sessionStorage.getItem("pendingReservation");
+    if (pending) {
+      try {
+        setPendingReservation(JSON.parse(pending));
+      } catch (error) {
+        console.error("Invalid pending reservation payload", error);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     async function fetchData() {
+      if (!pendingReservation) return;
+      const type = pendingReservation.type;
+      const checkIn = pendingReservation.checkInDate;
+      const checkOut = pendingReservation.checkOutDate;
+      const numberOfGuests = pendingReservation.numberOfGuests;
+      const totalPrice = pendingReservation.totalPrice;
+      setCurrentReservation({
+        check_in_date: checkIn,
+        check_out_date: checkOut,
+        number_of_guests: numberOfGuests,
+        total_price: totalPrice,
+        createdAt: new Date().toISOString(),
+      });
+
       try {
-        const accommodation = await http.get(
-          `/accommodations?accommodation_id=${accomodationId}`
-        );
+        if (type === "accommodation" && pendingReservation.accommodationId) {
+          const accommodation = await http.get(
+            `/accommodations?accommodation_id=${pendingReservation.accommodationId}`
+          );
+          const foundAccomodation = accommodation.data?.data?.[0];
+          if (foundAccomodation) {
+            setListingDetails(foundAccomodation);
+            return;
+          }
+        }
 
-        const foundAccomodation = accommodation.data?.data?.[0];
-        if (foundAccomodation) {
-          setAccommodationsDetails(foundAccomodation);
-
-          const reservationUrl = `/reservations/${reservationId}`;
-
-          const reservation = await http.get(reservationUrl);
-
-          if (reservation.data) {
-            setCurrentReservation(reservation.data);
+        if (type === "hotel" && pendingReservation.hotelId) {
+          const hotelResponse = await http.get(
+            `/hotels?hotel_id=${pendingReservation.hotelId}&limit=1`
+          );
+          const payload = hotelResponse?.data || {};
+          const hotel =
+            payload?.data?.[0] || payload?.data || payload?.hotel || null;
+          if (hotel) {
+            setListingDetails({
+              ...hotel,
+              price_per_night:
+                pendingReservation.totalPerNight ??
+                pendingReservation.totalPrice ??
+                hotel?.price_per_night,
+            });
+            return;
           }
         }
       } catch (error) {
@@ -54,7 +215,18 @@ const ReservationResume = ({ goToNextStep, goToPrevStep }) => {
       }
     }
     fetchData();
-  }, [accomodationId]);
+  }, [pendingReservation]);
+
+  useEffect(() => {
+    fetchUser(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const selectedPaymentMethod = (
+    formValues?.paymentMethod ||
+    searchParams.get("payment") ||
+    "WALLET"
+  ).toUpperCase();
 
   const nights = useMemo(() => {
     if (
@@ -69,16 +241,86 @@ const ReservationResume = ({ goToNextStep, goToPrevStep }) => {
     return Math.max(diff, 1);
   }, [currentReservation?.check_in_date, currentReservation?.check_out_date]);
 
-  if (!accomodationDetails || !currentReservation) return null;
+  if (!listingDetails || !currentReservation) return null;
 
   async function onFinalSubmission() {
-    const paymentMethod = (
-      searchParams.get("payment") || "WALLET"
-    ).toUpperCase();
-    if (paymentMethod === "WALLET") {
+    if (!hasIdentity) {
+      goToNextStep();
+      return;
+    }
+    if (selectedPaymentMethod === "WALLET") {
       setOpenModal(true);
-    } else goToNextStep();
+      return;
+    }
+
+    if (!pendingReservation) {
+      goToNextStep();
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      const result = await submitReservation(
+        http,
+        pendingReservation,
+        formValues?.guest,
+        selectedPaymentMethod
+      );
+      if (result) {
+        completeFlow();
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Une erreur est survenue lors de la réservation!");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
+
+  const handleWalletPayment = async () => {
+    if (!pendingReservation) {
+      goToNextStep();
+      return;
+    }
+    try {
+      setIsSubmitting(true);
+      const result = await submitReservation(
+        http,
+        pendingReservation,
+        formValues?.guest,
+        selectedPaymentMethod
+      );
+      if (result) {
+        completeFlow();
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Une erreur est survenue lors de la réservation!");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const listingRating = listingDetails?.rating ?? listingDetails?.avgRating;
+  const pickPrimaryImage = (items = []) => {
+    const list = Array.isArray(items) ? items : [];
+    if (!list.length) return "";
+    const primary = list.find((item) => item?.is_primary);
+    return (
+      primary?.media?.file_path ||
+      primary?.file_path ||
+      list[0]?.media?.file_path ||
+      list[0]?.file_path ||
+      ""
+    );
+  };
+  const listingImage =
+    listingDetails?.AccommodationMedia?.[0]?.media?.file_path ||
+    pickPrimaryImage(listingDetails?.HotelMedia) ||
+    pickPrimaryImage(listingDetails?.hotel_media) ||
+    listingDetails?.images?.[0]?.file_path ||
+    listingDetails?.primaryImage ||
+    "/images/placeholder.png";
 
   return (
     <div className="flex flex-col items-center pb-16">
@@ -102,7 +344,7 @@ const ReservationResume = ({ goToNextStep, goToPrevStep }) => {
             </div>
             <div className="text-xs text-gray-500 mt-1">
               {nights} nuit{nights > 1 ? "s" : ""} •{" "}
-              {(+accomodationDetails.price_per_night || 0).toLocaleString(
+              {(+listingDetails.price_per_night || 0).toLocaleString(
                 "fr-FR"
               )}{" "}
               FCFA / nuit
@@ -115,12 +357,9 @@ const ReservationResume = ({ goToNextStep, goToPrevStep }) => {
             <Image
               width={1600}
               height={900}
-              className="w-full h-[420px] md:h-[520px] object-cover"
-              src={
-                accomodationDetails.AccommodationMedia?.[0]?.media?.file_path ||
-                "/images/placeholder.png"
-              }
-              alt={accomodationDetails.name ?? ""}
+              className="w-full h-[260px] sm:h-[320px] md:h-[520px] object-cover"
+              src={listingImage}
+              alt={listingDetails.name ?? ""}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
             <div className="absolute top-4 right-4">
@@ -133,7 +372,7 @@ const ReservationResume = ({ goToNextStep, goToPrevStep }) => {
                 </div>
                 <div className="text-xs text-gray-500 mt-1">
                   {nights} nuit{nights > 1 ? "s" : ""} •{" "}
-                  {(+accomodationDetails.price_per_night || 0).toLocaleString(
+                  {(+listingDetails.price_per_night || 0).toLocaleString(
                     "fr-FR"
                   )}{" "}
                   FCFA / nuit
@@ -144,18 +383,18 @@ const ReservationResume = ({ goToNextStep, goToPrevStep }) => {
               <div className="flex items-center gap-2 text-sm">
                 <MapPin size={16} />
                 <span className="line-clamp-1">
-                  {`${accomodationDetails.city} ${
-                    accomodationDetails.district ?? ""
-                  }, ${accomodationDetails.country}`}
+                  {`${listingDetails.city} ${
+                    listingDetails.district ?? ""
+                  }, ${listingDetails.country}`}
                 </span>
               </div>
               <h2 className="font-montserrat-bold text-xl md:text-2xl">
-                {accomodationDetails.name}
+                {listingDetails.name}
               </h2>
               <div className="flex items-center gap-2">
-                {renderStars(accomodationDetails.rating ?? 5)}{" "}
+                {renderStars(listingRating ?? 5)}{" "}
                 <span className="text-sm">
-                  {accomodationDetails?.rating?.toFixed?.(1) ?? "5.0"}
+                  {listingRating?.toFixed?.(1) ?? "5.0"}
                 </span>
               </div>
             </div>
@@ -184,7 +423,7 @@ const ReservationResume = ({ goToNextStep, goToPrevStep }) => {
               <SummaryItem
                 label="Prix / nuit"
                 value={`${(
-                  +accomodationDetails.price_per_night || 0
+                  +listingDetails.price_per_night || 0
                 ).toLocaleString("fr-FR")} FCFA`}
               />
               <SummaryItem
@@ -199,15 +438,15 @@ const ReservationResume = ({ goToNextStep, goToPrevStep }) => {
             <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600 border-t pt-4">
               <Badge
                 icon={<Bed size={16} />}
-                text={`${accomodationDetails.number_of_rooms ?? 1} chambres`}
+                text={`${listingDetails.number_of_rooms ?? 1} chambres`}
               />
               <Badge
                 icon={<Bath size={16} />}
-                text={`${accomodationDetails.number_of_bathrooms ?? 1} bains`}
+                text={`${listingDetails.number_of_bathrooms ?? 1} bains`}
               />
               <Badge
                 icon={<Car size={16} />}
-                text={`${accomodationDetails.number_of_parking ?? 0} parking`}
+                text={`${listingDetails.number_of_parking ?? 0} parking`}
               />
             </div>
           </div>
@@ -226,6 +465,8 @@ const ReservationResume = ({ goToNextStep, goToPrevStep }) => {
           <div className="md:w-1/2">
             <Button
               onClick={onFinalSubmission}
+              isLoading={isSubmitting}
+              disabled={isSubmitting}
               className="w-full bg-primary hover:!bg-amber-400 py-3 font-montserrat-bold rounded-xl"
             >
               Continuer
@@ -234,7 +475,43 @@ const ReservationResume = ({ goToNextStep, goToPrevStep }) => {
         </div>
       </div>
       <Modal onClose={() => setOpenModal(false)} isOpen={openModal}>
-        <span className="p-10">Cinet Pay Payment</span>
+        <div className="p-6 md:p-8 space-y-4">
+          <div>
+            <h3 className="text-xl font-montserrat-bold text-gray-900">
+              Paiement GeniusPay
+            </h3>
+            <p className="text-sm text-gray-500 mt-1">
+              Finalisez votre paiement via notre agrégateur GeniusPay.
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button
+              onClick={() => {
+                const url = process.env.NEXT_PUBLIC_GENIUSPAY_URL;
+                if (!url) {
+                  toast.error("URL GeniusPay non configurée.");
+                  return;
+                }
+                window.open(url, "_blank", "noopener,noreferrer");
+              }}
+              className="bg-primary hover:!bg-amber-400 py-2.5 font-montserrat-bold rounded-xl w-full"
+            >
+              Ouvrir GeniusPay
+            </Button>
+            <Button
+              onClick={() => {
+                setOpenModal(false);
+                handleWalletPayment();
+              }}
+              isLoading={isSubmitting}
+              disabled={isSubmitting}
+              variant="secondary"
+              className="border border-gray-200 py-2.5 font-montserrat-bold rounded-xl w-full"
+            >
+              J&apos;ai payé
+            </Button>
+          </div>
+        </div>
       </Modal>
     </div>
   );

@@ -1,5 +1,5 @@
 import React from "react";
-import { useRef, useState, useMemo } from "react";
+import { useRef, useState, useMemo, useEffect } from "react";
 import useAuthContext from "@/context/auth";
 import { usePathname } from "next/navigation";
 import Calendar from "@/components/ui/common/Calendar";
@@ -15,13 +15,42 @@ import {
   ChevronDown,
 } from "lucide-react";
 
-const MobileSearchMenu = ({ className }) => {
+const MobileSearchMenu = ({
+  className,
+  onSearch,
+  hideDestination = false,
+  initialValues,
+  defaultCapacity = 0,
+}) => {
+
+  const formatInitialDate = (value) => {
+    if (!value) return "";
+    if (value.includes("/")) return value;
+    const parts = value.split("-");
+    if (parts.length !== 3) return value;
+    const [year, month, day] = parts;
+    return `${day}/${month}/${year}`;
+  };
+
+  const formatInitialCapacity = (value) => {
+    const parsed = Number.parseInt(value, 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+  };
 
   // SearchBar states
-  const [destination, setDestination] = useState("");
-  const [arrivalDate, setArrivalDate] = useState("");
-  const [departureDate, setDepartureDate] = useState("");
-  const [adults, setAdults] = useState(0);
+  const [destination, setDestination] = useState(
+    initialValues?.city?.trim() || ""
+  );
+  const [arrivalDate, setArrivalDate] = useState(
+    formatInitialDate(initialValues?.check_in)
+  );
+  const [departureDate, setDepartureDate] = useState(
+    formatInitialDate(initialValues?.check_out)
+  );
+  const [adults, setAdults] = useState(() => {
+    const initial = formatInitialCapacity(initialValues?.capacity);
+    return initial > 0 ? initial : defaultCapacity;
+  });
   const [children, setChildren] = useState(0);
   const [babies, setBabies] = useState(0);
   const [showGuestsDropdown, setShowGuestsDropdown] = useState(false);
@@ -120,15 +149,31 @@ const MobileSearchMenu = ({ className }) => {
     },
   ];
 
+  useEffect(() => {
+    if (!initialValues) return;
+    setDestination(initialValues?.city?.trim() || "");
+    setArrivalDate(formatInitialDate(initialValues?.check_in));
+    setDepartureDate(formatInitialDate(initialValues?.check_out));
+    const initialCapacity = formatInitialCapacity(initialValues?.capacity);
+    setAdults(initialCapacity > 0 ? initialCapacity : defaultCapacity);
+    setChildren(0);
+    setBabies(0);
+  }, [initialValues, defaultCapacity]);
+
   const handleSearch = () => {
-    console.log({
-      destination,
-      arrivalDate,
-      departureDate,
-      adults,
-      children,
-      babies,
-    });
+    if (!arrivalDate || !departureDate) return;
+    const check_in = arrivalDate.split("/").reverse().join("-");
+    const check_out = departureDate.split("/").reverse().join("-");
+    const capacity = adults + children;
+    if (onSearch) {
+      onSearch({
+        check_in,
+        check_out,
+        capacity: capacity > 0 ? capacity : defaultCapacity || 1,
+        destination: destination.trim(),
+      });
+      return;
+    }
   };
 
   const toggleDropdown = (dropdown, state) => {
@@ -170,70 +215,72 @@ const MobileSearchMenu = ({ className }) => {
     <div className={`p-6 ${className}`}>
       <div className="space-y-4">
         {/* Destination */}
-        <div ref={destinationRef} className="relative">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Destination
-          </label>
-          <input
-            type="text"
-            placeholder="Quelle ville préférez-vous ?"
-            className="w-full px-3 py-2 text-sm focus:outline-none"
-            value={destination}
-            onChange={(e) => {
-              setDestination(e.target.value);
-              toggleDropdown("destination", true);
-            }}
-            onFocus={() => toggleDropdown("destination", true)}
-            onKeyDown={handleDestinationKeyDown}
-            autoComplete="off"
-          />
-          <div>
-            <hr className="w-full" />
-          </div>
-
-          {showDestinationDropdown && filteredDestinations.length > 0 && (
-            <ul
-              className="fixed z-[110] bg-white border border-gray-200 rounded-lg shadow-lg overflow-auto w-[calc(100vw-4rem)] max-w-sm max-h-[50vh]"
-              style={{
-                top:
-                  destinationRef.current?.getBoundingClientRect().bottom +
-                  4 +
-                  "px",
-                left: "1rem",
-                right: "1rem",
+        {!hideDestination && (
+          <div ref={destinationRef} className="relative">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Destination
+            </label>
+            <input
+              type="text"
+              placeholder="Quelle ville préférez-vous ?"
+              className="w-full px-3 py-2 text-sm focus:outline-none"
+              value={destination}
+              onChange={(e) => {
+                setDestination(e.target.value);
+                toggleDropdown("destination", true);
               }}
-            >
-              {filteredDestinations.map((suggestion, idx) => {
-                const IconComponent = suggestion.icon;
-                return (
-                  <li
-                    key={suggestion.id}
-                    className={`flex items-center px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors ${
-                      idx === activeIndex ? "bg-gray-50" : ""
-                    }`}
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      selectDestination(suggestion);
-                    }}
-                  >
-                    <IconComponent
-                      size={20}
-                      className="text-black mr-3 flex-shrink-0"
-                    />
-                    <div className="flex-1 min-w-0 text-left">
-                      <div className="text-sm font-bold text-black truncate">
-                        {suggestion.name}
+              onFocus={() => toggleDropdown("destination", true)}
+              onKeyDown={handleDestinationKeyDown}
+              autoComplete="off"
+            />
+            <div>
+              <hr className="w-full" />
+            </div>
+
+            {showDestinationDropdown && filteredDestinations.length > 0 && (
+              <ul
+                className="fixed z-[110] bg-white border border-gray-200 rounded-lg shadow-lg overflow-auto w-[calc(100vw-4rem)] max-w-sm max-h-[50vh]"
+                style={{
+                  top:
+                    destinationRef.current?.getBoundingClientRect().bottom +
+                    4 +
+                    "px",
+                  left: "1rem",
+                  right: "1rem",
+                }}
+              >
+                {filteredDestinations.map((suggestion, idx) => {
+                  const IconComponent = suggestion.icon;
+                  return (
+                    <li
+                      key={suggestion.id}
+                      className={`flex items-center px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors ${
+                        idx === activeIndex ? "bg-gray-50" : ""
+                      }`}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        selectDestination(suggestion);
+                      }}
+                    >
+                      <IconComponent
+                        size={20}
+                        className="text-black mr-3 flex-shrink-0"
+                      />
+                      <div className="flex-1 min-w-0 text-left">
+                        <div className="text-sm font-bold text-black truncate">
+                          {suggestion.name}
+                        </div>
+                        <div className="text-xs text-black truncate">
+                          {suggestion.description}
+                        </div>
                       </div>
-                      <div className="text-xs text-black truncate">
-                        {suggestion.description}
-                      </div>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+        )}
 
         {/* Date d'arrivée */}
         <div ref={arrivalDateRef} className="relative">

@@ -15,6 +15,7 @@ const LoginPage = () => {
   const { login, isLogged } = useAuthContext();
   const [formError, setFormError] = useState("");
   const [isLoading, setLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -24,7 +25,11 @@ const LoginPage = () => {
     setFormError(error);
     if (error) return;
     setLoading(true);
-    const { success, message, status, code } = await login({ email, password });
+    const { success, message, status, code } = await login({
+      email,
+      password,
+      rememberMe,
+    });
     if (!success) {
       if (status === 403) {
         if (code === "ACCOUNT_LOCKED") {
@@ -67,6 +72,7 @@ const LoginPage = () => {
           showTopImage={true}
           formError={formError}
           withSocialLoginSection={true}
+          rememberMe={rememberMe}
           onSubmit={handleSubmit}
         >
           <InputRow type="email" label="Email" name="email" required={true} />
@@ -76,6 +82,15 @@ const LoginPage = () => {
             name="password"
             required={true}
           />
+          <label className="flex items-center gap-3 text-sm font-montserrat-medium text-gray-700 mt-4">
+            <input
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+              className="h-4 w-4 accent-primary"
+            />
+            Se souvenir de moi
+          </label>
 
           <Link
             href="/forgot-password"

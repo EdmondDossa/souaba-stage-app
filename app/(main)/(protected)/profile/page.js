@@ -5,6 +5,7 @@ import { IoCamera } from "react-icons/io5";
 import { BsPatchCheckFill } from "react-icons/bs";
 import { FaPenAlt } from "react-icons/fa";
 import { useState } from "react";
+import Image from "next/image";
 import ViewProfile from "./components/ViewProfile";
 import EditProfile from "./components/EditProfile";
 import { handlePhotoUpload } from "@/utils";
@@ -73,10 +74,12 @@ const Profiles = () => {
           </h1>
           <div className="flex flex-col items-center justify-center space-y-4">
             <div className="relative w-36 h-36 shadow-xl rounded-full bg-gray-100">
-              <img
-                className="h-full w-full rounded-full"
+              <Image
                 src={profilePhotoSrc}
                 alt=""
+                fill
+                sizes="144px"
+                className="rounded-full object-cover"
               />
               <button
                 onClick={initEdit}

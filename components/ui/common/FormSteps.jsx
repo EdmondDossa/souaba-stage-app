@@ -34,9 +34,9 @@ const FormSteps = ({ steps, currentStep }) => {
     </section>
   );
   return (
-    <div className="flex flex-col justify-center items-center mt-32 md:mt-10">
+    <div className="flex flex-col justify-center items-center mt-10 md:mt-10">
       {steps[currentStep].stepIcon && (
-        <div className="w-24 h-24 mb-4 md:hidden">
+        <div className="w-20 h-20 sm:w-24 sm:h-24 mb-4 md:hidden">
           <Image
             alt=""
             className="w-full h-full"

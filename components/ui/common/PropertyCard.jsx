@@ -6,7 +6,7 @@ import { Heart, Bed, Bath, CarFront as Car } from "lucide-react";
 import PropertyEllipsis from "./PropertyEllipsis";
 import renderStars from "@/utils/render-star";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import getAxiosInstance from "@/lib/request";
 import useAuthContext from "@/context/auth";
 
@@ -37,6 +37,7 @@ export default function PropertyCard({
   ...rest
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { isLogged } = useAuthContext();
   const [favorite, setFavorite] = useState(Boolean(isFavorite));
   const [favoriteLoading, setFavoriteLoading] = useState(false);
@@ -46,8 +47,20 @@ export default function PropertyCard({
   }, [isFavorite]);
 
   const resolvedFavoriteKind = favoriteKind === "hotel" ? "hotel" : "accommodation";
-  const href =
+  const bookingParams = new URLSearchParams();
+  const checkIn = searchParams.get("check_in");
+  const checkOut = searchParams.get("check_out");
+  const capacity = searchParams.get("capacity");
+
+  if (checkIn) bookingParams.set("check_in", checkIn);
+  if (checkOut) bookingParams.set("check_out", checkOut);
+  if (capacity) bookingParams.set("capacity", capacity);
+
+  const baseHref =
     type === "hotel" ? `/hotels-details/${id}` : `/appartement-details/${id}`;
+  const href = bookingParams.toString()
+    ? `${baseHref}?${bookingParams.toString()}`
+    : baseHref;
 
   const handleFavoriteToggle = async (event) => {
     event.preventDefault();

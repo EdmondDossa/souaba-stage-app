@@ -4,31 +4,12 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import getAxiosInstance from "@/lib/request";
 import PropertyList from "@/components/ui/common/PropertyList";
 
-const FILTER_ITEMS = [
-  "Tout",
-  "Hôtels",
-  "Résidences",
-  "Appartements",
-  "Villas",
-  "Studio",
-];
-
-const ACCOMMODATION_TYPE_MAP = {
-  Résidences: "RESIDENCE",
-  Appartements: "APARTMENT",
-  Villas: "VILLA",
-  Studio: "STUDIO",
-};
-
-const isHotelFavorite = (item) => Boolean(item?.hotel_id);
-
 export default function FavoritesPage() {
   const http = useMemo(() => getAxiosInstance(), []);
   const [favorites, setFavorites] = useState({
     hotels: [],
     accommodations: [],
   });
-  const [activeFilter, setActiveFilter] = useState("Tout");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -43,23 +24,6 @@ export default function FavoritesPage() {
       ...accommodations.map((acc) => ({ ...acc, isFavorite: true })),
     ];
   }, [favorites]);
-
-  const filteredFavorites = useMemo(() => {
-    if (activeFilter === "Tout") return combinedFavorites;
-
-    if (activeFilter === "Hôtels") {
-      return combinedFavorites.filter(isHotelFavorite);
-    }
-
-    const targetType = ACCOMMODATION_TYPE_MAP[activeFilter];
-    if (!targetType) return combinedFavorites;
-
-    return combinedFavorites.filter(
-      (item) =>
-        !isHotelFavorite(item) &&
-        String(item?.type || "").toUpperCase() === targetType
-    );
-  }, [activeFilter, combinedFavorites]);
 
   const fetchFavorites = useCallback(async () => {
     setLoading(true);
@@ -111,19 +75,6 @@ export default function FavoritesPage() {
         <h1 className="text-2xl md:text-3xl font-montserrat-bold text-gray-700">
           Mes favoris
         </h1>
-        <ul className="flex items-center gap-3 mt-6 overflow-x-auto pb-2">
-          {FILTER_ITEMS.map((item) => (
-            <li
-              key={item}
-              onClick={() => setActiveFilter(item)}
-              className={`whitespace-nowrap cursor-pointer font-montserrat-medium font-bold text-sm md:text-base pb-1 ${
-                activeFilter === item ? "active-border" : "active-border-hover"
-              }`}
-            >
-              {item}
-            </li>
-          ))}
-        </ul>
       </div>
 
       {error && (
@@ -133,10 +84,8 @@ export default function FavoritesPage() {
       )}
 
       <PropertyList
-        sectionTitleFirstBloc="Vos"
-        sectionTitleLastBloc={`favoris (${filteredFavorites.length})`}
         showOnMap={false}
-        propertyList={filteredFavorites}
+        propertyList={combinedFavorites}
         isLoading={loading}
         cardFullWidth={false}
         onFavoriteChange={handleFavoriteChange}

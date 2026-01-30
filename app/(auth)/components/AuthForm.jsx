@@ -17,6 +17,7 @@ const AuthForm = ({
   isLoading,
   withSocialLoginSection = false,
   formError = "",
+  rememberMe = true,
 }) => {
   const customClasse = `mx-auto w-full md:w-[385px] py-8 px-5 ${className}`;
 
@@ -59,7 +60,7 @@ const AuthForm = ({
         </div>
         {withSocialLoginSection && (
           <div className="px-8">
-            <SocialLoginButton />
+            <SocialLoginButton rememberMe={rememberMe} />
           </div>
         )}
         {alternativeOptionMessage && (

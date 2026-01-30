@@ -197,42 +197,45 @@ export default function FindHostingPage() {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-150px)] mt-4">
-        <div className="overflow-y-auto px-4">
-          {loading ? (
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {Array.from({ length: 6 }).map((_, idx) => (
-                      <PropertyCardSkeleton key={idx} />
-                  ))}
-               </div>
-          ) : error ? (
+      <div className="mt-4 flex h-[calc(100vh-150px)] flex-col">
+        <div className="grid flex-1 min-h-0 grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="min-h-0 overflow-y-auto px-4">
+            {loading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {Array.from({ length: 6 }).map((_, idx) => (
+                  <PropertyCardSkeleton key={idx} />
+                ))}
+              </div>
+            ) : error ? (
               <div className="text-red-500 text-center font-bold my-4 p-4 bg-red-100 border border-red-300 rounded-md h-full flex items-center justify-center">
-                  <p>{error}</p>
+                <p>{error}</p>
               </div>
-          ) : displayedProperties.length > 0 ? (
-              <>
-                  <PropertyList
-                      propertyList={displayedProperties}
-                      isLoading={loading}
-                  />
-                  {totalPages > 1 && (
-                      <Paginator
-                          onPageChange={handlePageChange}
-                          defaultPage={currentPage}
-                          totalPages={totalPages}
-                      />
-                  )}
-              </>
-          ) : (
+            ) : displayedProperties.length > 0 ? (
+              <PropertyList
+                propertyList={displayedProperties}
+                isLoading={loading}
+                disablePagination
+              />
+            ) : (
               <div className="h-full flex items-center justify-center">
-                  <NoResults />
+                <NoResults />
               </div>
-          )}
-        </div>
+            )}
+          </div>
 
-        <div className="hidden lg:block w-full h-full sticky top-[100px]">
-          <Map properties={displayedProperties} />
+          <div className="hidden lg:block w-full h-full sticky top-[100px]">
+            <Map properties={displayedProperties} />
+          </div>
         </div>
+        {!loading && !error && displayedProperties.length > 0 && totalPages > 1 && (
+          <div className="shrink-0 px-4">
+            <Paginator
+              onPageChange={handlePageChange}
+              defaultPage={currentPage}
+              totalPages={totalPages}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

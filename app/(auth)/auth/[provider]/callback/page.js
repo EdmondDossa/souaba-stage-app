@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import useAuthContext from "@/context/auth";
+import getAxiosInstance from "@/lib/request";
 
 export default function SocialCallbackPage() {
   const { provider } = useParams();
@@ -18,25 +19,6 @@ export default function SocialCallbackPage() {
 
   const apiBase = process.env.NEXT_PUBLIC_API_URL;
 
-  const readCookieToken = (names = []) => {
-    if (typeof document === "undefined") return null;
-    const cookies = document.cookie ? document.cookie.split("; ") : [];
-    for (const entry of cookies) {
-      const [rawName, ...rest] = entry.split("=");
-      const name = rawName?.trim();
-      if (names.includes(name)) return rest.join("=");
-    }
-    return null;
-  };
-
-  const clearCookieTokens = (names = []) => {
-    if (typeof document === "undefined") return;
-    const expire = "Thu, 01 Jan 1970 00:00:00 GMT";
-    names.forEach((name) => {
-      document.cookie = `${name}=; expires=${expire}; path=/`;
-    });
-  };
-
   useEffect(() => {
     const run = async () => {
       if (handledRef.current) return;
@@ -46,48 +28,27 @@ export default function SocialCallbackPage() {
         return;
       }
 
-      const cookieAccess = readCookieToken(["accessToken"]);
-      const cookieRefresh = readCookieToken(["refreshToken"]);
-      console.log("Social auth tokens from cookies:", {
-        cookieAccess,
-        cookieRefresh,
-      });
-
-      const hasAnyToken =
-        cookieAccess ||
-        cookieRefresh ||
-        (typeof window !== "undefined" &&
-          (localStorage.getItem("accessToken") ||
-            localStorage.getItem("refreshToken")));
+      const rememberMe =
+        typeof window !== "undefined" &&
+        sessionStorage.getItem("rememberMe") === "1";
 
       try {
-        // 1) Tokens déjà présents en query ou dans les cookies
-        const finalAccess = cookieAccess;
-        const finalRefresh = cookieRefresh;
-        console.log("Social auth tokens from cookies:", {
-          finalAccess,
-          finalRefresh,
-        });
-        if (finalAccess) {
-          localStorage.setItem("accessToken", finalAccess);
-        }
-        if (finalRefresh) {
-          localStorage.setItem("refreshToken", finalRefresh);
+        const http = getAxiosInstance();
+        const { data } = await http.post("/auth/refresh-token");
+        const access = data?.accessToken || data?.access || null;
+        if (access) {
+          if (rememberMe) {
+            localStorage.setItem("accessToken", access);
+            sessionStorage.removeItem("accessToken");
+          } else {
+            sessionStorage.setItem("accessToken", access);
+            localStorage.removeItem("accessToken");
+          }
         }
 
-        // 3) Nettoyer les cookies pour éviter toute incohérence
-        clearCookieTokens(["accessToken", "refreshToken"]);
-
-        // 4) Rafraîchir l'utilisateur (utilise cookie httpOnly ou bearer stocké)
+        // 2) Rafraîchir l'utilisateur (utilise cookie httpOnly ou bearer stocké)
         const { success } = await fetchUser(false);
         if (!success) {
-          if (hasAnyToken) {
-            setStatus("error");
-            setMessage(
-              "Connexion reçue, mais la finalisation a échoué. Veuillez réessayer."
-            );
-            return;
-          }
           throw new Error("Fetch user failed");
         }
 

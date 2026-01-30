@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { FaGoogle, FaFacebookF } from "react-icons/fa";
 
-export default function SocialLogin() {
+export default function SocialLogin({ rememberMe = true }) {
   const apiBase = process.env.NEXT_PUBLIC_API_URL;
   const appBase =
     process.env.NEXT_PUBLIC_APP_URL ||
@@ -12,9 +12,16 @@ export default function SocialLogin() {
   const startSocialLogin = (provider) => {
     if (!apiBase || !appBase) return;
     const frontendCallback = `${appBase}/auth/${provider}/callback`;
-    const target = `${apiBase}/auth/${provider}?redirect_uri=${encodeURIComponent(
-      frontendCallback
-    )}&state=${encodeURIComponent(frontendCallback)}`;
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("rememberMe", rememberMe ? "1" : "0");
+    }
+    const state = JSON.stringify({
+      redirectUrl: frontendCallback,
+      rememberMe: Boolean(rememberMe),
+    });
+    const target = `${apiBase}/auth/${provider}?state=${encodeURIComponent(
+      state
+    )}`;
     window.location.href = target;
   };
 

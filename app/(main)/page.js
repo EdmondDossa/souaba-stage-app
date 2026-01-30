@@ -7,6 +7,7 @@ import { useGeolocation } from "@/utils/useGeolocalisation";
 import PropertyList from "@/components/ui/common/PropertyList";
 
 export default function Home() {
+  const HOME_LIST_LIMIT = 50;
   const [property, setProperty] = useState("Tout voir");
   const [properties, setProperties] = useState();
   const [nearby, setNearby] = useState();
@@ -38,10 +39,9 @@ export default function Home() {
         const nearbyPromise =
           location.latitude && location.longitude
             ? http.get(
-                `/search/properties/nearby?latitude=${location.latitude}&longitude=${location.longitude}&radius=10`,
+                `/search/properties/nearby?latitude=${location.latitude}&longitude=${location.longitude}&radius=1000&limit=${HOME_LIST_LIMIT}`,
               )
             : Promise.resolve({ data: [] });
-
         const [
           nearbyResponse,
           featuredResponse,
@@ -49,11 +49,10 @@ export default function Home() {
           propertiesResponse,
         ] = await Promise.all([
           nearbyPromise,
-          http.get("/search/properties/featured"),
-          http.get("/search/properties/recent"),
-          http.get("/search/properties"),
+          http.get(`/search/properties/featured?limit=${HOME_LIST_LIMIT}`),
+          http.get(`/search/properties/recent?limit=${HOME_LIST_LIMIT}`),
+          http.get(`/search/properties?limit=${HOME_LIST_LIMIT}`),
         ]);
-
         setNearby(nearbyResponse.data);
         setFeatured(featuredResponse.data);
         setRecent(recentResponse.data);
@@ -211,6 +210,16 @@ export default function Home() {
           isLoading={loading}
           cardFullWidth={false}
         />
+
+        <PropertyList
+          sectionTitleFirstBloc="Propriétés en vedette"
+          sectionTitleLastBloc="sur notre liste"
+          showOnMap={true}
+          propertyList={featuredProperties}
+          isLoading={loading}
+          cardFullWidth={false}
+        />
+
         {/* CTA Section - Essayez d'héberger avec nous */}
         <div className="mt-10 md:py-8 md:px-12 relative flex items-center justify-center text-center">
           <div className="rounded-none md:rounded-xl bg-black/40 bg-blend-darken bg-[url('/images/home-illustration.png')] bg-cover bg-center w-full">
@@ -239,15 +248,6 @@ export default function Home() {
             </div>
           </div>
         </div>
-
-        <PropertyList
-          sectionTitleFirstBloc="Propriétés en vedette"
-          sectionTitleLastBloc="sur notre liste"
-          showOnMap={true}
-          propertyList={featuredProperties}
-          isLoading={loading}
-          cardFullWidth={false}
-        />
       </section>
     </>
   );

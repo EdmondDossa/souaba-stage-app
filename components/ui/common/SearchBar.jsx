@@ -33,7 +33,14 @@ const SUGGESTIONS = [
   },
 ];
 
-function SearchBar({ isCentered = true, setError, initialValues }) {
+function SearchBar({
+  isCentered = true,
+  setError,
+  initialValues,
+  onSearch,
+  hideDestination = false,
+  defaultCapacity = 0,
+}) {
   const formatInitialDate = (value) => {
     if (!value) return "";
     if (value.includes("/")) return value;
@@ -57,9 +64,10 @@ function SearchBar({ isCentered = true, setError, initialValues }) {
   const [departureDate, setDepartureDate] = useState(
     formatInitialDate(initialValues?.check_out)
   );
-  const [adults, setAdults] = useState(
-    formatInitialCapacity(initialValues?.capacity)
-  );
+  const [adults, setAdults] = useState(() => {
+    const initial = formatInitialCapacity(initialValues?.capacity);
+    return initial > 0 ? initial : defaultCapacity;
+  });
   const [children, setChildren] = useState(0);
   const [babies, setBabies] = useState(0);
   const [showGuestsDropdown, setShowGuestsDropdown] = useState(false);
@@ -89,11 +97,12 @@ function SearchBar({ isCentered = true, setError, initialValues }) {
     setDestination(initialValues?.city?.trim() || "");
     setArrivalDate(formatInitialDate(initialValues?.check_in));
     setDepartureDate(formatInitialDate(initialValues?.check_out));
-    setAdults(formatInitialCapacity(initialValues?.capacity));
+    const initialCapacity = formatInitialCapacity(initialValues?.capacity);
+    setAdults(initialCapacity > 0 ? initialCapacity : defaultCapacity);
     setChildren(0);
     setBabies(0);
     initializedRef.current = true;
-  }, [initialValues]);
+  }, [initialValues, defaultCapacity]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -229,6 +238,7 @@ function SearchBar({ isCentered = true, setError, initialValues }) {
   }, []);
 
   useEffect(() => {
+    if (hideDestination) return;
     if (!destination || destination.length < 2) {
       setSuggestions(SUGGESTIONS);
       return;
@@ -239,7 +249,7 @@ function SearchBar({ isCentered = true, setError, initialValues }) {
       250
     );
     return () => clearTimeout(handle);
-  }, [destination, fetchDestinationSuggestions]);
+  }, [destination, fetchDestinationSuggestions, hideDestination]);
 
   const handleDestinationKeyDown = (e) => {
     if (!showDestinationDropdown) return;
@@ -259,7 +269,11 @@ function SearchBar({ isCentered = true, setError, initialValues }) {
   };
 
   const handleSearch = () => {
-    if (![arrivalDate, departureDate, destination, adults, children, babies].some(Boolean)) {
+    if (
+      ![arrivalDate, departureDate, destination, adults, children, babies].some(
+        Boolean
+      )
+    ) {
       return;
     }
 
@@ -277,6 +291,16 @@ function SearchBar({ isCentered = true, setError, initialValues }) {
     const check_in = arrivalDate.split("/").reverse().join("-");
     const check_out = departureDate.split("/").reverse().join("-");
     const capacity = adults + children;
+    if (onSearch) {
+      onSearch({
+        check_in,
+        check_out,
+        capacity: capacity > 0 ? capacity : defaultCapacity || 1,
+        destination: destination.trim(),
+      });
+      return;
+    }
+
     const params = new URLSearchParams();
 
     params.set("check_in", check_in);
@@ -302,82 +326,86 @@ function SearchBar({ isCentered = true, setError, initialValues }) {
         isCentered ? "mx-auto" : ""
       }`}
     >
-      <div className="px-4 py-2 relative" ref={destinationRef}>
-        <label
-          htmlFor="destination"
-          className="block text-start text-sm  text-gray-700 font-montserrat-medium font-bold"
-        >
-          Destination
-        </label>
-        <input
-          type="text"
-          id="destination"
-          placeholder="Quelle ville préférez-vous ?"
-          className="w-full focus:outline-none text-[13px] text-gray-800 font-bold placeholder-gray-400"
-          value={destination}
-          onChange={(e) => {
-            setDestination(e.target.value);
-            toggleDropdown("destination", true);
-          }}
-          onFocus={() => toggleDropdown("destination", true)}
-          onClick={() => toggleDropdown("destination", true)}
-          onKeyDown={handleDestinationKeyDown}
-          autoComplete="off"
-        />
+      {!hideDestination && (
+        <div className="px-4 py-2 relative" ref={destinationRef}>
+          <label
+            htmlFor="destination"
+            className="block text-start text-sm  text-gray-700 font-montserrat-medium font-bold"
+          >
+            Destination
+          </label>
+          <input
+            type="text"
+            id="destination"
+            placeholder="Quelle ville préférez-vous ?"
+            className="w-full focus:outline-none text-[13px] text-gray-800 font-bold placeholder-gray-400"
+            value={destination}
+            onChange={(e) => {
+              setDestination(e.target.value);
+              toggleDropdown("destination", true);
+            }}
+            onFocus={() => toggleDropdown("destination", true)}
+            onClick={() => toggleDropdown("destination", true)}
+            onKeyDown={handleDestinationKeyDown}
+            autoComplete="off"
+          />
 
-        {showDestinationDropdown && filteredDestinations.length > 0 && (
-          <ul className="absolute z-50 bg-white border border-gray-200 rounded-lg shadow-lg overflow-auto w-56 h-48 left-0 top-full mt-2">
-            {filteredDestinations.map((suggestion, idx) => {
-              const IconComponent = suggestion.icon;
-              return (
-                <li
-                  key={suggestion.id}
-                  className={`flex items-center px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors ${
-                    idx === activeIndex ? "bg-gray-50" : ""
-                  } ${
-                    idx !== filteredDestinations.length - 1
-                      ? "border-b border-gray-100"
-                      : ""
-                  }`}
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    selectDestination(suggestion);
-                  }}
-                >
-                  <IconComponent
-                    size={20}
-                    className="text-black mr-3 flex-shrink-0"
-                  />
-                  <div className="flex-1 min-w-0 text-left">
-                    <div className="text-sm font-bold text-black truncate">
-                      {suggestion.name}
+          {showDestinationDropdown && filteredDestinations.length > 0 && (
+            <ul className="absolute z-50 bg-white border border-gray-200 rounded-lg shadow-lg overflow-auto w-56 h-48 left-0 top-full mt-2">
+              {filteredDestinations.map((suggestion, idx) => {
+                const IconComponent = suggestion.icon;
+                return (
+                  <li
+                    key={suggestion.id}
+                    className={`flex items-center px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors ${
+                      idx === activeIndex ? "bg-gray-50" : ""
+                    } ${
+                      idx !== filteredDestinations.length - 1
+                        ? "border-b border-gray-100"
+                        : ""
+                    }`}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      selectDestination(suggestion);
+                    }}
+                  >
+                    <IconComponent
+                      size={20}
+                      className="text-black mr-3 flex-shrink-0"
+                    />
+                    <div className="flex-1 min-w-0 text-left">
+                      <div className="text-sm font-bold text-black truncate">
+                        {suggestion.name}
+                      </div>
+                      <div className="text-xs text-black truncate">
+                        {suggestion.description}
+                      </div>
                     </div>
-                    <div className="text-xs text-black truncate">
-                      {suggestion.description}
-                    </div>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-
-        {showDestinationDropdown &&
-          !filteredDestinations.length &&
-          !suggestionsLoading && (
-            <div className="absolute z-50 bg-white border border-gray-200 rounded-lg shadow-lg w-56 left-0 top-full mt-2 px-4 py-3 text-sm text-gray-600">
-              Aucun résultat pour cette destination
-            </div>
+                  </li>
+                );
+              })}
+            </ul>
           )}
 
-        {showDestinationDropdown && suggestionsLoading && (
-          <div className="absolute z-50 bg-white border border-gray-200 rounded-lg shadow-lg w-56 left-0 top-full mt-2 px-4 py-3 text-sm text-gray-600">
-            Chargement...
-          </div>
-        )}
-      </div>
+          {showDestinationDropdown &&
+            !filteredDestinations.length &&
+            !suggestionsLoading && (
+              <div className="absolute z-50 bg-white border border-gray-200 rounded-lg shadow-lg w-56 left-0 top-full mt-2 px-4 py-3 text-sm text-gray-600">
+                Aucun résultat pour cette destination
+              </div>
+            )}
 
-      <div className="border-l border-gray-200 h-12"></div>
+          {showDestinationDropdown && suggestionsLoading && (
+            <div className="absolute z-50 bg-white border border-gray-200 rounded-lg shadow-lg w-56 left-0 top-full mt-2 px-4 py-3 text-sm text-gray-600">
+              Chargement...
+            </div>
+          )}
+        </div>
+      )}
+
+      {!hideDestination && (
+        <div className="border-l border-gray-200 h-12"></div>
+      )}
 
       <div className="flex-1 px-4 py-2 relative" ref={arrivalDateRef}>
         <label

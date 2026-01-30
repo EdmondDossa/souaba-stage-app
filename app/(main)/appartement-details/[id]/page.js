@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { useParams } from "next/navigation";
 import { Star, MapPin, Heart, CodeSquare } from "lucide-react";
@@ -17,17 +17,20 @@ import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import PropertyDetailsSkeleton from "@/components/ui/common/PropertyDetailsSkeleton";
 import { getAmenityIcon, getAmenityLabel } from "@/data/amenitiesMap";
+import useAuthContext from "@/context/auth";
+import { differenceInDays } from "date-fns";
 
 const AppartementDetails = () => {
   const params = useParams();
   const searchParams = useSearchParams();
   const propertyId = searchParams.get("id");
-  const http = getAxiosInstance();
+  const http = useMemo(() => getAxiosInstance(), []);
   const [pageData, setPageData] = useState();
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const { isLogged } = useAuthContext();
 
-  const normalizeMediaArray = (mediaArray = []) => {
+  const normalizeMediaArray = useCallback((mediaArray = []) => {
     const list = Array.isArray(mediaArray) ? mediaArray : [];
 
     if (!list.length) {
@@ -54,10 +57,10 @@ const AppartementDetails = () => {
         is_primary: item?.is_primary ?? false,
       };
     });
-  };
+  }, []);
 
   // Normalise les données provenant d'une réservation (accommodation ou hôtel + chambre)
-  const buildPageDataFromReservation = (reservation) => {
+  const buildPageDataFromReservation = useCallback((reservation) => {
     if (!reservation) return null;
 
     const accommodation =
@@ -138,7 +141,7 @@ const AppartementDetails = () => {
         hotel?.avgRating ||
         hotelRoomCategory?.avgRating,
     };
-  };
+  }, [normalizeMediaArray]);
 
   // État pour les favoris
   const [isFavorite, setIsFavorite] = useState(false);
@@ -228,16 +231,6 @@ const AppartementDetails = () => {
     ],
   };
 
-  const updateGuestCount = (type, operation) => {
-    setReservationData((prev) => ({
-      ...prev,
-      [type]:
-        operation === "increment"
-          ? prev[type] + 1
-          : Math.max(type === "adults" ? 1 : 0, prev[type] - 1),
-    }));
-  };
-
   useEffect(() => {
     const details = async () => {
       try {
@@ -303,7 +296,15 @@ const AppartementDetails = () => {
     if (typeof window !== "undefined") {
       window.scrollTo({ top: 0 });
     }
-  }, [params.id]);
+  }, [params.id, http, buildPageDataFromReservation, normalizeMediaArray]);
+
+  useEffect(() => {
+    if (!isLogged) {
+      setIsFavorite(false);
+      return;
+    }
+    setIsFavorite(Boolean(pageData?.isFavorite));
+  }, [pageData?.isFavorite, isLogged]);
 
   if (isLoading) {
     return <PropertyDetailsSkeleton showSearch={false} />;
@@ -340,23 +341,47 @@ const AppartementDetails = () => {
       );
     }
 
-    //le nombre de jours à faire dans cet appart
-    const days_offset = (new Date(checkOut) - new Date(checkIn)) / 86_400_000;
     try {
-      const data = {
-        checkInDate: arrivalDate,
-        checkOutDate: departureDate,
+      const availabilityResponse = await http.get(
+        `/accommodations/${params.id}/availability`,
+        {
+          params: {
+            check_in: arrivalDate.toISOString(),
+            check_out: departureDate.toISOString(),
+            capacity: adults + children || 1,
+          },
+        }
+      );
+      const availabilityPayload =
+        availabilityResponse?.data?.data || availabilityResponse?.data || null;
+      if (!availabilityPayload?.isAvailable) {
+        return toast.error(
+          "Cet hébergement n'est pas disponible pour ces dates."
+        );
+      }
+
+      //le nombre de jours à faire dans cet appart
+      const days_offset = Math.max(
+        1,
+        differenceInDays(departureDate, arrivalDate)
+      );
+      const pendingReservation = {
+        type: "accommodation",
+        accommodationId: params.id,
+        checkInDate: arrivalDate.toISOString(),
+        checkOutDate: departureDate.toISOString(),
         numberOfGuests: adults + babies + children,
         totalPrice: days_offset * pageData.price_per_night,
-        accommodationId: params.id,
-        paymentMethod: "WALLET",
+        pricePerNight: pageData.price_per_night,
       };
-      toast.loading("Réservation en cours ...");
-      const res = await http.post("/reservations", data);
-      router.push(
-        `/make-reservation?r=${res.data.reservation_id}&h=${res.data.accommodation_id}`
-      );
-      toast.dismiss();
+
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem(
+          "pendingReservation",
+          JSON.stringify(pendingReservation)
+        );
+      }
+      router.push(`/make-reservation?type=accommodation`);
     } catch (error) {
       console.log(error);
       toast.error("Une erreur est survenue lors de la réservation!");
@@ -398,19 +423,21 @@ const AppartementDetails = () => {
                 </div>
               </div>
               <div className="flex items-center space-x-3">
-                <button
-                  onClick={() => setIsFavorite(!isFavorite)}
-                  className="p-3 hover:bg-gray-100 rounded-full transition-colors"
-                >
-                  <Heart
-                    size={24}
-                    className={
-                      isFavorite
-                        ? "fill-red-500 stroke-red-500"
-                        : "stroke-yellow-500 text-gray-400"
-                    }
-                  />
-                </button>
+                {isLogged && (
+                  <button
+                    onClick={() => setIsFavorite(!isFavorite)}
+                    className="p-3 hover:bg-gray-100 rounded-full transition-colors"
+                  >
+                    <Heart
+                      size={24}
+                      className={
+                        isFavorite
+                          ? "fill-red-500 stroke-red-500"
+                          : "stroke-yellow-500 text-gray-400"
+                      }
+                    />
+                  </button>
+                )}
                 <button className="p-3 hover:bg-gray-100 rounded-full transition-colors">
                   <SvgIcon name="share" size={24} className="filter " />
                 </button>
@@ -481,9 +508,11 @@ const AppartementDetails = () => {
                         className="flex items-center space-x-3 p-2"
                       >
                         {icon?.endsWith(".svg") ? (
-                          <img
+                          <Image
                             src={icon}
                             alt={label}
+                            width={24}
+                            height={24}
                             className="w-6 h-6 object-contain"
                           />
                         ) : (

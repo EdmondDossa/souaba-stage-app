@@ -1,5 +1,6 @@
 "use client";
 import React, { Suspense, useEffect, useState } from "react";
+import Link from "next/link";
 import AuthForm from "../components/AuthForm";
 import OtpInput from "@/components/ui/common/OtpInput";
 import getAxiosInstance from "@/lib/request";
@@ -134,12 +135,12 @@ const RegisterConfirmationOtpContent = () => {
         </button>
       </div>
       <div className="text-center text-sm my-2">
-        <a
+        <Link
           href="/"
           className="text-primary font-montserrat-bold underline hover:no-underline"
         >
           Revenir à l&apos;accueil
-        </a>
+        </Link>
       </div>
     </AuthForm>
   );

@@ -5,7 +5,7 @@ import Image from "next/image";
 import FilterSideBar from "../find-hosting/components/FilterSideBar";
 import { PropertyCard } from "@/components/ui/common";
 import { useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import getAxiosInstance from "@/lib/request";
 import { useRouter } from "next/navigation";
 import Paginator from "@/components/ui/common/Paginator";
@@ -22,7 +22,7 @@ const FoundProducts = () => {
     searchParams ? Object.fromEntries(searchParams) : {}
   );
 
-  const http = getAxiosInstance();
+  const http = useMemo(() => getAxiosInstance(), []);
   const router = useRouter();
 
   // Synchroniser filters avec searchParams
@@ -35,36 +35,42 @@ const FoundProducts = () => {
   }, [searchParams]);
 
   const filtersThemes = Object.values(filters);
-  const byLabelObject={
-    "Tout":"popular",
-    "Tout voir":"popular",
-    "Populaire":"popular",
-    "Proche":"nearby",
-    "Prix-du plus bas au plus élevé":"price_asc",
-    "Prix-du plus élevé au plus bas":"price_desc"
-  };
- const ratingObject={
-    "4.5 et plus":{
-      min:4.5,
-      max:5
-    },
-    "4.0-4.5":{
-      min:4.0,
-      max:4.5
-    },
-    "3.5-4.0":{
-      min:3.5,
-      max:4.0
-    },
-    "3.0-3.5":{
-      min:3.0,
-      max:3.5
-    },
-    "2.5-3.0":{
-      min:2.5,
-      max:3.0
-    } 
- }
+  const byLabelObject = useMemo(
+    () => ({
+      Tout: "popular",
+      "Tout voir": "popular",
+      Populaire: "popular",
+      Proche: "nearby",
+      "Prix-du plus bas au plus élevé": "price_asc",
+      "Prix-du plus élevé au plus bas": "price_desc",
+    }),
+    []
+  );
+  const ratingObject = useMemo(
+    () => ({
+      "4.5 et plus": {
+        min: 4.5,
+        max: 5,
+      },
+      "4.0-4.5": {
+        min: 4.0,
+        max: 4.5,
+      },
+      "3.5-4.0": {
+        min: 3.5,
+        max: 4.0,
+      },
+      "3.0-3.5": {
+        min: 3.0,
+        max: 3.5,
+      },
+      "2.5-3.0": {
+        min: 2.5,
+        max: 3.0,
+      },
+    }),
+    []
+  );
 
   const extractListAndTotalPages = (payload) => {
     const list =
@@ -85,7 +91,7 @@ const FoundProducts = () => {
   };
 
   // Fonction pour transformer les données d'accommodation
-  const transformAccommodation = (acc) => ({
+  const transformAccommodation = useCallback((acc) => ({
     id: acc.accommodation_id,
     type: "accommodation",
     imageUrl:
@@ -101,11 +107,12 @@ const FoundProducts = () => {
     bathrooms: acc.number_of_bathrooms,
     parking: acc.number_of_parking,
     isFavorite: acc.isFavorite
-  });
+  }), []);
 
   // Fonction pour transformer les chambres d'hôtel
-  const transformHotelRoom = (hotel, roomCategory) => ({
-    id: `${hotel.hotel_id}-${roomCategory.room_category_id}`,
+  const transformHotelRoom = useCallback((hotel, roomCategory) => ({
+    listKey: `${hotel.hotel_id}-${roomCategory.room_category_id}`,
+    id: hotel.hotel_id,
     type: "hotel",
     imageUrl:
       (roomCategory?.HotelRoomCategoryMedia || []).find((m) => m.is_primary)
@@ -124,10 +131,10 @@ const FoundProducts = () => {
     bathrooms: roomCategory.number_of_bathrooms,
     parking: 1, 
     isFavorite: hotel.isFavorite
-  });
+  }), []);
 
  
-  const normalizeProperties = (items, type) => {
+  const normalizeProperties = useCallback((items, type) => {
     if (!Array.isArray(items)) return [];
 
     if (type === "Hôtels") {
@@ -140,7 +147,7 @@ const FoundProducts = () => {
     } else {
       return items.map(transformAccommodation);
     }
-  };
+  }, [transformAccommodation, transformHotelRoom]);
 
   useEffect(() => {
     const getFilteredProperties = async () => {
@@ -225,7 +232,14 @@ const FoundProducts = () => {
     if (filters.type) {
       getFilteredProperties();
     }
-  }, [filters, currentPage]); 
+  }, [
+    filters,
+    currentPage,
+    normalizeProperties,
+    byLabelObject,
+    ratingObject,
+    http,
+  ]); 
 
     function handleFilterUpdate(filters) {
     console.log("filter:",filters);
@@ -275,7 +289,7 @@ const FoundProducts = () => {
           ) : filteredProperties.length > 0 ? (
             filteredProperties.map((property, index) => (
               <PropertyCard
-                key={property.id || index}
+                key={property.listKey || property.id || index}
                 id={property.id}
                 type={property.type}
                 imageUrl={property.imageUrl}

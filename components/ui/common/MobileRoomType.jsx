@@ -2,7 +2,13 @@ import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import React, { useState } from "react";
 
-const MobileRoomType = ({ rooms }) => {
+const MobileRoomType = ({
+  rooms,
+  selection = {},
+  onSelectChange,
+  onReserve,
+  isSelectionEnabled = true,
+}) => {
   const [currentRoomIndex, setCurrentRoomIndex] = useState(0);
 
   const onRoomChange = (action) => {
@@ -14,6 +20,15 @@ const MobileRoomType = ({ rooms }) => {
 
   const hasRooms = Array.isArray(rooms) && rooms.length > 0;
   const currentRoom = hasRooms ? rooms[currentRoomIndex] : null;
+  const selectedCount = currentRoom
+    ? selection[currentRoom.room_category_id] || 0
+    : 0;
+  const totalSelected = hasRooms
+    ? rooms.reduce(
+        (sum, room) => sum + (selection[room.room_category_id] || 0),
+        0
+      )
+    : 0;
 
   const roomImage = currentRoom
     ? currentRoom.HotelRoomCategoryMedia?.find((media) => media?.is_primary)?.media?.file_path ||
@@ -70,13 +85,22 @@ const MobileRoomType = ({ rooms }) => {
         <div className="flex items-center justify-center space-x-4 mt-2">
           {/* Select pour choisir le nombre de chambres */}
           <select
-            defaultValue={currentRoom.selectedCount ?? 0}
-            onChange={(e) => {}}
+            value={selectedCount}
+            onChange={(e) => {
+              if (!onSelectChange || !currentRoom) return;
+              onSelectChange(currentRoom, Number(e.target.value));
+            }}
+            disabled={!isSelectionEnabled}
             className="px-3 py-2 border border-gray-300 rounded text-sm"
           >
             <option value={0}>0 (0FCFA)</option>
             {[
-              ...Array(Math.min(currentRoom.number_of_rooms, 5)),
+              ...Array(
+                Math.min(
+                  Number(currentRoom.availableRooms ?? currentRoom.number_of_rooms) || 0,
+                  5
+                )
+              ),
             ].map((_, idx) => (
               <option key={idx + 1} value={idx + 1}>
                 {idx + 1}
@@ -85,7 +109,11 @@ const MobileRoomType = ({ rooms }) => {
           </select>
         </div>
         <div className="flex items-center justify-center">
-          <button className="bg-primary mt-4 text-white px-5 py-2 rounded-lg text-sm font-semibold shadow hover:bg-amber-400 transition-colors">
+          <button
+            onClick={onReserve}
+            disabled={!isSelectionEnabled || totalSelected === 0}
+            className="bg-primary mt-4 text-white px-5 py-2 rounded-lg text-sm font-semibold shadow hover:bg-amber-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
             Je réserve
           </button>
         </div>

@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import DesktopHeader from "./DesktopHeader";
 import MobileHeader from "./MobileHeader";
-import { AuthProvider } from "@/context/auth";
 
 const Header = () => {
   const [isMobile, setIsMobile] = useState(
@@ -20,12 +19,7 @@ const Header = () => {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  return (
-    <AuthProvider>
-      {" "}
-      {isMobile ? <MobileHeader /> : <DesktopHeader />}{" "}
-    </AuthProvider>
-  );
+  return isMobile ? <MobileHeader /> : <DesktopHeader />;
 };
 
 export default Header;

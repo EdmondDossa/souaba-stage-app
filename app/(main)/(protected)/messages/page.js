@@ -451,7 +451,7 @@ export default function MessagingPage() {
             <div className="text-center py-8 text-gray-400">Chargement...</div>
           ) : conversations.length === 0 ? (
             <div className="text-center py-8 text-gray-400">
-              Aucune conversation pour l'instant.
+              Aucune conversation pour l&apos;instant.
             </div>
           ) : (
             conversations.map((conv) => {
