@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { InputRow } from "@/components/ui/common/index";
 import Link from "next/link";
 import AuthForm from "../components/AuthForm";
@@ -9,7 +9,7 @@ import ConnexionHero from "../components/ConnexionHero";
 import AuthWrapper from "../components/AuthWrapper";
 import { isEmail } from "@/utils/validator";
 
-const LoginPage = () => {
+const LoginPageContent = () => {
   const router = useRouter();
 
   const { login, isLogged } = useAuthContext();
@@ -117,6 +117,14 @@ const LoginPage = () => {
     }
     return "";
   }
+};
+
+const LoginPage = () => {
+  return (
+    <Suspense fallback={<div className="min-h-screen" />}>
+      <LoginPageContent />
+    </Suspense>
+  );
 };
 
 export default LoginPage;
