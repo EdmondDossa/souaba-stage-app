@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { InputRow } from "@/components/ui/common/index";
 import Link from "next/link";
 import AuthForm from "../components/AuthForm";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import useAuthContext from "@/context/auth";
 import ConnexionHero from "../components/ConnexionHero";
 import AuthWrapper from "../components/AuthWrapper";
@@ -16,6 +16,8 @@ const LoginPage = () => {
   const [formError, setFormError] = useState("");
   const [isLoading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
+  const searchParams = useSearchParams();
+  const redirectTarget = searchParams.get("redirect") || "/";
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -29,6 +31,7 @@ const LoginPage = () => {
       email,
       password,
       rememberMe,
+      redirect: redirectTarget,
     });
     if (!success) {
       if (status === 403) {
@@ -55,8 +58,8 @@ const LoginPage = () => {
   }
 
   useEffect(() => {
-    if (isLogged) router.replace("/");
-  }, [isLogged, router]);
+    if (isLogged) router.replace(redirectTarget);
+  }, [isLogged, router, redirectTarget]);
 
   return (
     <section className="flex justify-center items-center lg:justify-start">
@@ -67,7 +70,9 @@ const LoginPage = () => {
           btnTitle="Se connecter"
           alternativeOptionBtn="S'inscrire"
           alternativeOptionMessage="Vous n'avez pas de compte ?"
-          alternativeOptionLink="/register"
+          alternativeOptionLink={`/register?redirect=${encodeURIComponent(
+            redirectTarget
+          )}`}
           isLoading={isLoading}
           showTopImage={true}
           formError={formError}

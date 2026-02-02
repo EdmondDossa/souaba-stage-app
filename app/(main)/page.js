@@ -224,8 +224,8 @@ export default function Home() {
         <div className="mt-10 md:py-8 md:px-12 relative flex items-center justify-center text-center">
           <div className="rounded-none md:rounded-xl bg-black/40 bg-blend-darken bg-[url('/images/home-illustration.png')] bg-cover bg-center w-full">
             <div className="rounded-xl py-8 md:py-12 relative h-full w-full z-10 flex flex-col text-white space-y-3 md:space-y-4 px-6 md:px-10">
-              <div className="space-y-2 md:space-y-3">
-                <div className="w-fit h-auto md:h-52 font-montserrat-bold text-[26px] md:text-4xl flex flex-col justify-start space-y-1 md:space-y-2">
+              <div className="space-y-2">
+                <div className="w-fit h-auto  font-montserrat-bold text-[26px] md:text-4xl flex flex-col justify-start space-y-1 md:space-y-2">
                   <h4 className="font-bold text-start leading-tight">
                     Essayez d&apos;héberger{" "}
                   </h4>

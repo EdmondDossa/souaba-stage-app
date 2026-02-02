@@ -183,12 +183,12 @@ const Footer = () => {
         {/* Bottom Section */}
         <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
           <div className="text-sm text-gray-400">
-            © 2025 <span className="text-orange-500">souaba.com</span> | Tous
+            © 2025 <span className="text-primary">souaba.com</span> | Tous
             droits réservés
           </div>
           <div className="text-sm text-gray-400 mt-4 md:mt-0">
             Créé avec amour par{" "}
-            <span className="text-orange-500">souaba.com</span>
+            <span className="text-primary">souaba.com</span>
           </div>
         </div>
       </div>

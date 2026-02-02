@@ -55,7 +55,14 @@ export default function SocialCallbackPage() {
         handledRef.current = true;
         setStatus("success");
         setMessage("Connexion réussie, redirection...");
-        router.replace("/");
+        const redirectTarget =
+          (typeof window !== "undefined" &&
+            sessionStorage.getItem("postAuthRedirect")) ||
+          "/";
+        if (typeof window !== "undefined") {
+          sessionStorage.removeItem("postAuthRedirect");
+        }
+        router.replace(redirectTarget);
       } catch (error) {
         console.error("Social auth error:", error);
         setStatus("error");

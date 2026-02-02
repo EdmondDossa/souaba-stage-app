@@ -35,6 +35,10 @@ export function AuthProvider({ children }) {
       const { data } = await http.post("/auth/login", credentials);
       const access = data?.accessToken || data?.access || null;
       const rememberMe = Boolean(credentials?.rememberMe);
+      const redirectTarget =
+        typeof credentials?.redirect === "string" && credentials.redirect
+          ? credentials.redirect
+          : "/";
 
       if (access) {
         if (rememberMe) {
@@ -52,7 +56,7 @@ export function AuthProvider({ children }) {
       }
 
       await fetchUser(false);
-      router.push("/");
+      router.push(redirectTarget);
       return { success: true };
     } catch (error) {
       const status = error?.response?.status;
