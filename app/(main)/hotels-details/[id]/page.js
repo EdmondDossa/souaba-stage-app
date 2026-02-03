@@ -260,7 +260,7 @@ export default function HotelDetails() {
     .join(", ");
 
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-white min-h-screen pt-24 md:pt-28">
       <div className="max-w-7xl mx-auto px-4 py-8 mt-10 lg:mt-0">
         {/* Galerie d'images */}
         <div className="mb-8">
@@ -287,15 +287,17 @@ export default function HotelDetails() {
           </div>
 
           {/* Carte de réservation */}
-          <div className="lg:col-span-1">
-            <PropertyBookingCard
-              onBook={() => {
-                if (roomsSectionRef.current) {
-                  roomsSectionRef.current.scrollIntoView({ behavior: "smooth" });
-                }
-              }}
-              amenities={hotelsData?.amenities || []}
-            />
+          <div className="lg:col-span-1 lg:sticky lg:top-24 self-start">
+            <div className="lg:overflow-visible">
+              <PropertyBookingCard
+                onBook={() => {
+                  if (roomsSectionRef.current) {
+                    roomsSectionRef.current.scrollIntoView({ behavior: "smooth" });
+                  }
+                }}
+                amenities={hotelsData?.amenities || []}
+              />
+            </div>
           </div>
         </div>
 

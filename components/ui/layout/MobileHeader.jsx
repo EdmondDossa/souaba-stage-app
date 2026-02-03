@@ -13,63 +13,49 @@ import Link from "next/link";
 import Image from "next/image";
 import useAuthContext from "@/context/auth";
 import ConditionalComponentRender from "@/components/auth/ConditionalComponentRender";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { SvgIcon } from "@/components/ui/common";
 import Calendar from "@/components/ui/common/Calendar";
 import { dateToLetters } from "@/utils/dateToLetters";
+import { DESTINATION_DATA } from "@/data/destination-locations";
 
-const SUGGESTIONS = [
-  {
-    id: 1,
-    name: "Abidjan",
-    description: "Côte d'Ivoire",
-    type: "city",
-    icon: MapPin,
-  },
-  {
-    id: 2,
-    name: "Abids",
-    description: "Hyderabad, Telangana, India",
-    type: "city",
-    icon: MapPin,
-  },
-  {
-    id: 3,
-    name: "Abidos Hotel Apartment Dubai Land",
-    description: "Dubai, Dubai Emirate, United Arab Emirates",
-    type: "hotel",
-    icon: Building,
-  },
-  {
-    id: 4,
-    name: "Hotel Abi d'Oru",
-    description: "Olbia, Sardinia, Italy",
-    type: "hotel",
-    icon: Building,
-  },
-  {
-    id: 5,
-    name: "Abidos Hotel Apartment Al Barsha",
-    description: "Dubai, Dubai Emirate, United Arab Emirates",
-    type: "hotel",
-    icon: Building,
-  },
-  { id: 6, name: "Dakar", description: "Sénégal", type: "city", icon: MapPin },
-  {
-    id: 7,
-    name: "Saint-Louis",
-    description: "Sénégal",
-    type: "city",
-    icon: MapPin,
-  },
-  {
-    id: 8,
-    name: "Ziguinchor",
-    description: "Sénégal",
-    type: "city",
-    icon: MapPin,
-  },
-];
+const slugifyLabel = (value) =>
+  String(value)
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+const buildDestinationSuggestions = () => {
+  const abidjan = DESTINATION_DATA["Abidjan"];
+  const communes = abidjan?.communes || [];
+  const suggestions = [
+    {
+      id: "abidjan-city",
+      name: "Abidjan",
+      description: "Côte d'Ivoire",
+      type: "city",
+      icon: MapPin,
+    },
+    ...communes.map((commune) => ({
+      id: `abidjan-${slugifyLabel(commune)}`,
+      name: `${commune}, Abidjan`,
+      description: "Commune d'Abidjan",
+      type: "neighborhood",
+      icon: MapPin,
+    })),
+    ...(DESTINATION_DATA.villes || []).map((ville) => ({
+      id: slugifyLabel(ville),
+      name: ville,
+      description: "Côte d'Ivoire",
+      type: "city",
+      icon: MapPin,
+    })),
+  ];
+  return suggestions;
+};
+
+const SUGGESTIONS = [...buildDestinationSuggestions()];
 
 const MobileHeader = () => {
   const pathname = usePathname();
@@ -93,6 +79,8 @@ const MobileHeader = () => {
   const [showDestinationDropdown, setShowDestinationDropdown] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
 
+  const [dateRequiredError, setDateRequiredError] = useState(false);
+
   const [showDateDropdown, setShowDateDropdown] = useState(false);
   const [currentDateField, setCurrentDateField] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -111,11 +99,17 @@ const MobileHeader = () => {
         setIsUserMenuOpen(false);
       }
     }
-    window.addEventListener("click", closeMenu);
-    return () => window.removeEventListener("click", closeMenu);
-  }, []);
 
-  useEffect(() => {
+    function handleScroll() {
+      setIsMenuOpen(false);
+      setIsUserMenuOpen(false);
+      setIsSearchOpen(false);
+      setShowDestinationDropdown(false);
+      setShowDateDropdown(false);
+      setShowGuestsDropdown(false);
+      setActiveGuestType(null);
+      setCurrentDateField(null);
+    }
     const handleClickOutside = (event) => {
       if (
         destinationRef.current &&
@@ -140,40 +134,21 @@ const MobileHeader = () => {
       }
     };
 
+    window.addEventListener("click", closeMenu);
     document.addEventListener("mousedown", handleClickOutside);
+    window.addEventListener("scroll", handleScroll);
     return () => {
+      window.removeEventListener("click", closeMenu);
       document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
   useEffect(() => {
-    function closeMenu(e) {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
-        setIsMenuOpen(false);
-      }
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
-        setIsUserMenuOpen(false);
-      }
-    }
-
-    function handleScroll() {
+    if (isSearchOpen || isUserMenuOpen) {
       setIsMenuOpen(false);
-      setIsUserMenuOpen(false);
-      setIsSearchOpen(false);
-      setShowDestinationDropdown(false);
-      setShowDateDropdown(false);
-      setShowGuestsDropdown(false);
-      setActiveGuestType(null);
-      setCurrentDateField(null);
     }
-
-    window.addEventListener("click", closeMenu);
-    window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("click", closeMenu);
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
+  }, [isSearchOpen, isUserMenuOpen]);
 
   const filteredDestinations = useMemo(() => {
     if (!destination) return SUGGESTIONS;
@@ -205,9 +180,14 @@ const MobileHeader = () => {
 
   const handleDateSelect = (date, field) => {
     const formattedDate = date.toLocaleDateString("fr-FR");
+    const nextArrival = field === "arrival" ? formattedDate : arrivalDate;
+    const nextDeparture = field === "departure" ? formattedDate : departureDate;
     if (field === "arrival") setArrivalDate(formattedDate);
     else if (field === "departure") setDepartureDate(formattedDate);
     toggleDropdown("date", false);
+    if (nextArrival && nextDeparture && dateRequiredError) {
+      setDateRequiredError(false);
+    }
   };
 
   const selectDestination = (value) => {
@@ -232,16 +212,36 @@ const MobileHeader = () => {
     }
   };
 
+  const router = useRouter();
+
   const handleSearch = () => {
-    console.log({
-      destination,
-      arrivalDate,
-      departureDate,
-      adults,
-      children,
-      babies,
-    });
+    if (!arrivalDate || !departureDate) {
+      setDateRequiredError(true);
+      return;
+    }
+    if (dateRequiredError) {
+      setDateRequiredError(false);
+    }
+    const check_in = arrivalDate.split("/").reverse().join("-");
+    const check_out = departureDate.split("/").reverse().join("-");
+    const capacity = adults + children;
+    const params = new URLSearchParams();
+    params.set("check_in", check_in);
+    params.set("check_out", check_out);
+    params.set("type", "all");
+    params.set("page", "1");
+    params.set("limit", "10");
+    if (destination.trim()) {
+      params.set("city", destination.trim());
+    }
+    if (capacity > 0) {
+      params.set("capacity", String(capacity));
+    }
+    router.push(`/search?${params.toString()}`);
   };
+
+  const arrivalError = dateRequiredError && !arrivalDate;
+  const departureError = dateRequiredError && !departureDate;
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -297,47 +297,53 @@ const MobileHeader = () => {
 
             {/* Mobile Menu Dropdown */}
             {isMenuOpen && (
-              <div className="fixed left-4 top-[72px] w-64 text-sm bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-[100]">
-                <div className="p-4">
-                  <nav className="flex flex-col space-y-2 mb-4">
+              <>
+                <div
+                  className="fixed inset-0 z-[90]"
+                  onClick={() => setIsMenuOpen(false)}
+                />
+                <div className="fixed left-4 top-[72px] w-64 text-sm bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-[100]">
+                  <div className="p-4">
+                    <nav className="flex flex-col space-y-2 mb-4">
+                      <Link
+                        href="/find-hosting"
+                        className="text-black  hover:text-gray-900 px-3 py-2 text-sm font-medium transition-colors"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Trouver un hébergement
+                      </Link>
+                    </nav>
+
+                    <ConditionalComponentRender forLoggedUser={false}>
+                      <div className="flex flex-col space-y-2 mb-4">
+                        <Link
+                          href="/register"
+                          className="inline-flex justify-center items-center px-5 py-2.5 border-2 border-primary text-black rounded-lg text-sm font-bold bg-white hover:bg-primary hover:text-white transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          S'inscrire
+                        </Link>
+
+                        <Link
+                          href="/login"
+                          className="inline-flex justify-center items-center px-5 py-2.5 border-2 border-primary text-black rounded-lg text-sm font-bold bg-white hover:bg-primary hover:text-white transition-colors"
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          Se connecter
+                        </Link>
+                      </div>
+                    </ConditionalComponentRender>
+
                     <Link
-                      href="/find-hosting"
-                      className="text-black  hover:text-gray-900 px-3 py-2 text-sm font-medium transition-colors"
+                      href="/add-establishment"
+                      className="inline-flex whitespace-nowrap justify-center items-center w-full px-5 py-2.5 bg-green text-white rounded-lg text-sm font-bold hover:opacity-80 transition-colors"
                       onClick={() => setIsMenuOpen(false)}
                     >
-                      Trouver un hébergement
+                      Ajouter votre établissement
                     </Link>
-                  </nav>
-
-                  <ConditionalComponentRender forLoggedUser={false}>
-                    <div className="flex flex-col space-y-2 mb-4">
-                      <Link
-                        href="/register"
-                        className="inline-flex justify-center items-center px-5 py-2.5 border-2 border-primary text-black rounded-lg text-sm font-bold bg-white hover:bg-primary hover:text-white transition-colors"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        S'inscrire
-                      </Link>
-
-                      <Link
-                        href="/login"
-                        className="inline-flex justify-center items-center px-5 py-2.5 border-2 border-primary text-black rounded-lg text-sm font-bold bg-white hover:bg-primary hover:text-white transition-colors"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        Se connecter
-                      </Link>
-                    </div>
-                  </ConditionalComponentRender>
-
-                  <Link
-                    href="/add-establishment"
-                    className="inline-flex whitespace-nowrap justify-center items-center w-full px-5 py-2.5 bg-green text-white rounded-lg text-sm font-bold hover:opacity-80 transition-colors"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Ajouter votre établissement
-                  </Link>
+                  </div>
                 </div>
-              </div>
+              </>
             )}
           </div>
 
@@ -470,7 +476,11 @@ const MobileHeader = () => {
                           onClick={() => handleDateOpen("arrival")}
                           value={dateToLetters(arrivalDate)}
                           readOnly
-                          className="w-full px-3 py-2 text-sm focus:outline-none cursor-pointer"
+                          className={`w-full px-3 py-2 text-sm focus:outline-none cursor-pointer border rounded transition ${
+                            arrivalError
+                              ? "border-red-500 bg-red-50"
+                              : "border-gray-300 bg-white"
+                          }`}
                         />
                         {showDateDropdown && currentDateField === "arrival" && (
                           <div
@@ -514,7 +524,11 @@ const MobileHeader = () => {
                           onClick={() => handleDateOpen("departure")}
                           value={dateToLetters(departureDate)}
                           readOnly
-                          className="w-full px-3 py-2 text-sm focus:outline-none cursor-pointer"
+                          className={`w-full px-3 py-2 text-sm focus:outline-none cursor-pointer border rounded transition ${
+                            departureError
+                              ? "border-red-500 bg-red-50"
+                              : "border-gray-300 bg-white"
+                          }`}
                         />
                         {showDateDropdown &&
                           currentDateField === "departure" && (
@@ -616,8 +630,15 @@ const MobileHeader = () => {
                             )}
                           </div>
                         ))}
-                      </div>
                     </div>
+                  </div>
+
+                  {dateRequiredError && (
+                    <p className="text-sm text-red-600 px-3 mb-2">
+                      Sélectionnez une date d'arrivée et une date de départ pour
+                      lancer la recherche.
+                    </p>
+                  )}
 
                     {/* Search Button */}
                     <button

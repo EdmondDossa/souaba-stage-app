@@ -163,7 +163,7 @@ export default function Home() {
             </h2>
           </div>
           <div className="w-full flex flex-col items-center justify-center max-w-4xl mx-auto mt-5">
-            <ul className="flex items-center justify-start md:justify-center space-x-3 md:space-x-8 overflow-x-auto px-2 w-full">
+            <ul className="flex flex-wrap items-center justify-center md:justify-center gap-3 md:gap-8 overflow-x-auto md:overflow-x-visible px-2 w-full">
               {subNavItems.map((item) => {
                 return (
                   <li

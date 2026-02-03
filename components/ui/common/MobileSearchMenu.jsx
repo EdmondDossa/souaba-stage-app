@@ -14,6 +14,7 @@ import {
   Building,
   ChevronDown,
 } from "lucide-react";
+import { DESTINATION_DATA } from "@/data/destination-locations";
 
 const MobileSearchMenu = ({
   className,
@@ -22,7 +23,6 @@ const MobileSearchMenu = ({
   initialValues,
   defaultCapacity = 0,
 }) => {
-
   const formatInitialDate = (value) => {
     if (!value) return "";
     if (value.includes("/")) return value;
@@ -39,13 +39,13 @@ const MobileSearchMenu = ({
 
   // SearchBar states
   const [destination, setDestination] = useState(
-    initialValues?.city?.trim() || ""
+    initialValues?.city?.trim() || "",
   );
   const [arrivalDate, setArrivalDate] = useState(
-    formatInitialDate(initialValues?.check_in)
+    formatInitialDate(initialValues?.check_in),
   );
   const [departureDate, setDepartureDate] = useState(
-    formatInitialDate(initialValues?.check_out)
+    formatInitialDate(initialValues?.check_out),
   );
   const [adults, setAdults] = useState(() => {
     const initial = formatInitialCapacity(initialValues?.capacity);
@@ -62,6 +62,7 @@ const MobileSearchMenu = ({
   const [showDateDropdown, setShowDateDropdown] = useState(false);
   const [currentDateField, setCurrentDateField] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [dateErrorMessage, setDateErrorMessage] = useState("");
 
   const destinationRef = useRef(null);
   const arrivalDateRef = useRef(null);
@@ -89,65 +90,44 @@ const MobileSearchMenu = ({
     setDestination(value.name);
     toggleDropdown("destination", false);
   };
+  const slugifyLabel = (value) =>
+    String(value)
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
 
-  const SUGGESTIONS = [
-    {
-      id: 1,
-      name: "Abidjan",
-      description: "Côte d'Ivoire",
-      type: "city",
-      icon: MapPin,
-    },
-    {
-      id: 2,
-      name: "Abids",
-      description: "Hyderabad, Telangana, India",
-      type: "city",
-      icon: MapPin,
-    },
-    {
-      id: 3,
-      name: "Abidos Hotel Apartment Dubai Land",
-      description: "Dubai, Dubai Emirate, United Arab Emirates",
-      type: "hotel",
-      icon: Building,
-    },
-    {
-      id: 4,
-      name: "Hotel Abi d'Oru",
-      description: "Olbia, Sardinia, Italy",
-      type: "hotel",
-      icon: Building,
-    },
-    {
-      id: 5,
-      name: "Abidos Hotel Apartment Al Barsha",
-      description: "Dubai, Dubai Emirate, United Arab Emirates",
-      type: "hotel",
-      icon: Building,
-    },
-    {
-      id: 6,
-      name: "Dakar",
-      description: "Sénégal",
-      type: "city",
-      icon: MapPin,
-    },
-    {
-      id: 7,
-      name: "Saint-Louis",
-      description: "Sénégal",
-      type: "city",
-      icon: MapPin,
-    },
-    {
-      id: 8,
-      name: "Ziguinchor",
-      description: "Sénégal",
-      type: "city",
-      icon: MapPin,
-    },
-  ];
+  const buildDestinationSuggestions = () => {
+    const abidjan = DESTINATION_DATA["Abidjan"];
+    const communes = abidjan?.communes || [];
+    const suggestions = [
+      {
+        id: "abidjan-city",
+        name: "Abidjan",
+        description: "Côte d'Ivoire",
+        type: "city",
+        icon: MapPin,
+      },
+      ...communes.map((commune) => ({
+        id: `abidjan-${slugifyLabel(commune)}`,
+        name: `${commune}, Abidjan`,
+        description: "Commune d'Abidjan",
+        type: "neighborhood",
+        icon: MapPin,
+      })),
+      ...(DESTINATION_DATA.villes || []).map((ville) => ({
+        id: slugifyLabel(ville),
+        name: ville,
+        description: "Côte d'Ivoire",
+        type: "city",
+        icon: MapPin,
+      })),
+    ];
+    return suggestions;
+  };
+
+  const SUGGESTIONS = [...buildDestinationSuggestions()];
 
   useEffect(() => {
     if (!initialValues) return;
@@ -161,7 +141,15 @@ const MobileSearchMenu = ({
   }, [initialValues, defaultCapacity]);
 
   const handleSearch = () => {
-    if (!arrivalDate || !departureDate) return;
+    if (!arrivalDate || !departureDate) {
+      setDateErrorMessage(
+        "Sélectionnez une date d'arrivée et une date de départ pour lancer la recherche.",
+      );
+      return;
+    }
+    if (dateErrorMessage) {
+      setDateErrorMessage("");
+    }
     const check_in = arrivalDate.split("/").reverse().join("-");
     const check_out = departureDate.split("/").reverse().join("-");
     const capacity = adults + children;
@@ -200,9 +188,14 @@ const MobileSearchMenu = ({
 
   const handleDateSelect = (date, field) => {
     const formattedDate = date.toLocaleDateString("fr-FR");
+    const nextArrival = field === "arrival" ? formattedDate : arrivalDate;
+    const nextDeparture = field === "departure" ? formattedDate : departureDate;
     if (field === "arrival") setArrivalDate(formattedDate);
     else if (field === "departure") setDepartureDate(formattedDate);
     toggleDropdown("date", false);
+    if (nextArrival && nextDeparture && dateErrorMessage) {
+      setDateErrorMessage("");
+    }
   };
 
   const filteredDestinations = useMemo(() => {
@@ -210,6 +203,10 @@ const MobileSearchMenu = ({
     const q = destination.toLowerCase();
     return SUGGESTIONS.filter((s) => s.name.toLowerCase().includes(q));
   }, [destination]);
+
+  const showDateError = Boolean(dateErrorMessage);
+  const arrivalError = showDateError && !arrivalDate;
+  const departureError = showDateError && !departureDate;
 
   return (
     <div className={`p-6 ${className}`}>
@@ -294,7 +291,9 @@ const MobileSearchMenu = ({
               onClick={() => handleDateOpen("arrival")}
               value={dateToLetters(arrivalDate)}
               readOnly
-              className="w-full px-3 py-2 text-sm focus:outline-none cursor-pointer"
+              className={`w-full px-3 py-2 text-sm focus:outline-none cursor-pointer border rounded transition ${
+                arrivalError ? "border-red-500 bg-red-50" : "border-gray-300 bg-white"
+              }`}
             />
             {showDateDropdown && currentDateField === "arrival" && (
               <div
@@ -335,7 +334,9 @@ const MobileSearchMenu = ({
               onClick={() => handleDateOpen("departure")}
               value={dateToLetters(departureDate)}
               readOnly
-              className="w-full px-3 py-2 text-sm focus:outline-none cursor-pointer"
+              className={`w-full px-3 py-2 text-sm focus:outline-none cursor-pointer border rounded transition ${
+                departureError ? "border-red-500 bg-red-50" : "border-gray-300 bg-white"
+              }`}
             />
             {showDateDropdown && currentDateField === "departure" && (
               <div
@@ -432,6 +433,12 @@ const MobileSearchMenu = ({
             ))}
           </div>
         </div>
+
+        {showDateError && (
+          <div className="px-3 py-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded mt-2">
+            {dateErrorMessage}
+          </div>
+        )}
 
         {/* Search Button */}
         <button

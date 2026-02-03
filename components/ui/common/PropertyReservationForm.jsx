@@ -1,6 +1,6 @@
 "use client";
-import { Calendar, Minus, Plus, Shield } from "lucide-react";
-import { useMemo, useState, useEffect, useRef } from "react";
+import { Minus, Plus } from "lucide-react";
+import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import { SvgIcon } from "@/components/ui/common";
 import CalendarPicker from "./Calendar";
 import { dateToLetters } from "@/utils/dateToLetters";
@@ -21,9 +21,12 @@ export default function PropertyReservationForm({
 
   const [isVisible, setIsVisible] = useState(true);
   const [showDateDropdown, setShowDateDropdown] = useState(false);
-  const [currentDateField, setCurrentDateField] = useState(null); // 'arrival' | 'departure'
+  const [isSelectingEnd, setIsSelectingEnd] = useState(false);
+  const [previewEndDate, setPreviewEndDate] = useState(null);
   const componentRef = useRef(null);
   const datePickerRef = useRef(null);
+  const dateInputRef = useRef(null);
+  const calendarRef = useRef(null);
   const minCheckIn = useMemo(() => {
     const now = new Date();
     const year = now.getFullYear();
@@ -64,13 +67,23 @@ export default function PropertyReservationForm({
     };
   }, []);
 
+  const closeCalendar = useCallback(() => {
+    setShowDateDropdown(false);
+    setPreviewEndDate(null);
+    setIsSelectingEnd(
+      Boolean(reservationData.checkIn && reservationData.checkOut)
+    );
+  }, [reservationData.checkIn, reservationData.checkOut]);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (!datePickerRef.current) return;
-      if (!datePickerRef.current.contains(event.target)) {
-        setShowDateDropdown(false);
-        setCurrentDateField(null);
+      if (
+        dateInputRef.current?.contains(event.target) ||
+        calendarRef.current?.contains(event.target)
+      ) {
+        return;
       }
+      closeCalendar();
     };
 
     if (showDateDropdown) {
@@ -79,7 +92,7 @@ export default function PropertyReservationForm({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [showDateDropdown]);
+  }, [showDateDropdown, closeCalendar]);
 
   const updateGuestCount = (type, operation) => {
     setReservationData((prev) => ({
@@ -91,56 +104,82 @@ export default function PropertyReservationForm({
     }));
   };
 
-  const handleCheckInChange = (value) => {
+  const toIsoDate = (value) => {
+    const selectedDate = startOfDay(
+      value instanceof Date ? value : new Date(value)
+    );
+    if (Number.isNaN(selectedDate.getTime())) return null;
+    return `${selectedDate.getFullYear()}-${String(
+      selectedDate.getMonth() + 1
+    ).padStart(2, "0")}-${String(selectedDate.getDate()).padStart(2, "0")}`;
+  };
+
+  const isBeforeToday = (value) => {
+    const date = startOfDay(value instanceof Date ? value : new Date(value));
+    const today = startOfDay(new Date());
+    return date < today;
+  };
+
+  const handleRangeSelect = (date) => {
+    if (isBeforeToday(date)) return;
+    const isoDate = toIsoDate(date);
+    if (!isoDate) return;
+
     setReservationData((prev) => {
-      const nextCheckOut =
-        prev.checkOut && prev.checkOut < value ? "" : prev.checkOut;
-      return { ...prev, checkIn: value, checkOut: nextCheckOut };
+      const hasCheckIn = Boolean(prev.checkIn);
+      const hasCheckOut = Boolean(prev.checkOut);
+
+      if (!hasCheckIn || (hasCheckIn && hasCheckOut) || !isSelectingEnd) {
+        setPreviewEndDate(null);
+        setIsSelectingEnd(true);
+        return { ...prev, checkIn: isoDate, checkOut: "" };
+      }
+
+      const checkInDate = startOfDay(new Date(prev.checkIn));
+      if (startOfDay(new Date(isoDate)) < checkInDate) {
+        setPreviewEndDate(null);
+        setIsSelectingEnd(true);
+        return { ...prev, checkIn: isoDate, checkOut: "" };
+      }
+
+      setPreviewEndDate(null);
+      setIsSelectingEnd(false);
+      return {
+        ...prev,
+        checkOut: isoDate,
+      };
     });
   };
 
-  const handleDateOpen = (field) => {
-    setShowDateDropdown(true);
-    setCurrentDateField(field);
-  };
-
-  const handleDateSelect = (date, field) => {
-    const selectedDate = startOfDay(
-      date instanceof Date ? date : new Date(date)
-    );
-    const today = startOfDay(new Date());
-    if (selectedDate < today) return;
-
-    const isoDate = `${selectedDate.getFullYear()}-${String(
-      selectedDate.getMonth() + 1
-    ).padStart(2, "0")}-${String(selectedDate.getDate()).padStart(2, "0")}`;
-
-    if (field === "arrival") {
-      handleCheckInChange(isoDate);
+  const handleDateHover = (date) => {
+    if (!reservationData.checkIn || reservationData.checkOut) return;
+    const iso = toIsoDate(date);
+    if (!iso) return;
+    const checkInDate = startOfDay(new Date(reservationData.checkIn));
+    if (startOfDay(new Date(iso)) < checkInDate) {
+      setPreviewEndDate(reservationData.checkIn);
       return;
     }
-
-    if (field === "departure") {
-      const checkInDate = reservationData.checkIn
-        ? startOfDay(new Date(reservationData.checkIn))
-        : null;
-      if (checkInDate && selectedDate < checkInDate) return;
-      setReservationData((prev) => ({
-        ...prev,
-        checkOut: isoDate,
-      }));
-    }
-    setShowDateDropdown(false);
-    setCurrentDateField(null);
+    setPreviewEndDate(iso);
   };
+
+  const handleDateHoverEnd = () => {
+    setPreviewEndDate(null);
+  };
+
+  useEffect(() => {
+    if (reservationData.checkIn && reservationData.checkOut) {
+      setIsSelectingEnd(false);
+    }
+  }, [reservationData.checkIn, reservationData.checkOut]);
 
 
   return (
     <div
       ref={componentRef}
       className={`
-        bg-white border border-gray-200 rounded-2xl p-6 shadow-lg sticky top-4 
-        transition-all duration-500 ease-in-out
+        bg-white border border-gray-200 rounded-2xl p-5 shadow-lg sticky top-4 
+        transition-all duration-500 ease-in-out flex flex-col
         ${
           isVisible
             ? "opacity-100 transform translate-y-0"
@@ -155,196 +194,168 @@ export default function PropertyReservationForm({
         </div>
       </div>
 
-      <div className="space-y-5 ">
-        {/* Dates */}
-        <div
-          ref={datePickerRef}
-          className="grid grid-rows-2 gap-4 items-center "
-        >
-          <div>
-            <label className="block text-sm font-bold text-black mb-2">
-              Arrivée
-            </label>
-            <div className="relative">
-              <SvgIcon
-                name="Timeline Week"
-                size={20}
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-              />
-
-              <input
-                type="text"
-                value={dateToLetters(reservationData.checkIn)}
-                onClick={() => handleDateOpen("arrival")}
-                readOnly
-                className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg outline-none focus:outline-none focus:ring-0 focus:ring-offset-0 focus:border-primary transition-all"
-                placeholder="Date d'arrivée"
-              />
-              {showDateDropdown && currentDateField === "arrival" && (
-                <div className="absolute z-50 mt-2">
-                  <CalendarPicker
-                    selectedDate={reservationData.checkIn || null}
-                    minDate={new Date()}
-                    rangeStart={reservationData.checkIn || null}
-                    rangeEnd={reservationData.checkOut || null}
-                    onDateSelect={(date) => handleDateSelect(date, "arrival")}
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-bold text-black mb-2">
-              Départ
-            </label>
-            <div className="relative">
-              <SvgIcon
-                name="Timeline Week"
-                size={20}
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-              />
-              <input
-                type="text"
-                value={dateToLetters(reservationData.checkOut)}
-                onClick={() => handleDateOpen("departure")}
-                readOnly
-                className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg outline-none focus:outline-none focus:ring-0 focus:ring-offset-0 focus:border-primary transition-all"
-                placeholder="Date de départ"
-              />
-              {showDateDropdown && currentDateField === "departure" && (
-                <div className="absolute z-50 mt-2">
-                  <CalendarPicker
-                    selectedDate={reservationData.checkOut || null}
-                    minDate={reservationData.checkIn || new Date()}
-                    rangeStart={reservationData.checkIn || null}
-                    rangeEnd={reservationData.checkOut || null}
-                    onDateSelect={(date) => handleDateSelect(date, "departure")}
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Nombre d'invités */}
-        <div>
-          <label className="block text-sm font-bold text-black mb-3">
-            Nombre d&apos;invités
+      <div className="space-y-4 flex-1 flex flex-col">
+        <div className="relative" ref={datePickerRef}>
+          <label className="block text-sm font-bold text-black mb-2">
+            Dates de séjour
           </label>
+          <div
+            ref={dateInputRef}
+            className="flex items-center gap-2 px-3 py-3 border border-gray-300 rounded-lg cursor-pointer focus-within:border-primary focus-within:ring-0 focus-within:outline-none transition-all"
+            onClick={() =>
+              setShowDateDropdown((prev) => {
+                if (prev) setPreviewEndDate(null);
+                return !prev;
+              })
+            }
+          >
+            <SvgIcon
+              name="Timeline Week"
+              size={20}
+              className="text-gray-400"
+            />
+            <span className="text-sm leading-tight text-gray-600">
+              {reservationData.checkIn && reservationData.checkOut
+                ? `${dateToLetters(reservationData.checkIn)} - ${dateToLetters(
+                    reservationData.checkOut
+                  )}`
+                : reservationData.checkIn
+                ? `${dateToLetters(reservationData.checkIn)} - Ajouter une date de départ`
+                : "Ajouter vos dates"}
+            </span>
+          </div>
+          {showDateDropdown && (
+            <div ref={calendarRef} className="absolute z-50 mt-2 left-0">
+              <CalendarPicker
+                selectedDate={reservationData.checkIn || new Date()}
+                minDate={new Date()}
+                rangeStart={reservationData.checkIn || null}
+                rangeEnd={reservationData.checkOut || null}
+                previewRangeEnd={previewEndDate}
+                onDateSelect={handleRangeSelect}
+                onDateHover={handleDateHover}
+                onDateHoverLeave={handleDateHoverEnd}
+              />
+            </div>
+          )}
+        </div>
 
-          {/* Adultes */}
+        <div>
           <div className="space-y-3">
-            <div className="flex justify-between items-center p-4  ">
-              <div>
-                <div className="font-montserrat-bold text-black">Adultes</div>
-                <div className="text-sm text-gray-500">18 ans ou plus</div>
-              </div>
-              <div className="flex items-center space-x-3">
-                <button
-                  onClick={() => updateGuestCount("adults", "decrement")}
-                  className="w-8 h-8 rounded-sm border border-gray-300 flex items-center justify-center"
-                  disabled={reservationData.adults <= 1}
-                >
-                  <Minus
-                    size={16}
-                    className={
-                      reservationData.adults <= 1
-                        ? "text-black"
-                        : "text-gray-600"
-                    }
-                  />
-                </button>
-                <span className="font-semibold min-w-[2rem] text-center">
-                  {reservationData.adults}
-                </span>
-                <button
-                  onClick={() => updateGuestCount("adults", "increment")}
-                  className="w-8 h-8 rounded-sm border border-primary flex items-center justify-center bg-primary"
-                >
-                  <Plus size={16} className="text-white" />
-                </button>
-              </div>
-            </div>
-            <hr className="border border-gray-200 " />
-            {/* Enfants */}
-            <div className="flex justify-between items-center p-4 ">
-              <div>
-                <div className="font-montserrat-bold text-black">Enfants</div>
-                <div className="text-sm text-gray-500">2-17 ans</div>
-              </div>
-              <div className="flex items-center space-x-3">
-                <button
-                  onClick={() => updateGuestCount("children", "decrement")}
-                  className="w-8 h-8 rounded-sm border border-gray-300 flex items-center justify-center"
-                  disabled={reservationData.children <= 0}
-                >
-                  <Minus
-                    size={16}
-                    className={
-                      reservationData.children <= 0
-                        ? "text-black"
-                        : "text-gray-600"
-                    }
-                  />
-                </button>
-                <span className="font-semibold min-w-[2rem] text-center">
-                  {reservationData.children}
-                </span>
-                <button
-                  onClick={() => updateGuestCount("children", "increment")}
-                  className="w-8 h-8 rounded-sm border border-primary flex items-center justify-center bg-primary"
-                >
-                  <Plus size={16} className="text-white" />
-                </button>
-              </div>
-            </div>
-            <hr className="border border-gray-200 " />
+            <div>
+              <label className="block text-sm font-bold text-black mb-3">
+                Nombre d&apos;invités
+              </label>
 
-            {/* Bébés */}
-            <div className="flex justify-between items-center p-4">
-              <div>
-                <div className="font-montserrat-bold text-black">Bébés</div>
-                <div className="text-sm text-gray-500">Moins de 2 ans</div>
-              </div>
-              <div className="flex items-center space-x-3">
-                <button
-                  onClick={() => updateGuestCount("babies", "decrement")}
-                  className="w-8 h-8 rounded-sm border border-gray-300 flex items-center justify-center"
-                  disabled={reservationData.babies <= 0}
-                >
-                  <Minus
-                    size={16}
-                    className={
-                      reservationData.babies <= 0
-                        ? "text-black"
-                        : "text-gray-600"
-                    }
-                  />
-                </button>
-                <span className="font-semibold min-w-[2rem] text-center">
-                  {reservationData.babies}
-                </span>
-                <button
-                  onClick={() => updateGuestCount("babies", "increment")}
-                  className="w-8 h-8 rounded-sm border border-primary flex items-center justify-center bg-primary"
-                >
-                  <Plus size={16} className="text-white" />
-                </button>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center p-3">
+                  <div>
+                    <div className="font-montserrat-bold text-black">Adultes</div>
+                    <div className="text-sm text-gray-500">18 ans ou plus</div>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <button
+                      onClick={() => updateGuestCount("adults", "decrement")}
+                      className="w-8 h-8 rounded-sm border border-gray-300 flex items-center justify-center"
+                      disabled={reservationData.adults <= 1}
+                    >
+                      <Minus
+                        size={16}
+                        className={
+                          reservationData.adults <= 1
+                            ? "text-black"
+                            : "text-gray-600"
+                        }
+                      />
+                    </button>
+                    <span className="font-semibold min-w-[2rem] text-center">
+                      {reservationData.adults}
+                    </span>
+                    <button
+                      onClick={() => updateGuestCount("adults", "increment")}
+                      className="w-8 h-8 rounded-sm border border-primary flex items-center justify-center bg-primary"
+                    >
+                      <Plus size={16} className="text-white" />
+                    </button>
+                  </div>
+                </div>
+                <hr className="border border-gray-200" />
+                <div className="flex justify-between items-center p-3">
+                  <div>
+                    <div className="font-montserrat-bold text-black">Enfants</div>
+                    <div className="text-sm text-gray-500">2-17 ans</div>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <button
+                      onClick={() => updateGuestCount("children", "decrement")}
+                      className="w-8 h-8 rounded-sm border border-gray-300 flex items-center justify-center"
+                      disabled={reservationData.children <= 0}
+                    >
+                      <Minus
+                        size={16}
+                        className={
+                          reservationData.children <= 0
+                            ? "text-black"
+                            : "text-gray-600"
+                        }
+                      />
+                    </button>
+                    <span className="font-semibold min-w-[2rem] text-center">
+                      {reservationData.children}
+                    </span>
+                    <button
+                      onClick={() => updateGuestCount("children", "increment")}
+                      className="w-8 h-8 rounded-sm border border-primary flex items-center justify-center bg-primary"
+                    >
+                      <Plus size={16} className="text-white" />
+                    </button>
+                  </div>
+                </div>
+                <hr className="border border-gray-200" />
+                <div className="flex justify-between items-center p-3">
+                  <div>
+                    <div className="font-montserrat-bold text-black">Bébés</div>
+                    <div className="text-sm text-gray-500">Moins de 2 ans</div>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <button
+                      onClick={() => updateGuestCount("babies", "decrement")}
+                      className="w-8 h-8 rounded-sm border border-gray-300 flex items-center justify-center"
+                      disabled={reservationData.babies <= 0}
+                    >
+                      <Minus
+                        size={16}
+                        className={
+                          reservationData.babies <= 0
+                            ? "text-black"
+                            : "text-gray-600"
+                        }
+                      />
+                    </button>
+                    <span className="font-semibold min-w-[2rem] text-center">
+                      {reservationData.babies}
+                    </span>
+                    <button
+                      onClick={() => updateGuestCount("babies", "increment")}
+                      className="w-8 h-8 rounded-sm border border-primary flex items-center justify-center bg-primary"
+                    >
+                      <Plus size={16} className="text-white" />
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Bouton de réservation */}
-        <div className="flex flex-col items-center justify-center">
-          <button
-            onClick={() => onBook && onBook(reservationData)}
-            className="w-[200px] bg-red-500 text-white py-4 rounded-3xl font-bold text-sm hover:bg-opacity-90 transition-all transform hover:scale-[1.02] active:scale-[0.98]"
-          >
-            Réserver maintenant
-          </button>
-        </div>
+      <div className="mt-4 pt-4 border-t border-gray-100 flex justify-center">
+        <button
+          onClick={() => onBook && onBook(reservationData)}
+          className="w-[200px] bg-red-500 text-white py-4 rounded-3xl font-bold text-sm hover:bg-opacity-90 transition-all transform hover:scale-[1.02] active:scale-[0.98]"
+        >
+          Réserver maintenant
+        </button>
       </div>
     </div>
   );

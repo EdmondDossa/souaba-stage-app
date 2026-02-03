@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Star, MapPin, Heart } from 'lucide-react';
 import Image from 'next/image';
@@ -17,6 +17,8 @@ const AppartementDetails = () => {
 
   // État pour les favoris
   const [isFavorite, setIsFavorite] = useState(false);
+  const [shareFeedback, setShareFeedback] = useState("");
+  const shareTimeoutRef = useRef(null);
 
   // Données de la propriété
   const property = {
@@ -107,9 +109,42 @@ const AppartementDetails = () => {
     }));
   };
 
+  useEffect(() => {
+    return () => {
+      if (shareTimeoutRef.current) {
+        clearTimeout(shareTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const showFeedback = (message) => {
+    setShareFeedback(message);
+    if (shareTimeoutRef.current) {
+      clearTimeout(shareTimeoutRef.current);
+    }
+    shareTimeoutRef.current = setTimeout(() => {
+      setShareFeedback("");
+    }, 3500);
+  };
+
+  const handleShareClick = async () => {
+    const url =
+      typeof window !== "undefined"
+        ? window.location.href
+        : `https://souaba-web.app?property=${property.id}`;
+
+    try {
+      await navigator.clipboard.writeText(url);
+      showFeedback("Lien copié dans le presse-papiers");
+    } catch (error) {
+      console.error("Impossible de copier le lien:", error);
+      showFeedback("Impossible de copier pour le moment");
+    }
+  };
+
   return (
     <>
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-8 pt-24 md:pt-28">
         {/* Section Galerie d'images */}
         <div className="mb-8">
           <PropertyGallery
@@ -138,7 +173,7 @@ const AppartementDetails = () => {
                   {property.price} {property.currency}/ {property.period}
                 </div>
               </div>
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-3 relative">
                 <button
                   onClick={() => setIsFavorite(!isFavorite)}
                   className="p-3 hover:bg-gray-100 rounded-full transition-colors"
@@ -149,9 +184,17 @@ const AppartementDetails = () => {
       : "stroke-yellow-500 text-gray-400"}
                   />
                 </button>
-                <button className="p-3 hover:bg-gray-100 rounded-full transition-colors">
+                <button
+                  onClick={handleShareClick}
+                  className="p-3 hover:bg-gray-100 rounded-full transition-colors"
+                >
                   <SvgIcon name="share" size={24} className="filter " />
                 </button>
+                {shareFeedback && (
+                  <p className="absolute -bottom-8 right-0 left-0 text-xs text-gray-600 bg-white border border-gray-200 rounded-md px-3 py-1 shadow-sm">
+                    {shareFeedback}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -245,16 +288,18 @@ const AppartementDetails = () => {
           </div>
 
           {/* Colonne de droite - Formulaire de réservation */}
-          <div className="lg:col-span-1">
-            <PropertyReservationForm
-              price={property.price}
-              currency={property.currency}
-              period={property.period}
-              onBook={(reservationData) => {
-                console.log('Données de réservation:', reservationData);
-                // Logique de réservation
-              }}
-            />
+          <div className="lg:col-span-1 lg:sticky lg:top-24 self-start">
+            <div className="lg:pr-0">
+              <PropertyReservationForm
+                price={property.price}
+                currency={property.currency}
+                period={property.period}
+                onBook={(reservationData) => {
+                  console.log('Données de réservation:', reservationData);
+                  // Logique de réservation
+                }}
+              />
+            </div>
           </div>
         </div>
       </div>

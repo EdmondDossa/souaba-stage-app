@@ -188,10 +188,12 @@ const ReservationForm = () => {
   return isSubmitted ? (
     <Submitted />
   ) : (
-    <section>
-      <FormSteps steps={stepsDefinitions} currentStep={currentStep} />
-      <div className="my-10 ">
-        {render(stepsDefinitions[currentStep].component)}
+    <section className="min-h-screen pt-[5.5rem] pb-12 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-4xl flex flex-col gap-6">
+        <div className="bg-white border border-gray-100 rounded-3xl shadow-sm px-4 py-6 md:px-8 md:py-10">
+          <FormSteps steps={stepsDefinitions} currentStep={currentStep} />
+          <div className="mt-6">{render(stepsDefinitions[currentStep].component)}</div>
+        </div>
       </div>
     </section>
   );

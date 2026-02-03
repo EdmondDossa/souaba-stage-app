@@ -221,34 +221,32 @@ const PropertyList = ({
             </div>
           )}
 
-          {!showOnMap && (
-            <div className="flex lg:hidden items-center space-x-2">
-              <button
-                onClick={() => scroll(carouselRef, "left")}
-                disabled={!canScrollLeft}
-                className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
-                  canScrollLeft
-                    ? "bg-primary text-white hover:bg-amber-400"
-                    : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                }`}
-                aria-label="Précédent"
-              >
-                <SvgIcon name={"arrowLeft"} className={""} size={18} />
-              </button>
-              <button
-                onClick={() => scroll(carouselRef, "right")}
-                disabled={!canScrollRight}
-                className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
-                  canScrollRight
-                    ? "bg-primary text-white hover:bg-amber-400"
-                    : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                }`}
-                aria-label="Suivant"
-              >
-                <SvgIcon name={"arrowRight"} className={""} size={18} />
-              </button>
-            </div>
-          )}
+          <div className="flex lg:hidden items-center space-x-2">
+            <button
+              onClick={() => scroll(carouselRef, "left")}
+              disabled={!canScrollLeft}
+              className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
+                canScrollLeft
+                  ? "bg-primary text-white hover:bg-amber-400"
+                  : "bg-gray-200 text-gray-400 cursor-not-allowed"
+              }`}
+              aria-label="Précédent"
+            >
+              <SvgIcon name={"arrowLeft"} className={""} size={18} />
+            </button>
+            <button
+              onClick={() => scroll(carouselRef, "right")}
+              disabled={!canScrollRight}
+              className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
+                canScrollRight
+                  ? "bg-primary text-white hover:bg-amber-400"
+                  : "bg-gray-200 text-gray-400 cursor-not-allowed"
+              }`}
+              aria-label="Suivant"
+            >
+              <SvgIcon name={"arrowRight"} className={""} size={18} />
+            </button>
+          </div>
         </div>
       </div>
 

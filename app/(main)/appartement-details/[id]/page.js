@@ -395,7 +395,7 @@ const AppartementDetails = () => {
   const currency = pageData?.currency || property.currency;
   return (
     <>
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-8 pt-24 md:pt-28">
         {/* Section Galerie d'images */}
         <div className="mb-8 mt-10 lg:mt-0">
           <PropertyGallery hotelsMedias={appartMedias} />
@@ -595,13 +595,15 @@ const AppartementDetails = () => {
           </div>
 
           {/* Colonne de droite - Formulaire de réservation */}
-          <div className="lg:col-span-1">
-            <PropertyReservationForm
-              price={pageData.price_per_night}
-              currency={property.currency}
-              period={property.period}
-              onBook={saveReservation}
-            />
+          <div className="lg:col-span-1 lg:sticky lg:top-24 self-start">
+            <div className="lg:pr-0">
+              <PropertyReservationForm
+                price={pageData.price_per_night}
+                currency={property.currency}
+                period={property.period}
+                onBook={saveReservation}
+              />
+            </div>
           </div>
         </div>
       </div>

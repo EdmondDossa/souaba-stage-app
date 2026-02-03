@@ -43,6 +43,9 @@ const Calendar = ({
   allowPastDates = false,
   rangeStart,
   rangeEnd,
+  previewRangeEnd,
+  onDateHover,
+  onDateHoverLeave,
 }) => {
   const today = useMemo(() => startOfDay(new Date()), []);
   const selected = parseDateValue(selectedDate);
@@ -50,16 +53,8 @@ const Calendar = ({
   const rangeEndDate = parseDateValue(rangeEnd);
   const rangeStartTimestamp = getDayTimestamp(rangeStartDate);
   const rangeEndTimestamp = getDayTimestamp(rangeEndDate);
-  const hasRange =
-    rangeStartTimestamp !== null && rangeEndTimestamp !== null;
-  const rangeMin =
-    hasRange && rangeStartTimestamp <= rangeEndTimestamp
-      ? rangeStartTimestamp
-      : rangeEndTimestamp;
-  const rangeMax =
-    hasRange && rangeStartTimestamp <= rangeEndTimestamp
-      ? rangeEndTimestamp
-      : rangeStartTimestamp;
+  const previewRangeEndDate = parseDateValue(previewRangeEnd);
+  const previewRangeTimestamp = getDayTimestamp(previewRangeEndDate);
 
   const normalizedMinDate = allowPastDates
     ? null
@@ -69,6 +64,22 @@ const Calendar = ({
   const [dateOnDisplay, setDateOnDisplay] = useState(initialDisplayDate);
   const selectedTimestamp = selected ? startOfDay(selected).getTime() : null;
   const minTimestamp = normalizedMinDate ? normalizedMinDate.getTime() : null;
+  const highlightEndTimestamp =
+    rangeEndTimestamp !== null
+      ? rangeEndTimestamp
+      : previewRangeTimestamp;
+  const hasHighlightRange =
+    rangeStartTimestamp !== null && highlightEndTimestamp !== null;
+  const highlightMin =
+    hasHighlightRange && highlightEndTimestamp !== null
+      ? Math.min(rangeStartTimestamp, highlightEndTimestamp)
+      : null;
+  const highlightMax =
+    hasHighlightRange && highlightEndTimestamp !== null
+      ? Math.max(rangeStartTimestamp, highlightEndTimestamp)
+      : null;
+  const isPreviewRange =
+    rangeEndTimestamp === null && previewRangeTimestamp !== null;
 
   useEffect(() => {
     const targetDate = selected || normalizedMinDate || today;
@@ -158,33 +169,42 @@ const Calendar = ({
           const isDisabled =
             minTimestamp !== null && currentTimestamp < minTimestamp;
           const isInRange =
-            hasRange &&
-            currentTimestamp !== null &&
-            currentTimestamp >= rangeMin &&
-            currentTimestamp <= rangeMax;
+            hasHighlightRange &&
+            highlightMin !== null &&
+            highlightMax !== null &&
+            currentTimestamp >= highlightMin &&
+            currentTimestamp <= highlightMax;
           const isRangeStart =
-            hasRange && currentTimestamp === rangeStartTimestamp;
+            rangeStartTimestamp !== null &&
+            currentTimestamp === rangeStartTimestamp;
           const isRangeEnd =
-            hasRange && currentTimestamp === rangeEndTimestamp;
+            highlightEndTimestamp !== null &&
+            currentTimestamp === highlightEndTimestamp;
+          const rangeClass =
+            isRangeStart || isRangeEnd
+              ? isPreviewRange && isRangeEnd
+                ? "bg-primary/80 text-white"
+                : "bg-primary text-white"
+              : isInRange
+              ? "bg-primary/20"
+              : "";
           return (
             <button
               key={idx}
-              onClick={() => {
-                if (!isDisabled) onDateSelect(date);
-              }}
-              disabled={isDisabled}
-              className={`py-1 text-xs font-bold font-montserrat-medium rounded-full text-center ${
-                !isCurrentMonth ? "text-gray-500" : "text-gray-900"
-              } ${
-                isRangeStart || isRangeEnd
-                  ? "bg-primary text-white"
-                  : isSelected
-                    ? "border-2 border-gray-400 bg-gray-200"
-                    : ""
-              } ${
-                isInRange && !isRangeStart && !isRangeEnd
-                  ? "bg-primary/20"
-                  : ""
+            onClick={() => {
+              if (!isDisabled) onDateSelect(date);
+            }}
+            disabled={isDisabled}
+            onMouseEnter={() => {
+              if (onDateHover) onDateHover(date);
+            }}
+            onMouseLeave={() => {
+              if (onDateHoverLeave) onDateHoverLeave();
+            }}
+            className={`py-1 text-xs font-bold font-montserrat-medium rounded-full text-center ${
+              !isCurrentMonth ? "text-gray-500" : "text-gray-900"
+              } ${rangeClass} ${
+                isSelected ? "border-2 border-gray-400 bg-gray-200" : ""
               } ${
                 !isDisabled && !isSelected ? "hover:bg-gray-100" : ""
               } ${

@@ -12,10 +12,11 @@ const InputRow = ({
   type = "text",
   required = true,
   errorMessage = "",
+  hasError = false,
   value,
   className = "",
   labelClassName = "",
-  onBlur = ()=>{},
+  onBlur = () => {},
   onChange = () => {},
   ...props
 }) => {
@@ -23,8 +24,8 @@ const InputRow = ({
   const tooglePasswordVisibility = () => setPasswordVisible(!isPasswordVisible);
 
   const passwordValue = useMemo(
-    () => (type === "password" ? value ?? "" : value),
-    [type, value]
+    () => (type === "password" ? (value ?? "") : value),
+    [type, value],
   );
   const MIN_PASSWORD_LENGTH = 8;
   const passwordProgress = useMemo(() => {
@@ -32,9 +33,12 @@ const InputRow = ({
     return Math.min(passwordValue.length / MIN_PASSWORD_LENGTH, 1);
   }, [passwordValue, type]);
 
+  const errorRing = hasError
+    ? "ring-red-500 focus:ring-red-500"
+    : "ring-white focus:ring-primary";
   const customClass = `
     w-full px-5 py-3 rounded-xl outline-none focus:outline-none 
-    ring-2 transition duration-300 ring-white focus:ring-primary 
+    ring-2 transition duration-300 ${errorRing}
     bg-[#F9F9F9] 
     ${className}
   `;
@@ -104,7 +108,8 @@ const InputRow = ({
               </div>
               {passwordValue.length < MIN_PASSWORD_LENGTH && (
                 <p className="text-danger text-[12px] font-semibold">
-                  Mot de passe trop court (min. {MIN_PASSWORD_LENGTH} caractères)
+                  Mot de passe trop court (min. {MIN_PASSWORD_LENGTH}{" "}
+                  caractères)
                 </p>
               )}
             </div>
@@ -112,7 +117,7 @@ const InputRow = ({
         </>
       )}
       {errorMessage && (
-        <p className="text-danger text-[12px]"> {errorMessage} </p>
+        <p className="text-red-600 text-[12px]"> {errorMessage} </p>
       )}
       <div className="hidden py-3 border-none"></div>
     </div>

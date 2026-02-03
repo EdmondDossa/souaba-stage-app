@@ -98,10 +98,12 @@ const RegisterPage = () => {
             name="password"
             errorMessage={validationError.password}
           />
-          <p className="text-xs text-gray-500 mt-1 mb-4 leading-5">
-            Le mot de passe doit contenir au moins 8 caractères, dont une lettre,
-            un chiffre et un caractère spécial.
-          </p>
+          {!validationError.password && (
+            <p className="text-xs text-gray-500 mt-1 mb-4 leading-5">
+              Le mot de passe doit contenir au moins 8 caractères, dont une
+              lettre, un chiffre et un caractère spécial.
+            </p>
+          )}
           <div className="flex items-center -mt-1 mb-5">
             <CheckBox id="terms" defaultChecked={false} />
             <label

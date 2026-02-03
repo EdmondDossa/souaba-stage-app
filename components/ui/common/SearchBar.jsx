@@ -6,32 +6,46 @@ import { Search, MapPin, Building, ChevronDown } from "lucide-react";
 import React from "react";
 import { dateToLetters } from "@/utils/dateToLetters";
 import Calendar from "./Calendar";
-import getAxiosInstance from "@/lib/request";
+import { DESTINATION_DATA } from "@/data/destination-locations";
 // Constantes
-const http = getAxiosInstance();
-const SUGGESTIONS = [
-  {
-    id: "fallback-abidjan",
-    name: "Abidjan",
-    description: "Côte d'Ivoire",
-    type: "city",
-    icon: MapPin,
-  },
-  {
-    id: "fallback-dakar",
-    name: "Dakar",
-    description: "Sénégal",
-    type: "city",
-    icon: MapPin,
-  },
-  {
-    id: "fallback-saint-louis",
-    name: "Saint-Louis",
-    description: "Sénégal",
-    type: "city",
-    icon: MapPin,
-  },
-];
+const slugifyLabel = (value) =>
+  String(value)
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
+const buildDestinationSuggestions = () => {
+  const abidjan = DESTINATION_DATA["Abidjan"];
+  const communes = abidjan?.communes || [];
+  const suggestions = [
+    {
+      id: "abidjan-city",
+      name: "Abidjan",
+      description: "Côte d'Ivoire",
+      type: "city",
+      icon: MapPin,
+    },
+    ...communes.map((commune) => ({
+      id: `abidjan-${slugifyLabel(commune)}`,
+      name: `${commune}, Abidjan`,
+      description: "Commune d'Abidjan",
+      type: "neighborhood",
+      icon: MapPin,
+    })),
+    ...(DESTINATION_DATA.villes || []).map((ville) => ({
+      id: slugifyLabel(ville),
+      name: ville,
+      description: "Côte d'Ivoire",
+      type: "city",
+      icon: MapPin,
+    })),
+  ];
+  return suggestions;
+};
+
+const SUGGESTIONS = [...buildDestinationSuggestions()];
 
 function SearchBar({
   isCentered = true,
@@ -56,13 +70,13 @@ function SearchBar({
   };
 
   const [destination, setDestination] = useState(
-    initialValues?.city?.trim() || ""
+    initialValues?.city?.trim() || "",
   );
   const [arrivalDate, setArrivalDate] = useState(
-    formatInitialDate(initialValues?.check_in)
+    formatInitialDate(initialValues?.check_in),
   );
   const [departureDate, setDepartureDate] = useState(
-    formatInitialDate(initialValues?.check_out)
+    formatInitialDate(initialValues?.check_out),
   );
   const [adults, setAdults] = useState(() => {
     const initial = formatInitialCapacity(initialValues?.capacity);
@@ -70,6 +84,7 @@ function SearchBar({
   });
   const [children, setChildren] = useState(0);
   const [babies, setBabies] = useState(0);
+  const [dateRequiredError, setDateRequiredError] = useState(false);
   const [showGuestsDropdown, setShowGuestsDropdown] = useState(false);
   const [activeGuestType, setActiveGuestType] = useState(null); // 'adults', 'children', 'babies'
   const [suggestions, setSuggestions] = useState(SUGGESTIONS);
@@ -169,9 +184,15 @@ function SearchBar({
 
   const handleDateSelect = (date, field) => {
     const formattedDate = date.toLocaleDateString("fr-FR");
+    const nextArrival = field === "arrival" ? formattedDate : arrivalDate;
+    const nextDeparture = field === "departure" ? formattedDate : departureDate;
     if (field === "arrival") setArrivalDate(formattedDate);
     else if (field === "departure") setDepartureDate(formattedDate);
     toggleDropdown("date", false);
+    if (nextArrival && nextDeparture) {
+      setDateRequiredError(false);
+      if (setError) setError(null);
+    }
   };
 
   const selectDestination = (value) => {
@@ -186,57 +207,6 @@ function SearchBar({
     return [];
   };
 
-  const fetchDestinationSuggestions = useCallback(async (query) => {
-    setSuggestionsLoading(true);
-    try {
-      const { data } = await http.get("/locations/search", {
-        params: { q: query, limit: 10 },
-      });
-
-      const locations = normalizeLocationsResponse(data);
-      const uniqueCities = [];
-      const seen = new Set();
-
-      locations.forEach((item, idx) => {
-        const city =
-          item.city?.trim() ||
-          item.name?.trim() ||
-          item.locality?.trim() ||
-          item.ville?.trim();
-        const country =
-          item.country?.trim() ||
-          item.countryName?.trim() ||
-          item.country_name?.trim();
-        const countryCode =
-          item.countryCode?.trim() || item.country_code?.trim() || "";
-
-        if (!city || !country) return;
-        const key =
-          item.id ||
-          item.geonameId ||
-          `${city}-${countryCode || country}-${idx}`.toLowerCase();
-
-        if (seen.has(key)) return;
-        seen.add(key);
-        uniqueCities.push({
-          id: key,
-          name: city,
-          description: country,
-          countryCode,
-          type: "city",
-          icon: MapPin,
-        });
-      });
-
-      setSuggestions(uniqueCities.length ? uniqueCities : SUGGESTIONS);
-    } catch (error) {
-      console.error("Erreur lors du chargement des destinations:", error);
-      setSuggestions(SUGGESTIONS);
-    } finally {
-      setSuggestionsLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
     if (hideDestination) return;
     if (!destination || destination.length < 2) {
@@ -244,12 +214,14 @@ function SearchBar({
       return;
     }
 
-    const handle = setTimeout(
-      () => fetchDestinationSuggestions(destination),
-      250
-    );
-    return () => clearTimeout(handle);
-  }, [destination, fetchDestinationSuggestions, hideDestination]);
+    const handler = setTimeout(() => {
+      const filtered = SUGGESTIONS.filter((item) =>
+        item.name.toLowerCase().includes(destination.toLowerCase()),
+      );
+      setSuggestions(filtered.length ? filtered : SUGGESTIONS);
+    }, 250);
+    return () => clearTimeout(handler);
+  }, [destination, hideDestination]);
 
   const handleDestinationKeyDown = (e) => {
     if (!showDestinationDropdown) return;
@@ -271,17 +243,22 @@ function SearchBar({
   const handleSearch = () => {
     if (
       ![arrivalDate, departureDate, destination, adults, children, babies].some(
-        Boolean
+        Boolean,
       )
     ) {
       return;
     }
 
     if (!arrivalDate || !departureDate) {
+      setDateRequiredError(true);
       if (setError) {
         setError("Veuillez sélectionner une date d'arrivée et de départ.");
       }
       return;
+    }
+
+    if (dateRequiredError) {
+      setDateRequiredError(false);
     }
 
     if (setError) {
@@ -319,6 +296,9 @@ function SearchBar({
 
     router.push(`/search?${params.toString()}`);
   };
+
+  const arrivalMissing = dateRequiredError && !arrivalDate;
+  const departureMissing = dateRequiredError && !departureDate;
 
   return (
     <div
@@ -418,7 +398,9 @@ function SearchBar({
           type="text"
           id="arrivalDate"
           placeholder="Ajouter une date"
-          className="w-full focus:outline-none text-[13px] text-sm text-gray-800  font-bold placeholder-gray-400 cursor-pointer"
+          className={`w-full focus:outline-none text-[13px] text-sm text-gray-800  font-bold placeholder-gray-400 cursor-pointer ${
+            arrivalMissing ? "ring-1 ring-red-500" : ""
+          }`}
           onClick={() => handleDateOpen("arrival")}
           value={dateToLetters(arrivalDate)}
           readOnly
@@ -448,7 +430,9 @@ function SearchBar({
           type="text"
           id="departureDate"
           placeholder="Ajouter une date"
-          className="w-full focus:outline-none text-[13px] text-sm text-gray-800 font-bold placeholder-gray-400 cursor-pointer"
+          className={`w-full focus:outline-none text-[13px] text-sm text-gray-800 font-bold placeholder-gray-400 cursor-pointer ${
+            departureMissing ? "ring-1 ring-red-500" : ""
+          }`}
           onClick={() => handleDateOpen("departure")}
           value={dateToLetters(departureDate)}
           readOnly
@@ -548,6 +532,14 @@ function SearchBar({
       >
         <Search className="text-xl" />
       </button>
+      {dateRequiredError && (
+        <div className="absolute left-0 right-0 -bottom-10 px-4">
+          <p className="rounded-lg bg-white/95 px-3 py-1 text-center text-[12px] text-red-600 shadow-sm border border-red-200">
+            Sélectionnez une date d&apos;arrivée et de départ pour lancer la
+            recherche.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

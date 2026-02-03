@@ -15,6 +15,10 @@ const IdentityStep = ({ goToPrevStep, completeFlow, formValues }) => {
   const [identityBack, setIdentityBack] = useState(null);
   const [frontPreview, setFrontPreview] = useState("");
   const [backPreview, setBackPreview] = useState("");
+  const [identityFieldErrors, setIdentityFieldErrors] = useState({
+    front: false,
+    back: false,
+  });
   const [pendingReservation, setPendingReservation] = useState(null);
 
   const { user, fetchUser } = useAuthContext();
@@ -65,9 +69,11 @@ const IdentityStep = ({ goToPrevStep, completeFlow, formValues }) => {
     const previewUrl = URL.createObjectURL(file);
     if (side === "front") {
       setIdentityFront(file);
+      setIdentityFieldErrors((prev) => ({ ...prev, front: false }));
       setFrontPreview(previewUrl);
     } else {
       setIdentityBack(file);
+      setIdentityFieldErrors((prev) => ({ ...prev, back: false }));
       setBackPreview(previewUrl);
     }
   };
@@ -76,12 +82,18 @@ const IdentityStep = ({ goToPrevStep, completeFlow, formValues }) => {
     const needsFront = !identityFrontPath;
     const needsBack = !identityBackPath;
 
+    const errors = {};
     if (needsFront && !identityFront) {
-      toast.error("Veuillez ajouter le recto de votre pièce d'identité.");
-      return;
+      errors.front = true;
     }
     if (needsBack && !identityBack) {
-      toast.error("Veuillez ajouter le verso de votre pièce d'identité.");
+      errors.back = true;
+    }
+    setIdentityFieldErrors(errors);
+    if (Object.keys(errors).length) {
+      toast.error(
+        "Veuillez compléter les parties manquantes de votre pièce d'identité."
+      );
       return;
     }
 
@@ -125,6 +137,10 @@ const IdentityStep = ({ goToPrevStep, completeFlow, formValues }) => {
 
   const handleContinue = async () => {
     if (!hasIdentity) {
+      const errors = {};
+      if (needsFront && !identityFront) errors.front = true;
+      if (needsBack && !identityBack) errors.back = true;
+      setIdentityFieldErrors(errors);
       toast.error("Veuillez enregistrer votre pièce d'identité.");
       return;
     }
@@ -173,7 +189,13 @@ const IdentityStep = ({ goToPrevStep, completeFlow, formValues }) => {
               <p className="text-sm font-montserrat-bold mb-2">
                 Recto de la pièce
               </p>
-              <label className="block border border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:bg-gray-50">
+              <label
+                className={`block border border-dashed rounded-lg p-4 text-center cursor-pointer hover:bg-gray-50 ${
+                  identityFieldErrors.front
+                    ? "border-red-500 bg-red-50"
+                    : "border-gray-300"
+                }`}
+              >
                 <input
                   type="file"
                   accept="image/*"
@@ -192,12 +214,23 @@ const IdentityStep = ({ goToPrevStep, completeFlow, formValues }) => {
                   </span>
                 )}
               </label>
+              {identityFieldErrors.front && (
+                <p className="text-xs text-red-600 mt-2">
+                  Recto requis
+                </p>
+              )}
             </div>
             <div className="border rounded-lg p-4">
               <p className="text-sm font-montserrat-bold mb-2">
                 Verso de la pièce
               </p>
-              <label className="block border border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:bg-gray-50">
+              <label
+                className={`block border border-dashed rounded-lg p-4 text-center cursor-pointer hover:bg-gray-50 ${
+                  identityFieldErrors.back
+                    ? "border-red-500 bg-red-50"
+                    : "border-gray-300"
+                }`}
+              >
                 <input
                   type="file"
                   accept="image/*"
@@ -216,6 +249,11 @@ const IdentityStep = ({ goToPrevStep, completeFlow, formValues }) => {
                   </span>
                 )}
               </label>
+              {identityFieldErrors.back && (
+                <p className="text-xs text-red-600 mt-2">
+                  Verso requis
+                </p>
+              )}
             </div>
           </div>
         )}

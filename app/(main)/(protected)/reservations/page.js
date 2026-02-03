@@ -52,8 +52,27 @@ function ReservationsContent() {
   );
   const [currentCategory, setCurrentCategory] = useState(0);
 
-  const [cancelReason, setCancelReason] = useState("");
+  const [cancelReasonType, setCancelReasonType] = useState("");
+  const [customCancelReason, setCustomCancelReason] = useState("");
+  const [reasonError, setReasonError] = useState(false);
+  const [reasonSearch, setReasonSearch] = useState("");
   const MAX_CANCEL_REASON_LENGTH = 255;
+  const CANCELLATION_REASONS = [
+    { value: "change_of_plan", label: "Changement de programme" },
+    { value: "health_issue", label: "Soucis de santé" },
+    { value: "family_emergency", label: "Urgence familiale" },
+    { value: "natural_disaster", label: "Catastrophe naturelle" },
+    { value: "travel_restriction", label: "Restriction gouvernementale" },
+    { value: "payment_issue", label: "Problème de paiement" },
+    { value: "work_commitment", label: "Imprévu professionnel" },
+    { value: "documentation_loss", label: "Documents perdus (passeport)" },
+    { value: "military_deployment", label: "Mobilisation / service militaire" },
+    { value: "transport_disruption", label: "Grève ou annulation du transport" },
+    { value: "home_damage", label: "Dégâts à domicile" },
+    { value: "legal_obligation", label: "Obligation judiciaire" },
+    { value: "budget_issue", label: "Problème budgétaire" },
+    { value: "other", label: "Autre raison" },
+  ];
 
   const [reservationToCancel, setReservationToCancel] = useState(null);
   const [reservations, setReservations] = useState([]);
@@ -62,7 +81,30 @@ function ReservationsContent() {
   const [totalPages, setTotalPages] = useState(1);
 
   const initReservationCancellation = (id) => setReservationToCancel(id);
-  const abortReservationCancellation = () => setReservationToCancel(null);
+  const abortReservationCancellation = () => {
+    setReservationToCancel(null);
+    setCancelReasonType("");
+    setCustomCancelReason("");
+    setReasonError(false);
+  };
+  const handleReasonSelect = (value) => {
+    setCancelReasonType(value);
+    setReasonSearch("");
+    if (value !== "other") {
+      setCustomCancelReason("");
+    }
+    if (reasonError) {
+      setReasonError(false);
+    }
+  };
+
+  const filteredReasons = useMemo(() => {
+    const term = reasonSearch.trim().toLowerCase();
+    if (!term) return CANCELLATION_REASONS;
+    return CANCELLATION_REASONS.filter((reason) =>
+      reason.label.toLowerCase().includes(term)
+    );
+  }, [reasonSearch]);
 
   const fetchData = useCallback(
     async (page = 1) => {
@@ -104,10 +146,21 @@ function ReservationsContent() {
   async function handleCancel(e) {
     try {
       e.preventDefault();
+      const isOther = cancelReasonType === "other";
+      const reason = isOther
+        ? customCancelReason.trim()
+        : cancelReasonType;
+      if (!reason) {
+        setReasonError(true);
+        toast.error("Veuillez préciser un motif d'annulation.");
+        return;
+      }
+      setReasonError(false);
       setLoading(true);
       await http.patch(`/reservations/${reservationToCancel}/status`, {
         status: "CANCELLED",
-      });
+        reason,
+    });
       toast.success("Réservation annulée");
       setReservationToCancel(null);
       await fetchData(currentPage);
@@ -119,8 +172,10 @@ function ReservationsContent() {
   }
 
   function handleChange(e) {
-    if (e.target.value.length <= MAX_CANCEL_REASON_LENGTH)
-      setCancelReason(e.target.value);
+    if (e.target.value.length <= MAX_CANCEL_REASON_LENGTH) {
+      setCustomCancelReason(e.target.value);
+      if (reasonError) setReasonError(false);
+    }
   }
 
   useEffect(() => {
@@ -219,24 +274,67 @@ function ReservationsContent() {
         <>
           <form
             ref={ref}
-            className="fixed inset-0 text-sm translate-y-1/2 pt-8 left-[calc(100vw/2-314px/2)] md:left-[calc(100vw/2-512px/2)] w-[314px] md:w-lg z-50 h-80 md:h-96 bg-white border border-gray-200 rounded-lg p-3"
+            className="fixed inset-0 z-50 flex items-center justify-center px-4"
           >
-            <div className="h-full mx-auto w-[80%] ">
-              <label className="text-[12px] md:text-sm" htmlFor="cancel-reason">
-                Entrer le motif de votre annulation
+            <div className="relative w-[314px] md:w-[512px] max-h-[90vh-4rem] bg-white border border-gray-200 rounded-lg p-3 overflow-hidden">
+              <div className="max-h-full overflow-y-auto space-y-4 text-sm">
+              <label className="text-[12px] md:text-sm mb-2 block">
+                Sélectionnez le motif
               </label>
-              <textarea
-                className="w-full block mt-2 bg-[#FBFBFB] border border-gray-200 rounded-lg  resize-none p-3 ring-2 ring-white outline-0 focus:ring-primary  h-[140px] md:h-2/3"
-                name="cancel-reason"
-                id="cancel-reason"
-                value={cancelReason}
-                onChange={handleChange}
-                maxLength={MAX_CANCEL_REASON_LENGTH}
+              <input
+                type="search"
+                value={reasonSearch}
+                onChange={(e) => setReasonSearch(e.target.value)}
+                placeholder="Rechercher un motif..."
+                className="w-full mb-3 bg-[#FBFBFB] border border-gray-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-primary transition"
               />
-              <span className="block text-sm text-end mt-2">
-                {" "}
-                {`${cancelReason.length}/${MAX_CANCEL_REASON_LENGTH} caractères`}
-              </span>
+              <div className="max-h-40 overflow-y-auto space-y-2 mb-3 rounded-lg">
+                {filteredReasons.length ? (
+                  filteredReasons.map((reason) => (
+                    <button
+                      key={reason.value}
+                      type="button"
+                      onClick={() => handleReasonSelect(reason.value)}
+                      className={`w-full text-left px-3 py-2 rounded-lg border transition ${
+                        cancelReasonType === reason.value
+                          ? "border-primary bg-primary/10 text-primary font-semibold"
+                          : "border-gray-200 bg-white text-gray-700"
+                      }`}
+                    >
+                      {reason.label}
+                    </button>
+                  ))
+                ) : (
+                  <p className="text-xs text-gray-500">
+                    Aucun motif ne correspond à votre recherche.
+                  </p>
+                )}
+              </div>
+              {cancelReasonType === "other" && (
+                <>
+                  <textarea
+                    className="w-full block mt-3 bg-[#FBFBFB] border border-gray-200 rounded-lg resize-none p-3 ring-2 ring-white outline-0 focus:ring-primary h-[140px] md:h-2/3"
+                    name="cancel-reason"
+                    id="cancel-reason"
+                    value={customCancelReason}
+                    onChange={handleChange}
+                    maxLength={MAX_CANCEL_REASON_LENGTH}
+                  />
+                  <span className="block text-sm text-end mt-2">
+                    {`${customCancelReason.length}/${MAX_CANCEL_REASON_LENGTH} caractères`}
+                  </span>
+                </>
+              )}
+              {reasonError && cancelReasonType !== "other" && (
+                <p className="text-xs text-red-600 mt-1">
+                  Merci de choisir un motif.
+                </p>
+              )}
+              {reasonError && cancelReasonType === "other" && (
+                <p className="text-xs text-red-600 mt-1">
+                  Merci de décrire votre motif.
+                </p>
+              )}
               <div className="flex items-center justify-center md:justify-end gap-x-5 mt-5">
                 <button
                   type="reset"
@@ -255,9 +353,9 @@ function ReservationsContent() {
               </div>
             </div>
             <button className="absolute m-2 top-0 right-0 text-red-500">
-              {" "}
-              <IoMdCloseCircle className="w-5 h-5" />{" "}
+              <IoMdCloseCircle className="w-5 h-5" />
             </button>
+            </div>
           </form>
           <div className="min-h-screen transition-all ease-in-out z-40 w-screen fixed top-0 h-full border-gray-200 backdrop-brightness-60"></div>
         </>
