@@ -12,6 +12,7 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import getAxiosInstance from "@/lib/request";
+import { generateReservationId } from "@/lib/reservationId";
 import { useParams } from "next/navigation";
 import MobileSearchMenu from "@/components/ui/common/MobileSearchMenu";
 import PropertyDetailsSkeleton from "@/components/ui/common/PropertyDetailsSkeleton";
@@ -79,6 +80,10 @@ export default function HotelDetails() {
       checkOutDate: checkOut.toISOString(),
       numberOfGuests,
       totalPrice: totalPerNight * nights,
+      reservationId: generateReservationId(),
+      currency: hotelsData?.currency || "FCFA",
+      partnerId:
+        hotelsData?.partner_id || hotelsData?.partnerId || null,
       totalPerNight,
       rooms: selectedRooms.map(({ roomCategoryId, quantity }) => ({
         roomCategoryId,

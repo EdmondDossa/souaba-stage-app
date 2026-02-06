@@ -192,7 +192,13 @@ const ReservationForm = () => {
       <div className="mx-auto w-full max-w-4xl flex flex-col gap-6">
         <div className="bg-white border border-gray-100 rounded-3xl shadow-sm px-4 py-6 md:px-8 md:py-10">
           <FormSteps steps={stepsDefinitions} currentStep={currentStep} />
-          <div className="mt-6">{render(stepsDefinitions[currentStep].component)}</div>
+          <div className="mt-6">
+            {render(
+              stepsDefinitions[
+                Math.min(currentStep, stepsDefinitions.length - 1)
+              ].component
+            )}
+          </div>
         </div>
       </div>
     </section>

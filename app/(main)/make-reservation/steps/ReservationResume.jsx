@@ -28,6 +28,8 @@ const ReservationResume = ({
   const http = getAxiosInstance();
   const [openModal, setOpenModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCreatingGeniusPayPayment, setIsCreatingGeniusPayPayment] =
+    useState(false);
 
   const [listingDetails, setListingDetails] = useState();
   const [currentReservation, setCurrentReservation] = useState();
@@ -182,7 +184,7 @@ const ReservationResume = ({
       try {
         if (type === "accommodation" && pendingReservation.accommodationId) {
           const accommodation = await http.get(
-            `/accommodations?accommodation_id=${pendingReservation.accommodationId}`
+            `/accommodations?accommodation_id=${pendingReservation.accommodationId}`,
           );
           const foundAccomodation = accommodation.data?.data?.[0];
           if (foundAccomodation) {
@@ -193,7 +195,7 @@ const ReservationResume = ({
 
         if (type === "hotel" && pendingReservation.hotelId) {
           const hotelResponse = await http.get(
-            `/hotels?hotel_id=${pendingReservation.hotelId}&limit=1`
+            `/hotels?hotel_id=${pendingReservation.hotelId}&limit=1`,
           );
           const payload = hotelResponse?.data || {};
           const hotel =
@@ -227,6 +229,7 @@ const ReservationResume = ({
     searchParams.get("payment") ||
     "WALLET"
   ).toUpperCase();
+  const isGeniusPaySelected = selectedPaymentMethod === "WALLET";
 
   const nights = useMemo(() => {
     if (
@@ -236,7 +239,7 @@ const ReservationResume = ({
       return 1;
     const diff = differenceInDays(
       new Date(currentReservation.check_out_date),
-      new Date(currentReservation.check_in_date)
+      new Date(currentReservation.check_in_date),
     );
     return Math.max(diff, 1);
   }, [currentReservation?.check_in_date, currentReservation?.check_out_date]);
@@ -248,7 +251,7 @@ const ReservationResume = ({
       goToNextStep();
       return;
     }
-    if (selectedPaymentMethod === "WALLET") {
+    if (isGeniusPaySelected) {
       setOpenModal(true);
       return;
     }
@@ -264,7 +267,7 @@ const ReservationResume = ({
         http,
         pendingReservation,
         formValues?.guest,
-        selectedPaymentMethod
+        selectedPaymentMethod,
       );
       if (result) {
         completeFlow();
@@ -277,27 +280,146 @@ const ReservationResume = ({
     }
   }
 
-  const handleWalletPayment = async () => {
-    if (!pendingReservation) {
-      goToNextStep();
+  const handleCreateGeniusPayPayment = async () => {
+    if (!pendingReservation || !currentReservation || !listingDetails) {
+      toast.error("Impossible de créer le paiement GeniusPay.");
       return;
     }
+
+    const reservationResult = await submitReservation(
+      http,
+      pendingReservation,
+      formValues?.guest,
+      selectedPaymentMethod
+    );
+    if (!reservationResult) {
+      toast.error("Impossible de créer la réservation GeniusPay.");
+      return;
+    }
+
+    const reservationPayload =
+      reservationResult?.data ||
+      reservationResult?.reservation ||
+      reservationResult ||
+      {};
+
+    const serverReservationId =
+      reservationPayload?.reservation_id ||
+      reservationPayload?.id ||
+      reservationPayload?.reservation?.reservation_id ||
+      reservationPayload?.reservation?.id ||
+      pendingReservation?.reservationId;
+
+    const amount = Number(
+      reservationPayload?.total_price ??
+        reservationPayload?.totalPrice ??
+        currentReservation?.total_price ??
+        pendingReservation?.totalPrice ??
+        0
+    );
+    if (!amount) {
+      toast.error("Montant invalide pour le paiement GeniusPay.");
+      return;
+    }
+
+    const origin =
+      typeof window !== "undefined"
+        ? window.location.origin
+        : process.env.NEXT_PUBLIC_APP_URL || "";
+
+    const baseReturnParams = new URLSearchParams({
+      geniuspay_status: "success",
+      reservationId: serverReservationId,
+    });
+    const successUrl = `${origin}/make-reservation?${baseReturnParams.toString()}`;
+
+    const failureParams = new URLSearchParams({
+      geniuspay_status: "failed",
+      reservationId: serverReservationId,
+    });
+    const errorUrl = `${origin}/make-reservation?${failureParams.toString()}`;
+
+    const metadata = {
+      reservation_id: serverReservationId,
+    };
+    const partnerId =
+      pendingReservation?.partnerId ||
+      listingDetails?.partner_id ||
+      listingDetails?.partnerId;
+    if (partnerId) {
+      metadata.partner_id = partnerId;
+    }
+
+    const customerEmail = formValues?.guest?.email || user?.email || "";
+    const customerPhone =
+      formValues?.guest?.phone || user?.phone || user?.contact || "";
+
+    const currency = "XOF";
+    const description = `Réservation Souaba #${serverReservationId ?? ""}`;
+
+    const successUrlWithStatus = successUrl;
+    const errorUrlWithStatus = errorUrl;
+
+    const payload = {
+      amount,
+      currency,
+      description,
+      reservationId: serverReservationId,
+      metadata,
+      customer: {
+        email: customerEmail,
+        phone: customerPhone,
+      },
+      successUrl: successUrlWithStatus,
+      errorUrl: errorUrlWithStatus,
+    };
+
+    let checkoutWindow;
+    if (typeof window !== "undefined") {
+      checkoutWindow = window.open("", "_blank", "noopener,noreferrer");
+    }
+
     try {
-      setIsSubmitting(true);
-      const result = await submitReservation(
-        http,
-        pendingReservation,
-        formValues?.guest,
-        selectedPaymentMethod
-      );
-      if (result) {
-        completeFlow();
+      setIsCreatingGeniusPayPayment(true);
+      const response = await http.post("/payments", payload, {
+        headers: { "Content-Type": "application/json" },
+      });
+      const transaction =
+        response?.data?.data || response?.data || response?.paymentTransaction;
+      const paymentUrl =
+        transaction?.payment_url ||
+        transaction?.checkout_url ||
+        transaction?.paymentUrl ||
+        transaction?.checkoutUrl;
+      const reference =
+        transaction?.reference ||
+        transaction?.payment_reference ||
+        transaction?.paymentReference ||
+        response?.data?.reference;
+
+      if (!paymentUrl) {
+        throw new Error("Aucune URL de paiement GeniusPay n’a été renvoyée.");
+      }
+
+      const savedReference = reference || pendingReservation?.reservationId;
+      if (typeof window !== "undefined" && savedReference) {
+        sessionStorage.setItem("pendingPaymentReference", savedReference);
+      }
+      setOpenModal(false);
+      if (checkoutWindow) {
+        checkoutWindow.location.href = paymentUrl;
+      } else if (typeof window !== "undefined") {
+        window.open(paymentUrl, "_blank", "noopener,noreferrer");
       }
     } catch (error) {
-      console.log(error);
-      toast.error("Une erreur est survenue lors de la réservation!");
+      console.error("Créer GeniusPay Payment", error);
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Impossible de créer le paiement GeniusPay.";
+      toast.error(errorMessage);
     } finally {
-      setIsSubmitting(false);
+      setIsCreatingGeniusPayPayment(false);
     }
   };
 
@@ -344,9 +466,7 @@ const ReservationResume = ({
             </div>
             <div className="text-xs text-gray-500 mt-1">
               {nights} nuit{nights > 1 ? "s" : ""} •{" "}
-              {(+listingDetails.price_per_night || 0).toLocaleString(
-                "fr-FR"
-              )}{" "}
+              {(+listingDetails.price_per_night || 0).toLocaleString("fr-FR")}{" "}
               FCFA / nuit
             </div>
           </div>
@@ -366,14 +486,14 @@ const ReservationResume = ({
               <div className="bg-white/90 backdrop-blur rounded-2xl px-5 py-4 text-right shadow-md">
                 <div className="text-2xl md:text-3xl font-montserrat-bold text-gray-900 leading-none">
                   {(+currentReservation.total_price || 0).toLocaleString(
-                    "fr-FR"
+                    "fr-FR",
                   )}{" "}
                   FCFA
                 </div>
                 <div className="text-xs text-gray-500 mt-1">
                   {nights} nuit{nights > 1 ? "s" : ""} •{" "}
                   {(+listingDetails.price_per_night || 0).toLocaleString(
-                    "fr-FR"
+                    "fr-FR",
                   )}{" "}
                   FCFA / nuit
                 </div>
@@ -422,14 +542,14 @@ const ReservationResume = ({
               <SummaryItem label="Nombre de nuits" value={nights} />
               <SummaryItem
                 label="Prix / nuit"
-                value={`${(
-                  +listingDetails.price_per_night || 0
-                ).toLocaleString("fr-FR")} FCFA`}
+                value={`${(+listingDetails.price_per_night || 0).toLocaleString(
+                  "fr-FR",
+                )} FCFA`}
               />
               <SummaryItem
                 label="Montant total"
                 value={`${(+currentReservation.total_price || 0).toLocaleString(
-                  "fr-FR"
+                  "fr-FR",
                 )} FCFA`}
                 highlight
               />
@@ -486,29 +606,20 @@ const ReservationResume = ({
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <Button
-              onClick={() => {
-                const url = process.env.NEXT_PUBLIC_GENIUSPAY_URL;
-                if (!url) {
-                  toast.error("URL GeniusPay non configurée.");
-                  return;
-                }
-                window.open(url, "_blank", "noopener,noreferrer");
-              }}
+              onClick={handleCreateGeniusPayPayment}
+              isLoading={isCreatingGeniusPayPayment}
+              disabled={isCreatingGeniusPayPayment}
               className="bg-primary hover:!bg-amber-400 py-2.5 font-montserrat-bold rounded-xl w-full"
             >
-              Ouvrir GeniusPay
+              Payer avec GeniusPay
             </Button>
             <Button
-              onClick={() => {
-                setOpenModal(false);
-                handleWalletPayment();
-              }}
-              isLoading={isSubmitting}
-              disabled={isSubmitting}
+              onClick={() => setOpenModal(false)}
               variant="secondary"
+              disabled={isCreatingGeniusPayPayment}
               className="border border-gray-200 py-2.5 font-montserrat-bold rounded-xl w-full"
             >
-              J&apos;ai payé
+              Annuler
             </Button>
           </div>
         </div>

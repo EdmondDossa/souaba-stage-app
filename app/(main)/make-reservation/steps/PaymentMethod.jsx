@@ -1,27 +1,27 @@
 "use client";
 
 import { RadioGroup } from "radix-ui";
-import WalletIcon from "@/public/images/wallet.png";
-import CashIcon from "@/public/images/cash.png";
-import WarningIcon from "@/public/images/warning.png";
-import Image from "next/image";
 import { Button } from "@/components/ui/common";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Wallet, Coins, AlertTriangle } from "lucide-react";
+
+const paymentMethods = [
+  {
+    type: "WALLET",
+    label: "GeniusPay – Portefeuille",
+    description: "Paiement instantané via GeniusPay (carte, mobile money, wallet).",
+    icon: <Wallet size={24} className="text-primary" />,
+  },
+  {
+    type: "CASH",
+    label: "Espèces",
+    description:
+      "La réservation est validée après réception du paiement en main propre.",
+    icon: <Coins size={24} className="text-primary" />,
+  },
+];
 
 const PaymentMethod = ({ goToNextStep, setFormValues, formValues }) => {
-  const paymentMethods = [
-    {
-      type: "WALLET",
-      label: "Portefeuille",
-      icon: WalletIcon,
-    },
-    {
-      type: "CASH",
-      label: "Espèces",
-      icon: CashIcon,
-    },
-  ];
-
   const searchParams = useSearchParams();
   const params = new URLSearchParams(searchParams);
   const pathname = usePathname();
@@ -30,7 +30,6 @@ const PaymentMethod = ({ goToNextStep, setFormValues, formValues }) => {
   const handleValueChange = (value) => {
     setFormValues((prev) => ({ ...prev, paymentMethod: value }));
     params.set("payment", value);
-    //on met à jour la méthode de paiement dans l'url
     router.replace(`${pathname}?${params.toString()}`);
   };
 
@@ -51,20 +50,15 @@ const PaymentMethod = ({ goToNextStep, setFormValues, formValues }) => {
               key={method.type}
               className="cursor-pointer"
             >
-              <strong className="font-bold text-gray-900 font-montserrat-medium capitalize mb-2 block">
-                {" "}
-                {method.label}{" "}
-              </strong>
-              <div className="flex justify-between items-center px-4 py-2 w-full space-x-4 border border-gray-200 rounded-xl  mb-7">
-                <span className="flex items-center gap-x-4 font-bold text-gray-600 capitalize">
-                  {" "}
-                  <Image
-                    className="block"
-                    width={30}
-                    src={method.icon}
-                    alt=""
-                  />{" "}
-                  {method.label}
+              <div className="mb-2 font-bold text-gray-900 font-montserrat-medium">
+                {method.label}
+              </div>
+              <div className="flex justify-between items-center px-4 py-3 w-full space-x-4 border border-gray-200 rounded-xl mb-7">
+                <span className="flex items-center gap-x-4 font-bold text-gray-600">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                    {method.icon}
+                  </span>
+                  <span className="text-sm text-gray-600">{method.description}</span>
                 </span>
                 <div>
                   <RadioGroup.Item
@@ -82,10 +76,10 @@ const PaymentMethod = ({ goToNextStep, setFormValues, formValues }) => {
         </RadioGroup.Root>
         <div className="flex gap-x-3 text-[12px] text-gray-800 italic font-bold">
           <div>
-            <Image src={WarningIcon} alt="" />
-          </div>{" "}
+            <AlertTriangle size={16} className="text-primary" />
+          </div>
           Tant que le paiement en espèces n'est pas effectué, la réservation
-          n'est pas garantie
+          n'est pas garantie.
         </div>
       </div>
       <div className="mt-10 sm:mt-16 align-bottom self-end w-full place-content-end">
@@ -95,7 +89,7 @@ const PaymentMethod = ({ goToNextStep, setFormValues, formValues }) => {
         >
           Continuer
         </Button>
-      </div>{" "}
+      </div>
     </section>
   );
 };

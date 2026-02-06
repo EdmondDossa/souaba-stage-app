@@ -1,13 +1,21 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import useAuthContext from "@/context/auth";
 import { IoStar } from "react-icons/io5";
-import Image from "next/image";
 import { Eye, RefreshCw } from "lucide-react";
 
 const ViewProfile = ({ initEdit }) => {
   const { user } = useAuthContext();
   const [showModal, setShowModal] = useState(false);
   const [isFront, setIsFront] = useState(true);
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
+  const identityBaseUrl = useMemo(() => apiBase.replace(/\/+$/, ""), [apiBase]);
+
+  const buildIdentityUrl = (path) => {
+    if (!path) return "";
+    if (path.startsWith("http")) return path;
+    const normalizedPath = path.replace(/^\/+/, "");
+    return identityBaseUrl ? `${identityBaseUrl}/${normalizedPath}` : `/${normalizedPath}`;
+  };
 
   const formatGender = (key, value) => {
     if (key !== "gender") return value;
@@ -44,8 +52,14 @@ const ViewProfile = ({ initEdit }) => {
   ];
 
   const cardPaths = {
-    front: user?.profile?.identity_card_front,
-    back: user?.profile?.identity_card_back,
+    front:
+      buildIdentityUrl(
+        user?.profile?.identity_card_front || user?.identity_card_front
+      ) || "",
+    back:
+      buildIdentityUrl(
+        user?.profile?.identity_card_back || user?.identity_card_back
+      ) || "",
   };
 
   const renderCard = (side) => {
@@ -59,12 +73,7 @@ const ViewProfile = ({ initEdit }) => {
     }
     return (
       <div className="relative border rounded-xl overflow-hidden h-48 bg-gray-100 shadow-sm">
-        <Image
-          src={`${process.env.NEXT_PUBLIC_API_URL}/${path}`}
-          alt={side}
-          fill
-          className="object-cover"
-        />
+        <img src={path} alt={side} className="h-full w-full object-cover" />
         <button
           type="button"
           onClick={() => {
@@ -101,7 +110,7 @@ const ViewProfile = ({ initEdit }) => {
                         {item.label}:{" "}
                       </th>
                       <td className="text-start text-gray-800 font-montserrat-medium">
-                      {formatGender(item.key, user[item.key] ?? "NA")}
+                        {formatGender(item.key, user[item.key] ?? "NA")}
                       </td>
                     </tr>
                   ))}
@@ -179,13 +188,10 @@ const ViewProfile = ({ initEdit }) => {
             </div>
             <div className="relative h-[320px] bg-gray-50">
               {cardPaths[isFront ? "front" : "back"] ? (
-                <Image
-                  src={`${process.env.NEXT_PUBLIC_API_URL}/${
-                    cardPaths[isFront ? "front" : "back"]
-                  }`}
+                <img
+                  src={cardPaths[isFront ? "front" : "back"]}
                   alt={isFront ? "Recto" : "Verso"}
-                  fill
-                  className={`object-contain transition-transform duration-300 ${
+                  className={`h-full w-full object-contain transition-transform duration-300 ${
                     isFront ? "" : "scale-x-[-1]"
                   }`}
                 />

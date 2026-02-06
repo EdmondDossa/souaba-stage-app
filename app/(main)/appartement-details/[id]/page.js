@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { Star, MapPin, Heart, CodeSquare } from "lucide-react";
 import Image from "next/image";
 import getAxiosInstance from "@/lib/request";
+import { generateReservationId } from "@/lib/reservationId";
 import {
   PropertyReservationForm,
   PropertyReviewsAppart,
@@ -365,15 +366,22 @@ const AppartementDetails = () => {
         1,
         differenceInDays(departureDate, arrivalDate)
       );
-      const pendingReservation = {
-        type: "accommodation",
-        accommodationId: params.id,
-        checkInDate: arrivalDate.toISOString(),
-        checkOutDate: departureDate.toISOString(),
-        numberOfGuests: adults + babies + children,
-        totalPrice: days_offset * pageData.price_per_night,
-        pricePerNight: pageData.price_per_night,
-      };
+    const pendingReservation = {
+      type: "accommodation",
+      accommodationId: params.id,
+      checkInDate: arrivalDate.toISOString(),
+      checkOutDate: departureDate.toISOString(),
+      numberOfGuests: adults + babies + children,
+      totalPrice: days_offset * pageData.price_per_night,
+      reservationId: generateReservationId(),
+      currency: pageData?.currency || property.currency || "FCFA",
+      partnerId:
+        pageData?.partner_id ||
+        pageData?.partnerId ||
+        property?.partnerId ||
+        null,
+      pricePerNight: pageData.price_per_night,
+    };
 
       if (typeof window !== "undefined") {
         sessionStorage.setItem(
