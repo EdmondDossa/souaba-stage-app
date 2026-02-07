@@ -88,7 +88,12 @@ const EditProfile = ({ onEditCancel }) => {
       toast.success("Informations modifiées!");
       setHasEdit(false);
     } catch (error) {
-      setFormError({ ...formError, error: error.message });
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Impossible de mettre a jour le profil.";
+      setFormError((prev) => ({ ...prev, error: errorMessage }));
+      toast.error(errorMessage);
       console.log(error);
     } finally {
       setLoading(false);

@@ -251,8 +251,10 @@ const ReservationResume = ({
       goToNextStep();
       return;
     }
+
     if (isGeniusPaySelected) {
-      setOpenModal(true);
+      // Lancer directement le processus GeniusPay
+      await handleCreateGeniusPayPayment();
       return;
     }
 
@@ -286,104 +288,98 @@ const ReservationResume = ({
       return;
     }
 
-    const reservationResult = await submitReservation(
-      http,
-      pendingReservation,
-      formValues?.guest,
-      selectedPaymentMethod
-    );
-    if (!reservationResult) {
-      toast.error("Impossible de créer la réservation GeniusPay.");
-      return;
-    }
-
-    const reservationPayload =
-      reservationResult?.data ||
-      reservationResult?.reservation ||
-      reservationResult ||
-      {};
-
-    const serverReservationId =
-      reservationPayload?.reservation_id ||
-      reservationPayload?.id ||
-      reservationPayload?.reservation?.reservation_id ||
-      reservationPayload?.reservation?.id ||
-      pendingReservation?.reservationId;
-
-    const amount = Number(
-      reservationPayload?.total_price ??
-        reservationPayload?.totalPrice ??
-        currentReservation?.total_price ??
-        pendingReservation?.totalPrice ??
-        0
-    );
-    if (!amount) {
-      toast.error("Montant invalide pour le paiement GeniusPay.");
-      return;
-    }
-
-    const origin =
-      typeof window !== "undefined"
-        ? window.location.origin
-        : process.env.NEXT_PUBLIC_APP_URL || "";
-
-    const baseReturnParams = new URLSearchParams({
-      geniuspay_status: "success",
-      reservationId: serverReservationId,
-    });
-    const successUrl = `${origin}/make-reservation?${baseReturnParams.toString()}`;
-
-    const failureParams = new URLSearchParams({
-      geniuspay_status: "failed",
-      reservationId: serverReservationId,
-    });
-    const errorUrl = `${origin}/make-reservation?${failureParams.toString()}`;
-
-    const metadata = {
-      reservation_id: serverReservationId,
-    };
-    const partnerId =
-      pendingReservation?.partnerId ||
-      listingDetails?.partner_id ||
-      listingDetails?.partnerId;
-    if (partnerId) {
-      metadata.partner_id = partnerId;
-    }
-
-    const customerEmail = formValues?.guest?.email || user?.email || "";
-    const customerPhone =
-      formValues?.guest?.phone || user?.phone || user?.contact || "";
-
-    const currency = "XOF";
-    const description = `Réservation Souaba #${serverReservationId ?? ""}`;
-
-    const successUrlWithStatus = successUrl;
-    const errorUrlWithStatus = errorUrl;
-
-    const payload = {
-      amount,
-      currency,
-      description,
-      reservationId: serverReservationId,
-      metadata,
-      customer: {
-        email: customerEmail,
-        phone: customerPhone,
-      },
-      successUrl: successUrlWithStatus,
-      errorUrl: errorUrlWithStatus,
-    };
-
-    let checkoutWindow;
-    if (typeof window !== "undefined") {
-      checkoutWindow = window.open("", "_blank", "noopener,noreferrer");
-    }
-
     try {
-      setIsCreatingGeniusPayPayment(true);
+      setIsSubmitting(true); // Changé de setIsCreatingGeniusPayPayment
+
+      const reservationResult = await submitReservation(
+        http,
+        pendingReservation,
+        formValues?.guest,
+        selectedPaymentMethod,
+      );
+      if (!reservationResult) {
+        toast.error("Impossible de créer la réservation GeniusPay.");
+        return;
+      }
+
+      const reservationPayload =
+        reservationResult?.data ||
+        reservationResult?.reservation ||
+        reservationResult ||
+        {};
+
+      const serverReservationId =
+        reservationPayload?.reservation_id ||
+        reservationPayload?.id ||
+        reservationPayload?.reservation?.reservation_id ||
+        reservationPayload?.reservation?.id ||
+        pendingReservation?.reservationId;
+
+      const amount = Number(
+        reservationPayload?.total_price ??
+          reservationPayload?.totalPrice ??
+          currentReservation?.total_price ??
+          pendingReservation?.totalPrice ??
+          0,
+      );
+      if (!amount) {
+        toast.error("Montant invalide pour le paiement GeniusPay.");
+        return;
+      }
+
+      const origin =
+        typeof window !== "undefined"
+          ? window.location.origin
+          : process.env.NEXT_PUBLIC_APP_URL || "";
+
+      const baseReturnParams = new URLSearchParams({
+        geniuspay_status: "success",
+        reservationId: serverReservationId,
+      });
+      const successUrl = `${origin}/make-reservation?${baseReturnParams.toString()}`;
+
+      const failureParams = new URLSearchParams({
+        geniuspay_status: "failed",
+        reservationId: serverReservationId,
+      });
+      const errorUrl = `${origin}/make-reservation?${failureParams.toString()}`;
+
+      const metadata = {
+        reservation_id: serverReservationId,
+      };
+      const partnerId =
+        pendingReservation?.partnerId ||
+        listingDetails?.partner_id ||
+        listingDetails?.partnerId;
+      if (partnerId) {
+        metadata.partner_id = partnerId;
+      }
+
+      const customerEmail = formValues?.guest?.email || user?.email || "";
+      const customerPhone =
+        formValues?.guest?.phone || user?.phone || user?.contact || "";
+
+      const currency = "XOF";
+      const description = `Réservation Souaba #${serverReservationId ?? ""}`;
+
+      const payload = {
+        amount,
+        currency,
+        description,
+        reservationId: serverReservationId,
+        metadata,
+        customer: {
+          email: customerEmail,
+          phone: customerPhone,
+        },
+        successUrl: successUrl,
+        errorUrl: errorUrl,
+      };
+
       const response = await http.post("/payments", payload, {
         headers: { "Content-Type": "application/json" },
       });
+
       const transaction =
         response?.data?.data || response?.data || response?.paymentTransaction;
       const paymentUrl =
@@ -398,18 +394,26 @@ const ReservationResume = ({
         response?.data?.reference;
 
       if (!paymentUrl) {
-        throw new Error("Aucune URL de paiement GeniusPay n’a été renvoyée.");
+        throw new Error("Aucune URL de paiement GeniusPay n'a été renvoyée.");
       }
 
       const savedReference = reference || pendingReservation?.reservationId;
       if (typeof window !== "undefined" && savedReference) {
         sessionStorage.setItem("pendingPaymentReference", savedReference);
       }
-      setOpenModal(false);
-      if (checkoutWindow) {
-        checkoutWindow.location.href = paymentUrl;
-      } else if (typeof window !== "undefined") {
-        window.open(paymentUrl, "_blank", "noopener,noreferrer");
+
+      // Ouvrir dans une petite fenêtre popup
+      if (typeof window !== "undefined") {
+        const width = 600;
+        const height = 700;
+        const left = (window.screen.width - width) / 2;
+        const top = (window.screen.height - height) / 2;
+
+        window.open(
+          paymentUrl,
+          "GeniusPayCheckout",
+          `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`,
+        );
       }
     } catch (error) {
       console.error("Créer GeniusPay Payment", error);
@@ -419,7 +423,7 @@ const ReservationResume = ({
         "Impossible de créer le paiement GeniusPay.";
       toast.error(errorMessage);
     } finally {
-      setIsCreatingGeniusPayPayment(false);
+      setIsSubmitting(false); // Changé de setIsCreatingGeniusPayPayment
     }
   };
 
@@ -481,7 +485,7 @@ const ReservationResume = ({
               src={listingImage}
               alt={listingDetails.name ?? ""}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
+            <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/15 to-transparent" />
             <div className="absolute top-4 right-4">
               <div className="bg-white/90 backdrop-blur rounded-2xl px-5 py-4 text-right shadow-md">
                 <div className="text-2xl md:text-3xl font-montserrat-bold text-gray-900 leading-none">
@@ -587,7 +591,7 @@ const ReservationResume = ({
               onClick={onFinalSubmission}
               isLoading={isSubmitting}
               disabled={isSubmitting}
-              className="w-full bg-primary hover:!bg-amber-400 py-3 font-montserrat-bold rounded-xl"
+              className="w-full bg-primary hover:bg-amber-400! py-3 font-montserrat-bold rounded-xl"
             >
               Continuer
             </Button>
@@ -609,7 +613,7 @@ const ReservationResume = ({
               onClick={handleCreateGeniusPayPayment}
               isLoading={isCreatingGeniusPayPayment}
               disabled={isCreatingGeniusPayPayment}
-              className="bg-primary hover:!bg-amber-400 py-2.5 font-montserrat-bold rounded-xl w-full"
+              className="bg-primary hover:bg-amber-400! py-2.5 font-montserrat-bold rounded-xl w-full"
             >
               Payer avec GeniusPay
             </Button>
