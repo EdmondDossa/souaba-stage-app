@@ -104,6 +104,25 @@ const ReservationForm = () => {
     }
   }, [isLogged, redirectTarget]);
 
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.opener) return;
+    const geniuspayStatus = (searchParams.get("geniuspay_status") || "")
+      .toString()
+      .toLowerCase();
+    if (!geniuspayStatus) return;
+
+    const reservationId = searchParams.get("reservationId");
+    window.opener.postMessage(
+      {
+        type: "GENIUSPAY_RESULT",
+        status: geniuspayStatus,
+        reservationId: reservationId || "",
+      },
+      window.location.origin
+    );
+    window.close();
+  }, [searchParams]);
+
   if (!isLogged) {
     return (
       <section className="max-w-6xl mx-auto px-4 md:px-6 py-10">

@@ -224,6 +224,32 @@ const ReservationResume = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handleGeniusPayMessage = (event) => {
+      if (event.origin !== window.location.origin) return;
+      const payload = event.data || {};
+      if (payload?.type !== "GENIUSPAY_RESULT") return;
+      const status = (payload?.status || "").toString().toLowerCase();
+
+      if (status === "success") {
+        toast.success("Paiement valide. Votre reservation est confirmee.");
+        completeFlow();
+        return;
+      }
+
+      if (status === "failed") {
+        toast.error("Le paiement a echoue. Vous pouvez reessayer.");
+      }
+    };
+
+    window.addEventListener("message", handleGeniusPayMessage);
+    return () => {
+      window.removeEventListener("message", handleGeniusPayMessage);
+    };
+  }, [completeFlow]);
+
   const selectedPaymentMethod = (
     formValues?.paymentMethod ||
     searchParams.get("payment") ||
@@ -409,11 +435,14 @@ const ReservationResume = ({
         const left = (window.screen.width - width) / 2;
         const top = (window.screen.height - height) / 2;
 
-        window.open(
+        const popup = window.open(
           paymentUrl,
           "GeniusPayCheckout",
           `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`,
         );
+        if (!popup) {
+          window.location.href = paymentUrl;
+        }
       }
     } catch (error) {
       console.error("Créer GeniusPay Payment", error);
