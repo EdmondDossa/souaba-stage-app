@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import renderStars from "@/utils/render-star";
 import { Button } from "@/components/ui/common";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import getAxiosInstance from "@/lib/request";
 import toast from "react-hot-toast";
@@ -30,6 +30,11 @@ const ReservationResume = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCreatingGeniusPayPayment, setIsCreatingGeniusPayPayment] =
     useState(false);
+  const [paymentResult, setPaymentResult] = useState(null);
+  const [isResolvingPaymentResult, setIsResolvingPaymentResult] =
+    useState(false);
+  const [walletReservationPayload, setWalletReservationPayload] =
+    useState(null);
 
   const [listingDetails, setListingDetails] = useState();
   const [currentReservation, setCurrentReservation] = useState();
@@ -224,6 +229,94 @@ const ReservationResume = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const selectedPaymentMethod = (
+    formValues?.paymentMethod ||
+    searchParams.get("payment") ||
+    "WALLET"
+  ).toUpperCase();
+  const isGeniusPaySelected = selectedPaymentMethod === "WALLET";
+
+  const clearGeniusPayUrlParams = useCallback(() => {
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    const hasStatus = url.searchParams.has("geniuspay_status");
+    const hasReservationId = url.searchParams.has("reservationId");
+    if (!hasStatus && !hasReservationId) return;
+
+    url.searchParams.delete("geniuspay_status");
+    url.searchParams.delete("reservationId");
+    window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+  }, []);
+
+  const resolvePaymentOutcome = useCallback(
+    async (fallbackStatus = "") => {
+      if (typeof window === "undefined") {
+        return fallbackStatus === "success" ? "success" : "failed";
+      }
+
+      const reference = sessionStorage.getItem("pendingPaymentReference");
+      if (!reference) {
+        return fallbackStatus === "success" ? "success" : "failed";
+      }
+
+      try {
+        const syncResponse = await http.patch(`/payments/${reference}/sync`);
+        const payment = syncResponse?.data || {};
+        const paymentStatus = (payment?.status || "").toString().toUpperCase();
+        const reservationStatus = (payment?.reservation?.status || "")
+          .toString()
+          .toUpperCase();
+
+        if (
+          paymentStatus === "COMPLETED" ||
+          reservationStatus === "CONFIRMED"
+        ) {
+          return "success";
+        }
+
+        if (
+          ["FAILED", "CANCELLED", "REFUNDED", "EXPIRED"].includes(paymentStatus) ||
+          ["FAILED", "CANCELLED"].includes(reservationStatus)
+        ) {
+          return "failed";
+        }
+      } catch (error) {
+        console.error("Sync GeniusPay status failed:", error);
+      }
+
+      return fallbackStatus === "success" ? "success" : "failed";
+    },
+    [http],
+  );
+
+  const finalizeGeniusPayResult = useCallback(
+    async (status) => {
+      const normalized = (status || "").toString().toLowerCase();
+      if (normalized !== "success" && normalized !== "failed") return;
+
+      setOpenModal(false);
+      setIsResolvingPaymentResult(true);
+
+      const outcome = await resolvePaymentOutcome(normalized);
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem("pendingPaymentReference");
+      }
+      clearGeniusPayUrlParams();
+
+      if (outcome === "success") {
+        setPaymentResult("success");
+        toast.success("Paiement valide. Votre reservation est confirmee.");
+        completeFlow();
+      } else {
+        setPaymentResult("failed");
+        toast.error("Le paiement a echoue. Votre reservation n'est pas validee.");
+      }
+
+      setIsResolvingPaymentResult(false);
+    },
+    [clearGeniusPayUrlParams, completeFlow, resolvePaymentOutcome],
+  );
+
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -231,31 +324,22 @@ const ReservationResume = ({
       if (event.origin !== window.location.origin) return;
       const payload = event.data || {};
       if (payload?.type !== "GENIUSPAY_RESULT") return;
-      const status = (payload?.status || "").toString().toLowerCase();
-
-      if (status === "success") {
-        toast.success("Paiement valide. Votre reservation est confirmee.");
-        completeFlow();
-        return;
-      }
-
-      if (status === "failed") {
-        toast.error("Le paiement a echoue. Vous pouvez reessayer.");
-      }
+      void finalizeGeniusPayResult(payload?.status);
     };
 
     window.addEventListener("message", handleGeniusPayMessage);
     return () => {
       window.removeEventListener("message", handleGeniusPayMessage);
     };
-  }, [completeFlow]);
+  }, [finalizeGeniusPayResult]);
 
-  const selectedPaymentMethod = (
-    formValues?.paymentMethod ||
-    searchParams.get("payment") ||
-    "WALLET"
-  ).toUpperCase();
-  const isGeniusPaySelected = selectedPaymentMethod === "WALLET";
+  useEffect(() => {
+    const status = (searchParams.get("geniuspay_status") || "")
+      .toString()
+      .toLowerCase();
+    if (!status) return;
+    void finalizeGeniusPayResult(status);
+  }, [finalizeGeniusPayResult, searchParams]);
 
   const nights = useMemo(() => {
     if (
@@ -316,23 +400,28 @@ const ReservationResume = ({
 
     try {
       setIsSubmitting(true); // Changé de setIsCreatingGeniusPayPayment
+      setPaymentResult(null);
 
-      const reservationResult = await submitReservation(
-        http,
-        pendingReservation,
-        formValues?.guest,
-        selectedPaymentMethod,
-      );
-      if (!reservationResult) {
-        toast.error("Impossible de créer la réservation GeniusPay.");
-        return;
+      let reservationPayload = walletReservationPayload;
+      if (!reservationPayload) {
+        const reservationResult = await submitReservation(
+          http,
+          pendingReservation,
+          formValues?.guest,
+          selectedPaymentMethod,
+        );
+        if (!reservationResult) {
+          toast.error("Impossible de créer la réservation GeniusPay.");
+          return;
+        }
+
+        reservationPayload =
+          reservationResult?.data ||
+          reservationResult?.reservation ||
+          reservationResult ||
+          {};
+        setWalletReservationPayload(reservationPayload);
       }
-
-      const reservationPayload =
-        reservationResult?.data ||
-        reservationResult?.reservation ||
-        reservationResult ||
-        {};
 
       const serverReservationId =
         reservationPayload?.reservation_id ||
@@ -423,9 +512,8 @@ const ReservationResume = ({
         throw new Error("Aucune URL de paiement GeniusPay n'a été renvoyée.");
       }
 
-      const savedReference = reference || pendingReservation?.reservationId;
-      if (typeof window !== "undefined" && savedReference) {
-        sessionStorage.setItem("pendingPaymentReference", savedReference);
+      if (typeof window !== "undefined" && reference) {
+        sessionStorage.setItem("pendingPaymentReference", reference);
       }
 
       // Ouvrir dans une petite fenêtre popup
@@ -616,13 +704,21 @@ const ReservationResume = ({
             Retour
           </button>
           <div className="md:w-1/2">
+            {isGeniusPaySelected && paymentResult === "failed" && (
+              <div className="mb-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                Paiement echoue. La reservation n&apos;a pas ete validee. Vous
+                pouvez relancer le paiement.
+              </div>
+            )}
             <Button
               onClick={onFinalSubmission}
-              isLoading={isSubmitting}
-              disabled={isSubmitting}
+              isLoading={isSubmitting || isResolvingPaymentResult}
+              disabled={isSubmitting || isResolvingPaymentResult}
               className="w-full bg-primary hover:bg-amber-400! py-3 font-montserrat-bold rounded-xl"
             >
-              Continuer
+              {isGeniusPaySelected && paymentResult === "failed"
+                ? "Relancer le paiement"
+                : "Continuer"}
             </Button>
           </div>
         </div>

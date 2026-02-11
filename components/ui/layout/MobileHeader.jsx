@@ -1,267 +1,99 @@
 "use client";
-import React, { useEffect, useRef, useState, useMemo } from "react";
-import {
-  Menu,
-  User,
-  Search,
-  X,
-  MapPin,
-  Building,
-  ChevronDown,
-} from "lucide-react";
+
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Search, UserCircle } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import useAuthContext from "@/context/auth";
 import ConditionalComponentRender from "@/components/auth/ConditionalComponentRender";
 import { usePathname, useRouter } from "next/navigation";
 import { SvgIcon } from "@/components/ui/common";
-import Calendar from "@/components/ui/common/Calendar";
-import { dateToLetters } from "@/utils/dateToLetters";
-import { DESTINATION_DATA } from "@/data/destination-locations";
-
-const slugifyLabel = (value) =>
-  String(value)
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-const buildDestinationSuggestions = () => {
-  const abidjan = DESTINATION_DATA["Abidjan"];
-  const communes = abidjan?.communes || [];
-  const suggestions = [
-    {
-      id: "abidjan-city",
-      name: "Abidjan",
-      description: "Côte d'Ivoire",
-      type: "city",
-      icon: MapPin,
-    },
-    ...communes.map((commune) => ({
-      id: `abidjan-${slugifyLabel(commune)}`,
-      name: `${commune}, Abidjan`,
-      description: "Commune d'Abidjan",
-      type: "neighborhood",
-      icon: MapPin,
-    })),
-    ...(DESTINATION_DATA.villes || []).map((ville) => ({
-      id: slugifyLabel(ville),
-      name: ville,
-      description: "Côte d'Ivoire",
-      type: "city",
-      icon: MapPin,
-    })),
-  ];
-  return suggestions;
-};
-
-const SUGGESTIONS = [...buildDestinationSuggestions()];
+import MobileSearchMenu from "@/components/ui/common/MobileSearchMenu";
 
 const MobileHeader = () => {
   const pathname = usePathname();
-  const { logout } = useAuthContext();
+  const router = useRouter();
+  const { logout, isLogged } = useAuthContext();
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+
   const menuRef = useRef(null);
+  const menuPanelRef = useRef(null);
   const userMenuRef = useRef(null);
-
-  // SearchBar states
-  const [destination, setDestination] = useState("");
-  const [arrivalDate, setArrivalDate] = useState("");
-  const [departureDate, setDepartureDate] = useState("");
-  const [adults, setAdults] = useState(0);
-  const [children, setChildren] = useState(0);
-  const [babies, setBabies] = useState(0);
-  const [showGuestsDropdown, setShowGuestsDropdown] = useState(false);
-  const [activeGuestType, setActiveGuestType] = useState(null);
-
-  const [showDestinationDropdown, setShowDestinationDropdown] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(-1);
-
-  const [dateRequiredError, setDateRequiredError] = useState(false);
-
-  const [showDateDropdown, setShowDateDropdown] = useState(false);
-  const [currentDateField, setCurrentDateField] = useState(null);
-  const [selectedDate, setSelectedDate] = useState(new Date());
-
-  const destinationRef = useRef(null);
-  const arrivalDateRef = useRef(null);
-  const departureDateRef = useRef(null);
-  const guestsRef = useRef(null);
+  const userMenuPanelRef = useRef(null);
 
   useEffect(() => {
-    function closeMenu(e) {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
+    const closeMenus = (event) => {
+      const isInsideMenuTrigger = menuRef.current?.contains(event.target);
+      const isInsideMenuPanel = menuPanelRef.current?.contains(event.target);
+      if (!isInsideMenuTrigger && !isInsideMenuPanel) {
         setIsMenuOpen(false);
       }
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+      const isInsideUserTrigger = userMenuRef.current?.contains(event.target);
+      const isInsideUserPanel = userMenuPanelRef.current?.contains(event.target);
+      if (!isInsideUserTrigger && !isInsideUserPanel) {
         setIsUserMenuOpen(false);
-      }
-    }
-
-    function handleScroll() {
-      setIsMenuOpen(false);
-      setIsUserMenuOpen(false);
-      setIsSearchOpen(false);
-      setShowDestinationDropdown(false);
-      setShowDateDropdown(false);
-      setShowGuestsDropdown(false);
-      setActiveGuestType(null);
-      setCurrentDateField(null);
-    }
-    const handleClickOutside = (event) => {
-      if (
-        destinationRef.current &&
-        !destinationRef.current.contains(event.target)
-      ) {
-        setShowDestinationDropdown(false);
-      }
-
-      if (
-        arrivalDateRef.current &&
-        !arrivalDateRef.current.contains(event.target) &&
-        departureDateRef.current &&
-        !departureDateRef.current.contains(event.target)
-      ) {
-        setShowDateDropdown(false);
-        setCurrentDateField(null);
-      }
-
-      if (guestsRef.current && !guestsRef.current.contains(event.target)) {
-        setShowGuestsDropdown(false);
-        setActiveGuestType(null);
       }
     };
 
-    window.addEventListener("click", closeMenu);
-    document.addEventListener("mousedown", handleClickOutside);
-    window.addEventListener("scroll", handleScroll);
+    const closeOnScroll = () => {
+      setIsMenuOpen(false);
+      setIsSearchOpen(false);
+      setIsUserMenuOpen(false);
+    };
+
+    window.addEventListener("mousedown", closeMenus);
+    window.addEventListener("scroll", closeOnScroll);
+
     return () => {
-      window.removeEventListener("click", closeMenu);
-      document.removeEventListener("mousedown", handleClickOutside);
-      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("mousedown", closeMenus);
+      window.removeEventListener("scroll", closeOnScroll);
     };
   }, []);
 
   useEffect(() => {
-    if (isSearchOpen || isUserMenuOpen) {
-      setIsMenuOpen(false);
-    }
-  }, [isSearchOpen, isUserMenuOpen]);
-
-  const filteredDestinations = useMemo(() => {
-    if (!destination) return SUGGESTIONS;
-    const q = destination.toLowerCase();
-    return SUGGESTIONS.filter((s) => s.name.toLowerCase().includes(q));
-  }, [destination]);
-
-  const toggleDropdown = (dropdown, state) => {
-    switch (dropdown) {
-      case "destination":
-        setShowDestinationDropdown(state);
-        if (!state) setActiveIndex(-1);
-        break;
-      case "date":
-        setShowDateDropdown(state);
-        if (!state) setCurrentDateField(null);
-        break;
-      case "guests":
-        setShowGuestsDropdown(state);
-        break;
-    }
-  };
-
-  const handleDateOpen = (field) => {
-    setShowDateDropdown(true);
-    setCurrentDateField(field);
-    setSelectedDate(new Date());
-  };
-
-  const handleDateSelect = (date, field) => {
-    const formattedDate = date.toLocaleDateString("fr-FR");
-    const nextArrival = field === "arrival" ? formattedDate : arrivalDate;
-    const nextDeparture = field === "departure" ? formattedDate : departureDate;
-    if (field === "arrival") setArrivalDate(formattedDate);
-    else if (field === "departure") setDepartureDate(formattedDate);
-    toggleDropdown("date", false);
-    if (nextArrival && nextDeparture && dateRequiredError) {
-      setDateRequiredError(false);
-    }
-  };
-
-  const selectDestination = (value) => {
-    setDestination(value.name);
-    toggleDropdown("destination", false);
-  };
-
-  const handleDestinationKeyDown = (e) => {
-    if (!showDestinationDropdown) return;
-    const actions = {
-      ArrowDown: () =>
-        setActiveIndex((i) => Math.min(i + 1, filteredDestinations.length - 1)),
-      ArrowUp: () => setActiveIndex((i) => Math.max(i - 1, 0)),
-      Enter: () =>
-        activeIndex >= 0 &&
-        selectDestination(filteredDestinations[activeIndex]),
-      Escape: () => toggleDropdown("destination", false),
-    };
-    if (actions[e.key]) {
-      e.preventDefault();
-      actions[e.key]();
-    }
-  };
-
-  const router = useRouter();
-
-  const handleSearch = () => {
-    if (!arrivalDate || !departureDate) {
-      setDateRequiredError(true);
-      return;
-    }
-    if (dateRequiredError) {
-      setDateRequiredError(false);
-    }
-    const check_in = arrivalDate.split("/").reverse().join("-");
-    const check_out = departureDate.split("/").reverse().join("-");
-    const capacity = adults + children;
-    const params = new URLSearchParams();
-    params.set("check_in", check_in);
-    params.set("check_out", check_out);
-    params.set("type", "all");
-    params.set("page", "1");
-    params.set("limit", "10");
-    if (destination.trim()) {
-      params.set("city", destination.trim());
-    }
-    if (capacity > 0) {
-      params.set("capacity", String(capacity));
-    }
-    router.push(`/search?${params.toString()}`);
-  };
-
-  const arrivalError = dateRequiredError && !arrivalDate;
-  const departureError = dateRequiredError && !departureDate;
+    setIsMenuOpen(false);
+    setIsSearchOpen(false);
+    setIsUserMenuOpen(false);
+  }, [pathname]);
 
   const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
+    setIsMenuOpen((prev) => !prev);
     setIsSearchOpen(false);
+    setIsUserMenuOpen(false);
   };
 
   const toggleSearch = () => {
-    setIsSearchOpen(!isSearchOpen);
+    setIsSearchOpen((prev) => !prev);
     setIsMenuOpen(false);
+    setIsUserMenuOpen(false);
   };
 
   const toggleUserMenu = () => {
-    setIsUserMenuOpen(!isUserMenuOpen);
+    setIsUserMenuOpen((prev) => !prev);
+    setIsMenuOpen(false);
+    setIsSearchOpen(false);
   };
+
+  const showFloatingSearchButton = useMemo(() => {
+    if (!pathname) return false;
+    if (pathname === "/" || pathname === "/home") return true;
+    return [
+      "/search",
+      "/find-hosting",
+      "/find-accommodations",
+      "/find-bedroom",
+      "/hotels-details",
+      "/appartement-details",
+    ].some((route) => pathname.startsWith(route));
+  }, [pathname]);
 
   return (
     <header className="fixed w-full bg-white shadow-md top-0 z-50">
       <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Left side - Menu icon (mobile) */}
           <div
             ref={menuRef}
             className="w-10 h-10 flex items-center justify-center md:hidden relative"
@@ -271,7 +103,6 @@ const MobileHeader = () => {
               className="flex items-center justify-center w-10 h-10 rounded-lg border-2 border-gray-300 hover:bg-gray-50 transition"
             >
               <div className="relative w-6 h-6">
-                {/* Icône du menu fermé */}
                 <div
                   className={`absolute inset-0 transition-all duration-300 ease-in-out ${
                     isMenuOpen
@@ -281,8 +112,6 @@ const MobileHeader = () => {
                 >
                   <SvgIcon name="menuGroup" size={25} />
                 </div>
-
-                {/* Icône du menu ouvert */}
                 <div
                   className={`absolute inset-0 transition-all duration-300 ease-in-out ${
                     isMenuOpen
@@ -294,60 +123,8 @@ const MobileHeader = () => {
                 </div>
               </div>
             </button>
-
-            {/* Mobile Menu Dropdown */}
-            {isMenuOpen && (
-              <>
-                <div
-                  className="fixed inset-0 z-[90]"
-                  onClick={() => setIsMenuOpen(false)}
-                />
-                <div className="fixed left-4 top-[72px] w-64 text-sm bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-[100]">
-                  <div className="p-4">
-                    <nav className="flex flex-col space-y-2 mb-4">
-                      <Link
-                        href="/find-hosting"
-                        className="text-black  hover:text-gray-900 px-3 py-2 text-sm font-medium transition-colors"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        Trouver un hébergement
-                      </Link>
-                    </nav>
-
-                    <ConditionalComponentRender forLoggedUser={false}>
-                      <div className="flex flex-col space-y-2 mb-4">
-                        <Link
-                          href="/register"
-                          className="inline-flex justify-center items-center px-5 py-2.5 border-2 border-primary text-black rounded-lg text-sm font-bold bg-white hover:bg-primary hover:text-white transition-colors"
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          S'inscrire
-                        </Link>
-
-                        <Link
-                          href="/login"
-                          className="inline-flex justify-center items-center px-5 py-2.5 border-2 border-primary text-black rounded-lg text-sm font-bold bg-white hover:bg-primary hover:text-white transition-colors"
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          Se connecter
-                        </Link>
-                      </div>
-                    </ConditionalComponentRender>
-
-                    <Link
-                      href="/add-establishment"
-                      className="inline-flex whitespace-nowrap justify-center items-center w-full px-5 py-2.5 bg-green text-white rounded-lg text-sm font-bold hover:opacity-80 transition-colors"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Ajouter votre établissement
-                    </Link>
-                  </div>
-                </div>
-              </>
-            )}
           </div>
 
-          {/* Logo - Center */}
           <div className="flex-1 flex justify-center md:flex-none md:flex-1">
             <Link href="/" className="flex items-center">
               <Image
@@ -360,301 +137,198 @@ const MobileHeader = () => {
             </Link>
           </div>
 
-          {/* Right side - Search icon (mobile) */}
-          <div className="w-10 h-10 flex items-center justify-center md:hidden relative">
+          <div
+            ref={userMenuRef}
+            className="w-10 h-10 flex items-center justify-center md:hidden relative"
+          >
+            <ConditionalComponentRender forLoggedUser={true}>
+              <button
+                onClick={toggleUserMenu}
+                className={`flex items-center justify-center w-10 h-10 rounded-lg border-2 transition ${
+                  isUserMenuOpen
+                    ? "bg-primary border-primary text-white"
+                    : "border-gray-300 text-primary hover:bg-gray-50"
+                }`}
+                aria-label="Menu profil"
+              >
+                <UserCircle size={20} />
+              </button>
+            </ConditionalComponentRender>
+
+            <ConditionalComponentRender forLoggedUser={false}>
+              <Link
+                href="/login"
+                className="flex items-center justify-center w-10 h-10 rounded-lg border-2 border-gray-300 text-primary hover:bg-gray-50 transition"
+                aria-label="Se connecter"
+              >
+                <UserCircle size={20} />
+              </Link>
+            </ConditionalComponentRender>
+          </div>
+
+          {showFloatingSearchButton && (
             <button
               onClick={toggleSearch}
-              className="flex items-center justify-center w-10 h-10 rounded-lg border-2 border-gray-300 hover:bg-gray-50 transition"
+              className="fixed md:hidden bottom-5 right-4 z-[120] h-12 w-12 rounded-full bg-primary text-white shadow-lg flex items-center justify-center active:scale-95 transition"
+              aria-label="Ouvrir la recherche"
             >
-              <div className="relative w-6 h-6">
-                {/* Icône du menu fermé */}
-                <div
-                  className={`absolute inset-0 transition-all duration-300 ease-in-out ${
-                    isSearchOpen
-                      ? "opacity-0 scale-0 pointer-events-none"
-                      : "opacity-100 scale-100"
-                  }`}
-                >
-                  <SvgIcon name="Search" size={25} />
-                </div>
-
-                {/* Icône du menu ouvert */}
-                <div
-                  className={`absolute inset-0 transition-all duration-300 ease-in-out ${
-                    isSearchOpen
-                      ? "opacity-100 scale-100"
-                      : "opacity-0 scale-0 pointer-events-none"
-                  }`}
-                >
-                  <SvgIcon name="searchClicked" size={25} />
-                </div>
-              </div>
+              <Search size={20} />
             </button>
+          )}
 
-            {/* Mobile Search Dropdown */}
-            {isSearchOpen && (
-              <div className="fixed right-4 top-[72px] min-w-[250px] w-[calc(100vw-17rem)] max-w-md bg-white rounded-xl shadow-lg border border-gray-200 overflow-visible z-[100]">
-                <div className="p-6">
-                  <div className="space-y-4">
-                    {/* Destination */}
-                    <div ref={destinationRef} className="relative">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Destination
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="Quelle ville préférez-vous ?"
-                        className="w-full px-3 py-2 text-sm focus:outline-none"
-                        value={destination}
-                        onChange={(e) => {
-                          setDestination(e.target.value);
-                          toggleDropdown("destination", true);
-                        }}
-                        onFocus={() => toggleDropdown("destination", true)}
-                        onKeyDown={handleDestinationKeyDown}
-                        autoComplete="off"
-                      />
-                      <div>
-                        <hr className="w-full" />
-                      </div>
-
-                      {showDestinationDropdown &&
-                        filteredDestinations.length > 0 && (
-                          <ul
-                            className="fixed z-[110] bg-white border border-gray-200 rounded-lg shadow-lg overflow-auto w-[calc(100vw-4rem)] max-w-sm max-h-[50vh]"
-                            style={{
-                              top:
-                                destinationRef.current?.getBoundingClientRect()
-                                  .bottom +
-                                4 +
-                                "px",
-                              left: "1rem",
-                              right: "1rem",
-                            }}
-                          >
-                            {filteredDestinations.map((suggestion, idx) => {
-                              const IconComponent = suggestion.icon;
-                              return (
-                                <li
-                                  key={suggestion.id}
-                                  className={`flex items-center px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors ${
-                                    idx === activeIndex ? "bg-gray-50" : ""
-                                  }`}
-                                  onMouseDown={(e) => {
-                                    e.preventDefault();
-                                    selectDestination(suggestion);
-                                  }}
-                                >
-                                  <IconComponent
-                                    size={20}
-                                    className="text-black mr-3 flex-shrink-0"
-                                  />
-                                  <div className="flex-1 min-w-0 text-left">
-                                    <div className="text-sm font-bold text-black truncate">
-                                      {suggestion.name}
-                                    </div>
-                                    <div className="text-xs text-black truncate">
-                                      {suggestion.description}
-                                    </div>
-                                  </div>
-                                </li>
-                              );
-                            })}
-                          </ul>
-                        )}
-                    </div>
-
-                    {/* Date d'arrivée */}
-                    <div ref={arrivalDateRef} className="relative">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Date d'arrivée
-                      </label>
-                      <div className="relative">
-                        <input
-                          type="text"
-                          placeholder="Ajouter une date"
-                          onClick={() => handleDateOpen("arrival")}
-                          value={dateToLetters(arrivalDate)}
-                          readOnly
-                          className={`w-full px-3 py-2 text-sm focus:outline-none cursor-pointer border rounded transition ${
-                            arrivalError
-                              ? "border-red-500 bg-red-50"
-                              : "border-gray-300 bg-white"
-                          }`}
-                        />
-                        {showDateDropdown && currentDateField === "arrival" && (
-                          <div
-                            className="fixed z-[110]"
-                            style={{
-                              top:
-                                arrivalDateRef.current?.getBoundingClientRect()
-                                  .bottom +
-                                4 +
-                                "px",
-                              left: "1rem",
-                              right: "1rem",
-                            }}
-                          >
-                            <Calendar
-                              selectedDate={arrivalDate || null}
-                              minDate={new Date()}
-                              rangeStart={arrivalDate || null}
-                              rangeEnd={departureDate || null}
-                              onDateSelect={(date) =>
-                                handleDateSelect(date, "arrival")
-                              }
-                            />
-                          </div>
-                        )}
-                      </div>
-                      <div>
-                        <hr className="w-full" />
-                      </div>
-                    </div>
-
-                    {/* Date de départ */}
-                    <div ref={departureDateRef} className="relative">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Date de départ
-                      </label>
-                      <div className="relative">
-                        <input
-                          type="text"
-                          placeholder="Ajouter une date"
-                          onClick={() => handleDateOpen("departure")}
-                          value={dateToLetters(departureDate)}
-                          readOnly
-                          className={`w-full px-3 py-2 text-sm focus:outline-none cursor-pointer border rounded transition ${
-                            departureError
-                              ? "border-red-500 bg-red-50"
-                              : "border-gray-300 bg-white"
-                          }`}
-                        />
-                        {showDateDropdown &&
-                          currentDateField === "departure" && (
-                            <div
-                              className="fixed z-[110]"
-                              style={{
-                                top:
-                                  departureDateRef.current?.getBoundingClientRect()
-                                    .bottom +
-                                  4 +
-                                  "px",
-                                left: "1rem",
-                                right: "1rem",
-                              }}
-                            >
-                              <Calendar
-                                selectedDate={departureDate || null}
-                                minDate={arrivalDate || new Date()}
-                                rangeStart={arrivalDate || null}
-                                rangeEnd={departureDate || null}
-                                onDateSelect={(date) =>
-                                  handleDateSelect(date, "departure")
-                                }
-                              />
-                            </div>
-                          )}
-                      </div>
-                      <div>
-                        <hr className="w-full" />
-                      </div>
-                    </div>
-
-                    {/* Nombre d'invités */}
-                    <div ref={guestsRef} className="relative">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Nombre d'invités
-                      </label>
-                      <div className="flex gap-2">
-                        {[
-                          {
-                            label: "Adulte",
-                            value: adults,
-                            type: "adults",
-                            setter: setAdults,
-                            getter: adults,
-                          },
-                          {
-                            label: "Enfants",
-                            value: children,
-                            type: "children",
-                            setter: setChildren,
-                            getter: children,
-                          },
-                          {
-                            label: "Bébé",
-                            value: babies,
-                            type: "babies",
-                            setter: setBabies,
-                            getter: babies,
-                          },
-                        ].map(({ label, type, setter, getter }) => (
-                          <div key={label} className="flex-1 relative">
-                            <label
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setActiveGuestType(type);
-                                setShowGuestsDropdown(!showGuestsDropdown);
-                              }}
-                              className="text-xs flex items-center text-gray-400 cursor-pointer font-bold gap-x-1"
-                            >
-                              <span>{getter || label}</span>
-                              <ChevronDown
-                                size={12}
-                                className="text-gray-400"
-                              />
-                            </label>
-
-                            {showGuestsDropdown && activeGuestType === type && (
-                              <div className="absolute z-[110] bg-white border border-gray-300 shadow-lg w-14 left-0 top-full mt-2 rounded-lg">
-                                <div className="p-1 max-h-44 overflow-y-auto">
-                                  {(type === "adults"
-                                    ? [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-                                    : [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-                                  ).map((number) => (
-                                    <button
-                                      key={number}
-                                      onClick={() => {
-                                        setter(number);
-                                        setShowGuestsDropdown(false);
-                                        setActiveGuestType(null);
-                                      }}
-                                      className="text-center w-full px-2 py-1 text-sm text-gray-700 hover:bg-gray-100 rounded"
-                                    >
-                                      {number}
-                                    </button>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                    </div>
-                  </div>
-
-                  {dateRequiredError && (
-                    <p className="text-sm text-red-600 px-3 mb-2">
-                      Sélectionnez une date d'arrivée et une date de départ pour
-                      lancer la recherche.
-                    </p>
-                  )}
-
-                    {/* Search Button */}
-                    <button
-                      onClick={handleSearch}
-                      className="w-full px-5 py-2.5 bg-primary text-white rounded-lg text-sm font-bold hover:opacity-80 transition-colors flex items-center justify-center gap-2"
-                    >
-                      <Search size={18} />
-                      Recherche
-                    </button>
-                  </div>
-                </div>
+          {isSearchOpen && showFloatingSearchButton && (
+            <>
+              <div
+                className="fixed inset-0 bg-black/20 z-[95]"
+                onClick={() => setIsSearchOpen(false)}
+              />
+              <div className="fixed right-4 bottom-20 min-w-[250px] w-[calc(100vw-2rem)] max-w-md bg-white rounded-xl shadow-lg border border-gray-200 overflow-visible z-[100]">
+                <MobileSearchMenu
+                  className="p-6"
+                  onSearch={({ check_in, check_out, capacity, destination }) => {
+                    const params = new URLSearchParams();
+                    params.set("check_in", check_in);
+                    params.set("check_out", check_out);
+                    params.set("type", "all");
+                    params.set("page", "1");
+                    params.set("limit", "10");
+                    if (destination) params.set("city", destination);
+                    if (capacity > 0) params.set("capacity", String(capacity));
+                    setIsSearchOpen(false);
+                    router.push(`/search?${params.toString()}`);
+                  }}
+                />
               </div>
-            )}
-          </div>
+            </>
+          )}
         </div>
       </div>
+
+      {isMenuOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-[90]"
+            onClick={() => setIsMenuOpen(false)}
+          />
+          <div
+            ref={menuPanelRef}
+            className="fixed left-4 top-[72px] w-64 text-sm bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-[100]"
+          >
+            <div className="p-4">
+              <nav className="flex flex-col space-y-2 mb-4">
+                <Link
+                  href="/find-hosting"
+                  className="text-black hover:text-gray-900 px-3 py-2 text-sm font-medium transition-colors"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Trouver un hébergement
+                </Link>
+              </nav>
+
+              <ConditionalComponentRender forLoggedUser={false}>
+                <div className="flex flex-col space-y-2 mb-4">
+                  <Link
+                    href="/register"
+                    className="inline-flex justify-center items-center px-5 py-2.5 border-2 border-primary text-black rounded-lg text-sm font-bold bg-white hover:bg-primary hover:text-white transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    S'inscrire
+                  </Link>
+                  <Link
+                    href="/login"
+                    className="inline-flex justify-center items-center px-5 py-2.5 border-2 border-primary text-black rounded-lg text-sm font-bold bg-white hover:bg-primary hover:text-white transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Se connecter
+                  </Link>
+                </div>
+              </ConditionalComponentRender>
+
+              <Link
+                href="/add-establishment"
+                className="inline-flex whitespace-nowrap justify-center items-center w-full px-5 py-2.5 bg-green text-white rounded-lg text-sm font-bold hover:opacity-80 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Ajouter votre établissement
+              </Link>
+            </div>
+          </div>
+        </>
+      )}
+
+      {isUserMenuOpen && isLogged && (
+        <>
+          <div
+            className="fixed inset-0 z-[90]"
+            onClick={() => setIsUserMenuOpen(false)}
+          />
+          <div
+            ref={userMenuPanelRef}
+            className="fixed right-4 top-[72px] w-64 text-sm bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-[100]"
+          >
+            <div className="p-4">
+              <div className="flex flex-col space-y-1 pb-3">
+                <Link
+                  href="/favorites"
+                  className="block text-gray-700 hover:bg-gray-50 rounded-lg px-2 py-1 text-xl font-semibold transition-colors"
+                  onClick={() => setIsUserMenuOpen(false)}
+                >
+                  Favoris
+                </Link>
+                <Link
+                  href="/messages"
+                  className="block text-gray-700 hover:bg-gray-50 rounded-lg px-2 py-1 text-xl font-semibold transition-colors"
+                  onClick={() => setIsUserMenuOpen(false)}
+                >
+                  Messages
+                </Link>
+                <Link
+                  href="/notifications"
+                  className="block text-gray-700 hover:bg-gray-50 rounded-lg px-2 py-1 text-xl font-semibold transition-colors"
+                  onClick={() => setIsUserMenuOpen(false)}
+                >
+                  Notifications
+                </Link>
+                <Link
+                  href="/reservations"
+                  className="block text-gray-700 hover:bg-gray-50 rounded-lg px-2 py-1 text-xl font-semibold transition-colors"
+                  onClick={() => setIsUserMenuOpen(false)}
+                >
+                  Réservations
+                </Link>
+              </div>
+
+              <div className="border-t border-gray-200 my-2" />
+
+              <div className="flex flex-col space-y-1 pt-1">
+                <Link
+                  href="/profile"
+                  className="block text-gray-700 hover:bg-gray-50 rounded-lg px-2 py-1 text-xl font-medium transition-colors"
+                  onClick={() => setIsUserMenuOpen(false)}
+                >
+                  Profil
+                </Link>
+                <Link
+                  href="/help"
+                  className="block text-gray-700 hover:bg-gray-50 rounded-lg px-2 py-1 text-xl font-medium transition-colors"
+                  onClick={() => setIsUserMenuOpen(false)}
+                >
+                  Centre d'aide
+                </Link>
+                <button
+                  className="cursor-pointer text-left text-gray-700 hover:bg-red-50 hover:text-red-700 rounded-lg px-2 py-1 text-xl font-medium transition-colors"
+                  onClick={() => {
+                    setIsUserMenuOpen(false);
+                    logout();
+                  }}
+                >
+                  Déconnexion
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </header>
   );
 };
